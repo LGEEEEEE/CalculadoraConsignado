@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculadora de Comissão</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        form { max-width: 400px; margin: auto; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        input { width: 100%; padding: 8px; margin-top: 4px; }
+        button { margin-top: 15px; padding: 10px; width: 100%; background: #28a745; color: white; border: none; cursor: pointer; }
+        button:hover { background: #218838; }
+        .resultado { margin-top: 20px; padding: 15px; background: #f1f1f1; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<h1>Calculadora de Comissão</h1>
+
+<form id="calcForm">
+    <label>Valor da Parcela</label>
+    <input type="text" id="parcela" required placeholder="Ex: 1.157,55">
+
+    <label>Saldo Devedor</label>
+    <input type="text" id="saldodevedor" required placeholder="Ex: 20.000,00">
+
+    <label>Valor a Descontar</label>
+    <input type="text" id="desconto" required placeholder="Ex: 1.000,00">
+
+    <label>Comissão Final do Escritório</label>
+    <input type="text" id="comissaoesc" required placeholder="Ex: 500,00">
+
+    <button type="submit">Calcular</button>
+</form>
+
+<div class="resultado" id="resultado" style="display:none;"></div>
+
+<script>
+    function moedaParaFloat(valor) {
+        valor = valor.replace(/\./g, "").replace(",", ".");
+        return parseFloat(valor) || 0;
+    }
+
+    function formatarMoeda(valor) {
+        return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    document.getElementById("calcForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        let parcela = moedaParaFloat(document.getElementById("parcela").value);
+        let saldoDevedor = moedaParaFloat(document.getElementById("saldodevedor").value);
+        let desconto = moedaParaFloat(document.getElementById("desconto").value);
+        let comissaoEsc = moedaParaFloat(document.getElementById("comissaoesc").value);
+
+        let novoSaldo = parcela / 0.02;
+        let saldoSubtracao = novoSaldo - saldoDevedor - desconto;
+        let investidor = saldoDevedor * 0.10;
+        let gerente = saldoSubtracao * 0.15;
+        let valorGeral = saldoSubtracao - investidor - gerente;
+        let oferta = valorGeral - comissaoEsc;
+
+        document.getElementById("resultado").style.display = "block";
+        document.getElementById("resultado").innerHTML = `
+            <h2>Resultado</h2>
+            <p><strong>Valor da Parcela:</strong> ${formatarMoeda(parcela)}</p>
+            <p><strong>Comissão do Investidor:</strong> ${formatarMoeda(investidor)}</p>
+            <p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>
+            <p><strong>Comissão do Escritório:</strong> ${formatarMoeda(comissaoEsc)}</p>
+            <p><strong>Valor para Oferecer ao Cliente:</strong> ${formatarMoeda(oferta)}</p>
+        `;
+    });
+</script>
+
+</body>
+</html>
