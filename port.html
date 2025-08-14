@@ -15,6 +15,25 @@
             background-color: bisque;
         }
 
+        .btn-voltar {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background: #6c757d;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+            z-index: 1000;
+        }
+
+        .btn-voltar:hover {
+            background: #5a6268;
+            color: white;
+        }
+
         form {
             max-width: 400px;
             margin: auto;
@@ -88,6 +107,9 @@
 </head>
 
 <body>
+
+    <!-- Botão de voltar -->
+    <a href="index.html" class="btn-voltar">← Voltar</a>
 
     <h1 class="text-center">Calculadora de Simulação - Clientes -<br>
         Portabilidade</h1>
