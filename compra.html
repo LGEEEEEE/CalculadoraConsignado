@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Calculadora de Simulação - Clientes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: bisque;
+        }
+
+        form {
+            max-width: 400px;
+            margin: auto;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 6px;
+            margin-top: 4px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 8px;
+            width: 100%;
+            background: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 20px;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #218838;
+        }
+
+        .resultado {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f1f1f1;
+            border-radius: 8px;
+        }
+
+        img {
+            max-width: 200px;
+            height: auto;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                margin: 10px;
+            }
+
+            input,
+            button {
+                font-size: 0.9rem;
+                padding: 6px;
+            }
+
+            img {
+                max-width: 150px;
+            }
+
+            #desconto{
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+    
+</head>
+
+<body>
+
+    <h1 class="text-center">Calculadora de Simulação - Clientes -<br>
+    Compra de Dívidas</h1>
+
+    <div class="text-center">
+        <img src="logoheader.png" class="mx-auto">
+    </div>
+
+    <!-- Etapa 1 -->
+    <form id="calcForm1">
+        <label>Valor da Parcela</label>
+        <input type="text" id="parcela" required placeholder="Ex: 1.157,55">
+
+        <label>Saldo Devedor</label>
+        <input type="text" id="saldodevedor" required placeholder="Ex: 20.000,00">
+
+        <label>Valor a Descontar</label>
+        <input type="text" id="desconto" required placeholder="Ex: 1.000,00">
+
+        
+
+        <button class="btn btn-primary" type="submit">Calcular Valor Geral</button>
+    </form>
+
+    <!-- Resultado da primeira parte -->
+    <div class="resultado" id="resultadoParcial" style="display:none;"></div>
+
+    <!-- Etapa 2 -->
+    <form id="calcForm2" style="display:none;">
+        <label>Comissão Final do Escritório</label>
+        <input type="text" id="comissaoesc" required placeholder="Ex: 500,00">
+        <button  type="submit">Calcular Oferta</button>
+    </form>
+
+    <!-- Resultado final -->
+    <div class="resultado" id="resultadoFinal" style="display:none;"></div>
+
+    <script>
+        function moedaParaFloat(valor) {
+            valor = valor.replace(/\./g, "").replace(",", ".");
+            return parseFloat(valor) || 0;
+        }
+
+        function formatarMoeda(valor) {
+            return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+        }
+
+        let valorGeral = 0, parcela = 0, investidor = 0;
+
+        document.getElementById("calcForm1").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            parcela = moedaParaFloat(document.getElementById("parcela").value);
+            let saldoDevedor = moedaParaFloat(document.getElementById("saldodevedor").value);
+            let desconto = moedaParaFloat(document.getElementById("desconto").value);
+
+            let novoSaldo = parcela / 0.02;
+            let saldoSubtracao = novoSaldo - saldoDevedor - desconto;
+            investidor = saldoDevedor * 0.10;
+            let gerente = saldoSubtracao * 0.15;
+            valorGeral = saldoSubtracao - investidor - gerente;
+
+            document.getElementById("resultadoParcial").style.display = "block";
+            document.getElementById("resultadoParcial").innerHTML = `
+                <h2>Resultado Parcial</h2>
+                <p><strong>Valor da Parcela:</strong> ${formatarMoeda(parcela)}</p>
+                <p><strong>Comissão do Investidor(10%):</strong> ${formatarMoeda(investidor)}</p>
+                <p><strong>Comissão do Gerente(15%):</strong> ${formatarMoeda(gerente)}</p>
+                <p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>
+            `;
+
+            document.getElementById("calcForm2").style.display = "block";
+        });
+
+        document.getElementById("calcForm2").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            let comissaoEsc = moedaParaFloat(document.getElementById("comissaoesc").value);
+            let oferta = valorGeral - comissaoEsc;
+
+            document.getElementById("resultadoFinal").style.display = "block";
+            document.getElementById("resultadoFinal").innerHTML = `
+                <h2>Resultado Final</h2>
+                <p><strong>Comissão do Escritório:</strong> ${formatarMoeda(comissaoEsc)}</p>
+                <p><strong>Valor para Oferecer ao Cliente:</strong> ${formatarMoeda(oferta)}</p>
+            `;
+        });
+    </script>
+
+</body>
+
+</html>
