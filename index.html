@@ -17,7 +17,8 @@
 
 <h1>Calculadora de Comissão</h1>
 
-<form id="calcForm">
+<!-- Etapa 1 -->
+<form id="calcForm1">
     <label>Valor da Parcela</label>
     <input type="text" id="parcela" required placeholder="Ex: 1.157,55">
 
@@ -27,13 +28,21 @@
     <label>Valor a Descontar</label>
     <input type="text" id="desconto" required placeholder="Ex: 1.000,00">
 
-    <label>Comissão Final do Escritório</label>
-    <input type="text" id="comissaoesc" required placeholder="Ex: 500,00">
-
-    <button type="submit">Calcular</button>
+    <button type="submit">Calcular Valor Geral</button>
 </form>
 
-<div class="resultado" id="resultado" style="display:none;"></div>
+<!-- Resultado da primeira parte -->
+<div class="resultado" id="resultadoParcial" style="display:none;"></div>
+
+<!-- Etapa 2 -->
+<form id="calcForm2" style="display:none;">
+    <label>Comissão Final do Escritório</label>
+    <input type="text" id="comissaoesc" required placeholder="Ex: 500,00">
+    <button type="submit">Calcular Oferta</button>
+</form>
+
+<!-- Resultado final -->
+<div class="resultado" id="resultadoFinal" style="display:none;"></div>
 
 <script>
     function moedaParaFloat(valor) {
@@ -45,27 +54,44 @@
         return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
     }
 
-    document.getElementById("calcForm").addEventListener("submit", function(e) {
+    let valorGeral = 0, parcela = 0, investidor = 0;
+
+    // Primeira parte do cálculo
+    document.getElementById("calcForm1").addEventListener("submit", function(e) {
         e.preventDefault();
 
-        let parcela = moedaParaFloat(document.getElementById("parcela").value);
+        parcela = moedaParaFloat(document.getElementById("parcela").value);
         let saldoDevedor = moedaParaFloat(document.getElementById("saldodevedor").value);
         let desconto = moedaParaFloat(document.getElementById("desconto").value);
-        let comissaoEsc = moedaParaFloat(document.getElementById("comissaoesc").value);
 
         let novoSaldo = parcela / 0.02;
         let saldoSubtracao = novoSaldo - saldoDevedor - desconto;
-        let investidor = saldoDevedor * 0.10;
+        investidor = saldoDevedor * 0.10;
         let gerente = saldoSubtracao * 0.15;
-        let valorGeral = saldoSubtracao - investidor - gerente;
-        let oferta = valorGeral - comissaoEsc;
+        valorGeral = saldoSubtracao - investidor - gerente;
 
-        document.getElementById("resultado").style.display = "block";
-        document.getElementById("resultado").innerHTML = `
-            <h2>Resultado</h2>
+        document.getElementById("resultadoParcial").style.display = "block";
+        document.getElementById("resultadoParcial").innerHTML = `
+            <h2>Resultado Parcial</h2>
             <p><strong>Valor da Parcela:</strong> ${formatarMoeda(parcela)}</p>
             <p><strong>Comissão do Investidor:</strong> ${formatarMoeda(investidor)}</p>
             <p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>
+        `;
+
+        // Mostra o segundo formulário
+        document.getElementById("calcForm2").style.display = "block";
+    });
+
+    // Segunda parte do cálculo
+    document.getElementById("calcForm2").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        let comissaoEsc = moedaParaFloat(document.getElementById("comissaoesc").value);
+        let oferta = valorGeral - comissaoEsc;
+
+        document.getElementById("resultadoFinal").style.display = "block";
+        document.getElementById("resultadoFinal").innerHTML = `
+            <h2>Resultado Final</h2>
             <p><strong>Comissão do Escritório:</strong> ${formatarMoeda(comissaoEsc)}</p>
             <p><strong>Valor para Oferecer ao Cliente:</strong> ${formatarMoeda(oferta)}</p>
         `;
