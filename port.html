@@ -26,7 +26,8 @@
             font-weight: bold;
         }
 
-        input {
+        input,
+        select {
             width: 100%;
             padding: 6px;
             margin-top: 4px;
@@ -78,18 +79,18 @@
                 max-width: 150px;
             }
 
-            #desconto{
+            #desconto {
                 margin-bottom: 15px;
             }
         }
     </style>
-    
+
 </head>
 
 <body>
 
     <h1 class="text-center">Calculadora de Simulação - Clientes -<br>
-    Compra de Dívidas</h1>
+        Portabilidade</h1>
 
     <div class="text-center">
         <img src="logoheader.png" class="mx-auto">
@@ -106,7 +107,11 @@
         <label>Valor a Descontar</label>
         <input type="text" id="desconto" required placeholder="Ex: 1.000,00">
 
-        
+        <label>A agência do cliente é DF?</label>
+        <select id="agencia" required>
+            <option value="sim">Sim</option>
+            <option value="nao">Não</option>
+        </select>
 
         <button class="btn btn-primary" type="submit">Calcular Valor Geral</button>
     </form>
@@ -118,7 +123,7 @@
     <form id="calcForm2" style="display:none;">
         <label>Comissão Final do Escritório</label>
         <input type="text" id="comissaoesc" required placeholder="Ex: 500,00">
-        <button  type="submit">Calcular Oferta</button>
+        <button type="submit">Calcular Oferta</button>
     </form>
 
     <!-- Resultado final -->
@@ -134,7 +139,7 @@
             return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
         }
 
-        let valorGeral = 0, parcela = 0, investidor = 0;
+        let valorGeral = 0, parcela = 0, gerente = 0;
 
         document.getElementById("calcForm1").addEventListener("submit", function (e) {
             e.preventDefault();
@@ -142,19 +147,20 @@
             parcela = moedaParaFloat(document.getElementById("parcela").value);
             let saldoDevedor = moedaParaFloat(document.getElementById("saldodevedor").value);
             let desconto = moedaParaFloat(document.getElementById("desconto").value);
+            let agencia = document.getElementById("agencia").value;
 
-            let novoSaldo = parcela / 0.02;
+            const COEFICIENTE = 0.02;
+            let novoSaldo = parcela / COEFICIENTE;
             let saldoSubtracao = novoSaldo - saldoDevedor - desconto;
-            investidor = saldoDevedor * 0.10;
-            let gerente = saldoSubtracao * 0.15;
-            valorGeral = saldoSubtracao - investidor - gerente;
+            let taxaGerente = (agencia === "sim") ? 0.15 : 0.30;
+            gerente = saldoSubtracao * taxaGerente;
+            valorGeral = saldoSubtracao - gerente;
 
             document.getElementById("resultadoParcial").style.display = "block";
             document.getElementById("resultadoParcial").innerHTML = `
                 <h2>Resultado Parcial</h2>
                 <p><strong>Valor da Parcela:</strong> ${formatarMoeda(parcela)}</p>
-                <p><strong>Comissão do Investidor(10%):</strong> ${formatarMoeda(investidor)}</p>
-                <p><strong>Comissão do Gerente(15%):</strong> ${formatarMoeda(gerente)}</p>
+                <p><strong>Comissão do Gerente (${taxaGerente * 100}%):</strong> ${formatarMoeda(gerente)}</p>
                 <p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>
             `;
 
