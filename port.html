@@ -171,7 +171,7 @@
             let desconto = moedaParaFloat(document.getElementById("desconto").value);
             let agencia = document.getElementById("agencia").value;
 
-            const COEFICIENTE = 0.02;
+            const COEFICIENTE = 0.0190;
             let novoSaldo = parcela / COEFICIENTE;
             let saldoSubtracao = novoSaldo - saldoDevedor - desconto;
             let taxaGerente = (agencia === "sim") ? 0.15 : 0.30;
