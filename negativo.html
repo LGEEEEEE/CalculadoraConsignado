@@ -89,12 +89,18 @@
         <img src="logoheader.png" class="mx-auto">
     </div>
 
-    <form id="coefForm">
+    <form id="Negativado">
         <label>Valor da Parcela</label>
-        <input type="text" id="parcela" required placeholder="Ex: 3562,25">
+        <div id="parcelasContainer">
+            <input type="text" class="parcela-input" required placeholder="Ex: 3562,25">
+        </div>
+
+        <div class="buttons text-center">
+            <button class="btn btn-primary" type="button" id="addParcela" role="button">Incluir Nova Parcela</button>
+        </div>
 
         <label>Valor Negativo do Cliente</label>
-        <input type="text" id="negativo" required placeholder="Ex: 115.443,58">
+        <input type="text" id="negativo" required placeholder="Ex: 1000,00">
 
         <button class="btn btn-primary" type="submit">Calcular Nova Parcela</button>
     </form>
@@ -116,22 +122,44 @@
             return valor.toFixed(2).replace(".", ",");
         }
 
-        document.getElementById("coefForm").addEventListener("submit", function (e) {
+        // Adiciona um event listener para o botão de incluir nova parcela
+        document.getElementById("addParcela").addEventListener("click", function () {
+            let container = document.getElementById("parcelasContainer");
+
+            // Cria um novo campo de input
+            let novoInput = document.createElement("input");
+            novoInput.type = "text";
+            novoInput.className = "parcela-input";
+            novoInput.required = true;
+            novoInput.placeholder = "Ex: 3562,25";
+
+            // Adiciona o novo campo ao contêiner
+            container.appendChild(novoInput);
+        });
+
+
+        document.getElementById("Negativado").addEventListener("submit", function (e) {
             e.preventDefault();
 
-            let parcela = moedaParaFloat(document.getElementById("parcela").value);
-            let negativo = moedaParaFloat(document.getElementById("negativo").value);
+            let totalParcelas = 0;
+            let inputsParcela = document.getElementsByClassName("parcela-input");
 
-            let novaParcela = parcela - negativo;
+            for (let i = 0; i < inputsParcela.length; i++) {
+                totalParcelas += moedaParaFloat(inputsParcela[i].value);
+            }
+
+            let negativo = moedaParaFloat(document.getElementById("negativo").value);
+            let novaParcela = totalParcelas - negativo;
 
             document.getElementById("resultado").style.display = "block";
             document.getElementById("resultado").innerHTML = `
                 <h2>Resultado</h2>
+                <p><strong>Valor Total das Parcelas:</strong> R$ ${formatarDecimal(totalParcelas)}</p>
+                <p><strong>Valor Negativo do Cliente:</strong> R$ ${formatarDecimal(negativo)}</p>
                 <p><strong>Valor da nova Parcela:</strong> R$ ${formatarDecimal(novaParcela)}</p>
             `;
         });
     </script>
-
 </body>
 
 </html>
