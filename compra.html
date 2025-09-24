@@ -124,6 +124,8 @@
 
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'loan-list-item';
+                    
+                    // --- LINHA ALTERADA PARA INCLUIR O STATUS ---
                     itemDiv.innerHTML = `
                         <div class="form-check">
                             <input class="form-check-input loan-checkbox" type="checkbox" 
@@ -132,7 +134,7 @@
                                    id="loan-${index}">
                             <label class="form-check-label" for="loan-${index}">
                                 <strong>${nomeBanco}</strong><br>
-                                <small>Saldo: ${formatarMoeda(saldoAtualNum)} | Parcela: ${formatarMoeda(valorParcelaNum)}</small>
+                                <small>Saldo: ${formatarMoeda(saldoAtualNum)} | Parcela: ${formatarMoeda(valorParcelaNum)} | Status: ${pagas} de ${total}</small>
                             </label>
                         </div>
                     `;
@@ -158,7 +160,6 @@
                 totalParcela += parseFloat(cb.dataset.parcela);
             });
             
-            // Preenche o formulário manual com os totais
             preencherFormulario(totalParcela, totalSaldo);
         });
 
