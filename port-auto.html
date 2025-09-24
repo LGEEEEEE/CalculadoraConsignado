@@ -15,7 +15,7 @@
         .resultado { margin-top: 20px; padding: 15px; background: #f1f1f1; border-radius: 8px; }
         .upload-area { border: 2px dashed #0d6efd; padding: 25px; text-align: center; cursor: pointer; background-color: #f8f9fa; margin-bottom: 20px; }
         #pdf-upload { display: none; }
-        .loan-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #ddd; }
+        .loan-list-item { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #ddd; }
     </style>
 </head>
 <body>
@@ -31,15 +31,17 @@
             <p id="loading" class="text-center" style="display:none;">Analisando...</p>
         </div>
 
-        <div id="extratoHeader" class="resultado" style="display:none; margin-bottom: 10px;"></div>
         <div class="resultado" id="listaEmprestimos" style="display:none;"></div>
+        <div id="unificar-container-pdf" class="text-center" style="display:none; margin: 15px auto;">
+            <button id="unificarBtnPdf" class="btn btn-success w-100">Unificar Parcelas Selecionadas</button>
+        </div>
 
         <form id="calcForm1">
             <h2 class="text-center fs-4 mb-3">Dados da Simulação</h2>
-            <label>Valor da Parcela</label>
+            <label>Valor da Parcela (ou Soma)</label>
             <input type="text" id="parcela" required placeholder="Ex: 1.157,55">
 
-            <label>Saldo Devedor</label>
+            <label>Saldo Devedor (ou Soma)</label>
             <input type="text" id="saldodevedor" required placeholder="Ex: 20.000,00">
 
             <label>Valor a Descontar</label>
@@ -68,10 +70,8 @@
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js`;
 
-        // Função de conversão corrigida e robusta
         function moedaParaFloat(valor) {
             const valorString = String(valor || '');
-            // Remove pontos de milhar e troca a vírgula de decimal por ponto
             const valorLimpo = valorString.replace(/\./g, "").replace(",", ".");
             return parseFloat(valorLimpo) || 0;
         }
@@ -80,7 +80,6 @@
             return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
         }
         
-        // Função de formatação para preenchimento de campos (agora usando o padrão brasileiro com vírgula)
         const formatarInputMoeda = (v) => {
             return v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         };
@@ -112,9 +111,9 @@
                 let matches = [...textoTabela.matchAll(rgxEmprestimos)];
                 
                 const listaDiv = document.getElementById("listaEmprestimos");
-                listaDiv.innerHTML = `<h3 class="fs-5 text-center mb-3">Selecione o Contrato para Portabilidade</h3>`;
+                listaDiv.innerHTML = `<h3 class="fs-5 text-center mb-3">Selecione os Contratos para Unificar</h3>`;
                 
-                matches.forEach((match) => {
+                matches.forEach((match, index) => {
                     const [_, rubrica, valor, parcelasStr] = match;
                     const [pagas, total] = parcelasStr.split('/');
                     const nomeBanco = rubrica.replace(/\d{5}\s*-\s*/, '').trim();
@@ -124,21 +123,43 @@
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'loan-list-item';
                     itemDiv.innerHTML = `
-                        <div>
-                            <strong>${nomeBanco}</strong><br>
-                            <small>Saldo: ${formatarMoeda(saldoAtualNum)} | Parcela: ${formatarMoeda(valorParcelaNum)}</small>
+                        <div class="form-check">
+                            <input class="form-check-input loan-checkbox" type="checkbox" 
+                                   data-saldo="${saldoAtualNum}" 
+                                   data-parcela="${valorParcelaNum}"
+                                   id="loan-${index}">
+                            <label class="form-check-label" for="loan-${index}">
+                                <strong>${nomeBanco}</strong><br>
+                                <small>Saldo: ${formatarMoeda(saldoAtualNum)} | Parcela: ${formatarMoeda(valorParcelaNum)} | Status: ${pagas} de ${total}</small>
+                            </label>
                         </div>
-                        <button class="btn btn-sm btn-success" onclick="preencherFormPortabilidade('${valorParcelaNum}', '${saldoAtualNum}')">Simular Portabilidade</button>
                     `;
                     listaDiv.appendChild(itemDiv);
                 });
                 document.getElementById("loading").style.display = "none";
                 listaDiv.style.display = "block";
+                document.getElementById("unificar-container-pdf").style.display = "block";
             };
             fileReader.readAsArrayBuffer(file);
         });
 
-        function preencherFormPortabilidade(parcela, saldo) {
+        document.getElementById("unificarBtnPdf").addEventListener("click", function() {
+            const checkboxes = document.querySelectorAll('.loan-checkbox:checked');
+            let totalSaldo = 0;
+            let totalParcela = 0;
+            if (checkboxes.length === 0) {
+                alert("Por favor, selecione pelo menos uma parcela do PDF para unificar.");
+                return;
+            }
+            checkboxes.forEach(cb => {
+                totalSaldo += parseFloat(cb.dataset.saldo);
+                totalParcela += parseFloat(cb.dataset.parcela);
+            });
+            
+            preencherFormulario(totalParcela, totalSaldo);
+        });
+
+        function preencherFormulario(parcela, saldo) {
             document.getElementById("parcela").value = formatarInputMoeda(parseFloat(parcela));
             document.getElementById("saldodevedor").value = formatarInputMoeda(parseFloat(saldo));
             document.getElementById("calcForm1").scrollIntoView({ behavior: 'smooth' });
@@ -151,6 +172,7 @@
             let desconto = moedaParaFloat(document.getElementById("desconto").value);
             let agencia = document.getElementById("agencia").value;
 
+            // --- LÓGICA DE CÁLCULO ORIGINAL DA PORTABILIDADE ---
             const COEFICIENTE = 0.0190;
             let novoSaldo = parcela / COEFICIENTE;
             let saldoSubtracao = novoSaldo - saldoDevedor - desconto;
@@ -161,8 +183,8 @@
             document.getElementById("resultadoParcial").style.display = "block";
             document.getElementById("resultadoParcial").innerHTML = `
                 <h2>Resultado Parcial</h2>
-                <p><strong>Valor da Parcela:</strong> ${formatarMoeda(parcela)}</p>
-                <p><strong>Saldo Devedor:</strong> ${formatarMoeda(saldoDevedor)}</p>
+                <p><strong>Valor da Parcela (Total):</strong> ${formatarMoeda(parcela)}</p>
+                <p><strong>Saldo Devedor (Total):</strong> ${formatarMoeda(saldoDevedor)}</p>
                 <p><strong>Valor Geral Bruto:</strong> ${formatarMoeda(saldoSubtracao)}</p>
                 <p><strong>Comissão do Gerente (${taxaGerente * 100}%):</strong> ${formatarMoeda(gerente)}</p>
                 <p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>
