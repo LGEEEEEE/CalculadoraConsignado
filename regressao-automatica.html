@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Análise e Compra de Dívidas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="shortcut icon" href="icone.ico" type="image/x-icon">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: bisque;
+        }
+
+        .btn-voltar {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background: #6c757d;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            z-index: 1000;
+        }
+
+        .btn-voltar:hover {
+            background: #5a6268;
+            color: white;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+
+        form {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #fff;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 6px;
+            margin-top: 4px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            border: 1px solid #ccc;
+        }
+
+        input[readonly] {
+            background-color: #e9ecef;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 8px;
+            width: 100%;
+            background: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 20px;
+            font-size: 1rem;
+        }
+
+        button:hover {
+            background: #218838;
+        }
+
+        .resultado {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f1f1f1;
+            border-radius: 8px;
+        }
+
+        img {
+            max-width: 200px;
+            margin-bottom: 20px;
+        }
+
+        h1,
+        h2 {
+            font-weight: bold;
+        }
+
+        .upload-area {
+            border: 2px dashed #0d6efd;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            background-color: #f8f9fa;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            background-color: #e2e6ea;
+        }
+
+        #pdf-upload {
+            display: none;
+        }
+
+        #loading {
+            font-weight: bold;
+            color: #0d6efd;
+            display: none;
+        }
+
+        .loan-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .loan-list-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="btn-voltar">← Voltar</a>
+
+    <div class="container">
+        <h1 class="text-center">Análise para Compra de Dívidas</h1>
+        <div class="text-center">
+            <img src="logoheader.png" class="mx-auto" alt="Logo da empresa">
+        </div>
+
+        <div id="upload-container">
+            <h2 class="text-center fs-4 mb-3">Etapa 1: Carregar Extrato</h2>
+            <input type="file" id="pdf-upload" accept=".pdf">
+            <label for="pdf-upload" class="upload-area" id="upload-label">
+                Clique aqui para selecionar o arquivo PDF
+            </label>
+            <p id="loading" class="text-center">Analisando o extrato...</p>
+        </div>
+
+        <div id="extratoHeader" class="resultado" style="display:none; margin-bottom: 10px;"></div>
+        <div class="resultado" id="listaEmprestimos" style="display:none;"></div>
+        <div id="unificar-container" class="text-center" style="display:none; max-width: 600px; margin: 15px auto;">
+            <button id="unificarBtn" class="btn btn-primary w-100">Unificar Parcelas Selecionadas</button>
+        </div>
+        
+        <div class="resultado" id="resultadoRegressao" style="display:none;"></div>
+
+        <form id="simulacaoForm1" style="display:none;">
+            <h2 class="text-center fs-4 mb-3">Etapa 2: Simulação de Compra</h2>
+            <label>Saldo Devedor Total (Calculado)</label>
+            <input type="text" id="saldoDevedorAtual" readonly>
+
+            <label>Valor a Descontar (Opcional)</label>
+            <input type="text" id="desconto" placeholder="Ex: 1.000,00">
+
+            <button type="submit">Calcular Valor Geral</button>
+        </form>
+        
+        <div class="resultado" id="resultadoParcial" style="display:none;"></div>
+
+        <form id="simulacaoForm2" style="display:none;">
+            <h2 class="text-center fs-4 mb-3">Etapa 3: Oferta Final</h2>
+            <label>Comissão Final do Escritório</label>
+            <input type="text" id="comissaoesc" required placeholder="Ex: 500,00">
+            <button type="submit">Calcular Oferta para o Cliente</button>
+        </form>
+
+        <div class="resultado" id="resultadoFinal" style="display:none;"></div>
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js`;
+
+        const moedaParaFloat = (v) => parseFloat(String(v).replace("R$", "").trim().replace(/\./g, "").replace(",", ".")) || 0;
+        const formatarMoeda = (v) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+        const formatarInputMoeda = (v) => v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}).replace(/\./g, '#').replace(/,/g, '.').replace(/#/g, ',');
+
+        let saldoDevedorAtualizado = 0;
+        let totalParcelasUnificadas = 0; // Armazena a soma das parcelas mensais selecionadas
+        let valorGeralLiquido = 0;
+
+        // Função auxiliar para tentar múltiplos padrões de busca
+        function extractDataWithPatterns(text, patterns) {
+            for (const pattern of patterns) {
+                const match = text.match(pattern);
+                if (match && match[1]) {
+                    return match[1].trim().replace(/Bruta.*$/, "").trim();
+                }
+            }
+            return null;
+        }
+
+        document.getElementById("pdf-upload").addEventListener("change", async function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Reset UI
+            document.getElementById("extratoHeader").style.display = 'none';
+            document.getElementById("listaEmprestimos").style.display = 'none';
+            document.getElementById("unificar-container").style.display = 'none';
+            document.getElementById("resultadoRegressao").style.display = 'none';
+            document.getElementById("simulacaoForm1").style.display = 'none';
+            document.getElementById("resultadoParcial").style.display = 'none';
+            document.getElementById("simulacaoForm2").style.display = 'none';
+            document.getElementById("resultadoFinal").style.display = 'none';
+
+            document.getElementById("loading").style.display = "block";
+            document.getElementById("upload-label").style.display = "none";
+            
+            const fileReader = new FileReader();
+            fileReader.onload = async function() {
+                const typedarray = new Uint8Array(this.result);
+                const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                const page = await pdf.getPage(1);
+                const textContent = await page.getTextContent();
+                const text = textContent.items.map(item => item.str).join(' ');
+
+                const namePatterns = [
+                    /Matrícula\s+\d+\s+Nome\s+([A-Z\s]+?)\s+Bruta Compulsória/,
+                    /Nome\s+do\s+Servidor\s+([A-Z\s]{10,})/,
+                    /\d{3}\.\d{3}\.\d{3}\-\d{2}\s+([A-Z\s]{10,})/,
+                    /Nome\s+([A-Z\s]{10,})/
+                ];
+                
+                const cpfPatterns = [
+                    /CPF.*?([\d\.\-]{14})/,
+                    /\b(\d{3}\.\d{3}\.\d{3}\-\d{2})\b/
+                ];
+                
+                const foundName = extractDataWithPatterns(text, namePatterns);
+                const foundCPF = extractDataWithPatterns(text, cpfPatterns);
+                
+                const clienteNome = foundName ? foundName : "Nome não encontrado";
+                const clienteCPF = foundCPF ? foundCPF : "CPF não encontrado";
+                
+                const headerDiv = document.getElementById("extratoHeader");
+                headerDiv.innerHTML = `
+                    <p class="mb-1"><strong>Nome:</strong> ${clienteNome}</p>
+                    <p class="mb-0"><strong>CPF:</strong> ${clienteCPF}</p>
+                `;
+                headerDiv.style.display = "block";
+                
+                const tabelaInicioMarker = "Número do Contrato Rubrica Sequência";
+                const tabelaInicioIndex = text.indexOf(tabelaInicioMarker);
+                
+                if (tabelaInicioIndex === -1) {
+                    alert("Não foi possível localizar a tabela de empréstimos no extrato.");
+                    document.getElementById("loading").style.display = "none";
+                    document.getElementById("upload-label").style.display = "block";
+                    return;
+                }
+
+                const textoTabela = text.substring(tabelaInicioIndex);
+                const rgxEmprestimos = /(\d{5}\s*-\s*[A-Z\s\-\/]+?)\s+\d+\s+\d+\s+.*?R\$\s*([\d\.,]+)\s+(\d{1,2}\/\d{2,3})/g;
+                let matches = [...textoTabela.matchAll(rgxEmprestimos)];
+
+                if (matches.length === 0) {
+                     alert("Nenhum empréstimo encontrado na tabela. Verifique o arquivo.");
+                    document.getElementById("loading").style.display = "none";
+                    document.getElementById("upload-label").style.display = "block";
+                    return;
+                }
+
+                const listaDiv = document.getElementById("listaEmprestimos");
+                listaDiv.innerHTML = `<h3 class="fs-5 text-center mb-3">Selecione as Parcelas para Unificar</h3>`;
+                
+                matches.forEach((match, index) => {
+                    const [_, rubrica, valor, parcelasStr] = match;
+                    const [pagas, total] = parcelasStr.split('/');
+                    const nomeBanco = rubrica.replace(/\d{5}\s*-\s*/, '').trim();
+                    const valorParcelaNum = moedaParaFloat(valor);
+                    const saldoAtualNum = valorParcelaNum * (parseInt(total) - parseInt(pagas));
+
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'loan-list-item';
+                    itemDiv.innerHTML = `
+                        <div class="form-check">
+                            <input class="form-check-input loan-checkbox" type="checkbox" value="" 
+                                   data-saldo="${saldoAtualNum}" 
+                                   data-parcela="${valorParcelaNum}"
+                                   id="loan-${index}">
+                            <label class="form-check-label" for="loan-${index}">
+                                <strong>${nomeBanco}</strong><br>
+                                <small>Saldo: ${formatarMoeda(saldoAtualNum)} | Parcela: ${formatarMoeda(valorParcelaNum)} | Status: ${pagas} de ${total}</small>
+                            </label>
+                        </div>
+                    `;
+                    listaDiv.appendChild(itemDiv);
+                });
+
+                document.getElementById("loading").style.display = "none";
+                listaDiv.style.display = "block";
+                document.getElementById("unificar-container").style.display = "block";
+                headerDiv.scrollIntoView({ behavior: 'smooth' });
+            };
+            fileReader.readAsArrayBuffer(file);
+        });
+
+        document.getElementById("unificarBtn").addEventListener("click", function() {
+            const checkboxes = document.querySelectorAll('.loan-checkbox:checked');
+            let totalSaldo = 0;
+            let totalParcela = 0;
+
+            if (checkboxes.length === 0) {
+                alert("Por favor, selecione pelo menos uma parcela para unificar.");
+                return;
+            }
+
+            checkboxes.forEach(cb => {
+                totalSaldo += parseFloat(cb.dataset.saldo);
+                totalParcela += parseFloat(cb.dataset.parcela);
+            });
+
+            saldoDevedorAtualizado = totalSaldo;
+            totalParcelasUnificadas = totalParcela; // Armazena a soma das parcelas para a próxima etapa
+
+            document.getElementById("resultadoRegressao").style.display = "block";
+            document.getElementById("resultadoRegressao").innerHTML = `
+                <h3 class="fs-5">Resultado da Unificação</h3>
+                <p><strong>Parcelas Selecionadas:</strong> ${checkboxes.length}</p>
+                <p><strong>Soma das Parcelas Mensais:</strong> ${formatarMoeda(totalParcela)}</p>
+                <p><strong>Saldo Devedor Total a Quitar:</strong> ${formatarMoeda(totalSaldo)}</p>
+            `;
+
+            document.getElementById("saldoDevedorAtual").value = formatarInputMoeda(totalSaldo);
+            document.getElementById("simulacaoForm1").style.display = "block";
+            document.getElementById("simulacaoForm1").scrollIntoView({ behavior: 'smooth' });
+        });
+        
+        document.getElementById("simulacaoForm1").addEventListener("submit", function(e) {
+            e.preventDefault();
+            let desconto = moedaParaFloat(document.getElementById("desconto").value);
+            
+            // Lógica de Compra de Dívida, sem usar margem, mas sim a soma das parcelas existentes.
+            let valorNovoContrato = totalParcelasUnificadas / 0.02; // Coeficiente para o novo contrato
+            let saldoSubtracao = valorNovoContrato - saldoDevedorAtualizado - desconto;
+            let investidor = saldoDevedorAtualizado * 0.10;
+            let gerente = saldoSubtracao * 0.15;
+            valorGeralLiquido = saldoSubtracao - investidor - gerente;
+
+            const resultadoParcialDiv = document.getElementById("resultadoParcial");
+
+            if (saldoSubtracao < 0 || valorGeralLiquido < 10000) {
+                resultadoParcialDiv.style.display = "block";
+                resultadoParcialDiv.innerHTML = `
+                    <h3 class="fs-5 text-danger">Operação Não Viável</h3>
+                    <p>A simulação resultou em um valor que não cobre os custos da operação (não cobre).</p>
+                    <p><strong>Motivo:</strong> ${saldoSubtracao < 0 ? 'Saldo negativo após quitação.' : `Valor geral líquido (${formatarMoeda(valorGeralLiquido)}) é inferior a R$ 10.000,00.`}</p>
+                `;
+                document.getElementById("simulacaoForm2").style.display = "none";
+            } else {
+                resultadoParcialDiv.style.display = "block";
+                resultadoParcialDiv.innerHTML = `
+                    <h3 class="fs-5">Resultado Parcial da Simulação</h3>
+                    <p><strong>Comissão do Investidor (10%):</strong> ${formatarMoeda(investidor)}</p>
+                    <p><strong>Comissão do Gerente (15%):</strong> ${formatarMoeda(gerente)}</p>
+                    <hr>
+                    <p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeralLiquido)}</p>
+                `;
+                document.getElementById("simulacaoForm2").style.display = "block";
+            }
+        });
+
+        document.getElementById("simulacaoForm2").addEventListener("submit", function(e) {
+            e.preventDefault();
+            let comissaoEsc = moedaParaFloat(document.getElementById("comissaoesc").value);
+            let ofertaFinal = valorGeralLiquido - comissaoEsc;
+
+            document.getElementById("resultadoFinal").style.display = "block";
+            document.getElementById("resultadoFinal").innerHTML = `
+                <h3 class="fs-5">Resultado Final</h3>
+                <p><strong>Valor para Oferecer ao Cliente:</strong> ${formatarMoeda(ofertaFinal)}</p>
+            `;
+        });
+    </script>
+</body>
+
+</html>
