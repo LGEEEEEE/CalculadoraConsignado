@@ -15,7 +15,7 @@
         .resultado { margin-top: 20px; padding: 15px; background: #f1f1f1; border-radius: 8px; }
         .upload-area { border: 2px dashed #0d6efd; padding: 25px; text-align: center; cursor: pointer; background-color: #f8f9fa; margin-bottom: 20px; }
         #pdf-upload { display: none; }
-        .loan-list-item { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #ddd; }
+        .loan-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #ddd; }
     </style>
 </head>
 <body>
@@ -125,7 +125,6 @@
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'loan-list-item';
                     
-                    // --- LINHA ALTERADA PARA INCLUIR O STATUS ---
                     itemDiv.innerHTML = `
                         <div class="form-check">
                             <input class="form-check-input loan-checkbox" type="checkbox" 
@@ -186,18 +185,31 @@
             let gerente = saldoSubtracao * 0.15;
             valorGeral = saldoSubtracao - investidor - gerente;
 
-            document.getElementById("resultadoParcial").style.display = "block";
-            document.getElementById("resultadoParcial").innerHTML = `
-                <h2>Resultado Parcial</h2>
-                <p><strong>Valor da Parcela (Total):</strong> ${formatarMoeda(parcela)}</p>
-                <p><strong>Saldo Devedor (Total):</strong> ${formatarMoeda(saldoDevedor)}</p>
-                <p><strong>Valor Bruto Liberado:</strong> ${formatarMoeda(saldoSubtracao)}</p>
-                <p><strong>Comissão do Investidor (${(investidorRate * 100).toFixed(0)}%):</strong> ${formatarMoeda(investidor)}</p>
-                <p><strong>Comissão do Gerente (15%):</strong> ${formatarMoeda(gerente)}</p>
-                <hr>
-                <p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>
-            `;
-            document.getElementById("calcForm2").style.display = "block";
+            const resultadoParcialDiv = document.getElementById("resultadoParcial");
+
+            // --- LÓGICA DE VALIDAÇÃO ADICIONADA AQUI ---
+            if (saldoSubtracao < 0 || valorGeral < 0) {
+                resultadoParcialDiv.style.display = "block";
+                resultadoParcialDiv.innerHTML = `
+                    <h3 class="fs-5 text-danger">Operação Não Viável</h3>
+                    <p class="fw-bold">A parcela selecionada não pode ser coberta.</p>
+                    <p>O valor gerado pela(s) parcela(s) é insuficiente para quitar o saldo devedor e cobrir os custos.</p>
+                `;
+                document.getElementById("calcForm2").style.display = "none";
+            } else {
+                resultadoParcialDiv.style.display = "block";
+                resultadoParcialDiv.innerHTML = `
+                    <h2>Resultado Parcial</h2>
+                    <p><strong>Valor da Parcela (Total):</strong> ${formatarMoeda(parcela)}</p>
+                    <p><strong>Saldo Devedor (Total):</strong> ${formatarMoeda(saldoDevedor)}</p>
+                    <p><strong>Valor Bruto Liberado:</strong> ${formatarMoeda(saldoSubtracao)}</p>
+                    <p><strong>Comissão do Investidor (${(investidorRate * 100).toFixed(0)}%):</strong> ${formatarMoeda(investidor)}</p>
+                    <p><strong>Comissão do Gerente (15%):</strong> ${formatarMoeda(gerente)}</p>
+                    <hr>
+                    <p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>
+                `;
+                document.getElementById("calcForm2").style.display = "block";
+            }
         });
 
         document.getElementById("calcForm2").addEventListener("submit", function (e) {
