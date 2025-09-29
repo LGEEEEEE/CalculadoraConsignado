@@ -120,7 +120,7 @@
                     const [pagas, total] = parcelasStr.split('/');
                     const nomeBanco = rubrica.replace(/\d{5}\s*-\s*/, '').trim();
                     const valorParcelaNum = moedaParaFloat(valor);
-                    const saldoAtualNum = valorParcelaNum * (parseInt(total) - parseInt(pagas));
+                    const saldoAtualNum = valorParcelaNum * (parseInt(total) - parseInt(pagas)) * 0.75 ;
 
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'loan-list-item';
@@ -201,7 +201,7 @@
                 resultadoParcialDiv.innerHTML = `
                     <h2>Resultado Parcial</h2>
                     <p><strong>Valor da Parcela (Total):</strong> ${formatarMoeda(parcela)}</p>
-                    <p><strong>Saldo Devedor (Total):</strong> ${formatarMoeda(saldoDevedor)}</p>
+                    <p><strong>Saldo Devedor Aproximado (Total):</strong> ${formatarMoeda(saldoDevedor)}</p>
                     <p><strong>Valor Bruto Liberado:</strong> ${formatarMoeda(saldoSubtracao)}</p>
                     <p><strong>Comissão do Investidor (${(investidorRate * 100).toFixed(0)}%):</strong> ${formatarMoeda(investidor)}</p>
                     <p><strong>Comissão do Gerente (15%):</strong> ${formatarMoeda(gerente)}</p>
