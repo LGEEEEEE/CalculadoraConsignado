@@ -54,7 +54,7 @@
                 </div>
                 <div class="col-6">
                     <label for="comissaoGerente">Comissão Gerente (%)</label>
-                    <input type="text" id="comissaoGerente" class="form-control" value="15">
+                    <input type="text" id="comissaoGerente" class="form-control" value="15" placeholder="Ex: 15">
                 </div>
             </div>
 
@@ -178,7 +178,7 @@
             let saldoDevedor = moedaParaFloat(document.getElementById("saldodevedor").value);
             let desconto = moedaParaFloat(document.getElementById("desconto").value);
             let coeficiente = parseFloat(document.getElementById("coeficiente").value.replace(",", ".")) || 0.0190;
-            let comissaoGerentePerc = parseFloat(document.getElementById("comissaoGerente").value.replace(",", ".")) || 15;
+            let comissaoGerentePerc = parseFloat(document.getElementById("comissaoGerente").value.replace(",", ".")) || 0;
 
             let novoSaldo = parcela / coeficiente;
             let saldoSubtracao = novoSaldo - saldoDevedor - desconto;

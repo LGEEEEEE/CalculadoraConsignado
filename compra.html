@@ -63,6 +63,8 @@
 
             <label>Valor a Descontar</label>
             <input type="text" id="desconto" placeholder="Ex: 1.000,00">
+            
+            
 
             <button class="btn btn-primary w-100 mt-3" type="submit">Calcular Valor Geral</button>
         </form>
@@ -186,7 +188,7 @@
             let saldoDevedor = moedaParaFloat(document.getElementById("saldodevedor").value);
             let desconto = moedaParaFloat(document.getElementById("desconto").value);
             let coeficiente = parseFloat(document.getElementById("coeficiente").value.replace(",", ".")) || 0.02;
-            let comissaoGerentePerc = parseFloat(document.getElementById("comissaoGerente").value.replace(",", ".")) || 15;
+            let comissaoGerentePerc = parseFloat(document.getElementById("comissaoGerente").value.replace(",", ".")) || 0;
 
 
             const investidorRate = (tipoCompra === 'bradesco') ? 0.10 : 0.08;
