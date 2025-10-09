@@ -46,12 +46,21 @@
 
             <label>Valor a Descontar</label>
             <input type="text" id="desconto" placeholder="Ex: 1.000,00">
+            
+            <div class="row mb-2">
+                <div class="col-8">
+                    <label>A agência do cliente é DF?</label>
+                    <select id="agencia" class="form-select" required>
+                        <option value="sim">Sim</option>
+                        <option value="nao">Não</option>
+                    </select>
+                </div>
+                <div class="col-4">
+                    <label for="coeficiente">Coeficiente</label>
+                    <input type="text" id="coeficiente" class="form-control" value="0.0190">
+                </div>
+            </div>
 
-            <label>A agência do cliente é DF?</label>
-            <select id="agencia" required>
-                <option value="sim">Sim</option>
-                <option value="nao">Não</option>
-            </select>
             <button class="btn btn-primary w-100 mt-3" type="submit">Calcular Valor Geral</button>
         </form>
 
@@ -172,10 +181,9 @@
             let saldoDevedor = moedaParaFloat(document.getElementById("saldodevedor").value);
             let desconto = moedaParaFloat(document.getElementById("desconto").value);
             let agencia = document.getElementById("agencia").value;
+            let coeficiente = parseFloat(document.getElementById("coeficiente").value.replace(",", ".")) || 0.0190;
 
-            // --- LÓGICA DE CÁLCULO ORIGINAL DA PORTABILIDADE ---
-            const COEFICIENTE = 0.0190;
-            let novoSaldo = parcela / COEFICIENTE;
+            let novoSaldo = parcela / coeficiente;
             let saldoSubtracao = novoSaldo - saldoDevedor - desconto;
             let taxaGerente = (agencia === "sim") ? 0.15 : 0.30;
             let gerente = saldoSubtracao * taxaGerente;

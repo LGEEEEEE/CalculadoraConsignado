@@ -39,11 +39,19 @@
         <form id="calcForm1">
             <h2 class="text-center fs-4 mb-3">Dados da Simulação</h2>
             
-            <label for="tipoCompra">Tipo de Compra</label>
-            <select id="tipoCompra" class="form-select mb-2">
-                <option value="bradesco" selected>Bradesco (Comissão Investidor 10%)</option>
-                <option value="cef">Caixa (CEF) (Comissão Investidor 8%)</option>
-            </select>
+            <div class="row mb-2">
+                <div class="col-8">
+                    <label for="tipoCompra">Tipo de Compra</label>
+                    <select id="tipoCompra" class="form-select">
+                        <option value="bradesco" selected>Bradesco (Comissão Investidor 10%)</option>
+                        <option value="cef">Caixa (CEF) (Comissão Investidor 8%)</option>
+                    </select>
+                </div>
+                <div class="col-4">
+                    <label for="coeficiente">Coeficiente</label>
+                    <input type="text" id="coeficiente" class="form-control" value="0.02">
+                </div>
+            </div>
 
             <label>Valor da Parcela</label>
             <input type="text" id="parcela" required placeholder="Ex: 1.157,55">
@@ -175,11 +183,12 @@
             let parcela = moedaParaFloat(document.getElementById("parcela").value);
             let saldoDevedor = moedaParaFloat(document.getElementById("saldodevedor").value);
             let desconto = moedaParaFloat(document.getElementById("desconto").value);
+            let coeficiente = parseFloat(document.getElementById("coeficiente").value.replace(",", ".")) || 0.02;
 
-            const COEFICIENTE = 0.02;
+
             const investidorRate = (tipoCompra === 'bradesco') ? 0.10 : 0.08;
 
-            let novoSaldo = parcela / COEFICIENTE;
+            let novoSaldo = parcela / coeficiente;
             let saldoSubtracao = novoSaldo - saldoDevedor - desconto;
             
             let investidor = saldoDevedor * investidorRate;
@@ -188,7 +197,6 @@
 
             const resultadoParcialDiv = document.getElementById("resultadoParcial");
 
-            // --- LÓGICA DE VALIDAÇÃO ADICIONADA AQUI ---
             if (saldoSubtracao < 0 || valorGeral < 0) {
                 resultadoParcialDiv.style.display = "block";
                 resultadoParcialDiv.innerHTML = `
