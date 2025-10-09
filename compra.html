@@ -51,6 +51,8 @@
                     <label for="coeficiente">Coeficiente</label>
                     <input type="text" id="coeficiente" class="form-control" value="0.02">
                 </div>
+                <label for="comissaoGerente">Comissão Gerente (%)</label>
+            <input type="text" id="comissaoGerente" class="form-control" value="15">
             </div>
 
             <label>Valor da Parcela</label>
@@ -184,6 +186,7 @@
             let saldoDevedor = moedaParaFloat(document.getElementById("saldodevedor").value);
             let desconto = moedaParaFloat(document.getElementById("desconto").value);
             let coeficiente = parseFloat(document.getElementById("coeficiente").value.replace(",", ".")) || 0.02;
+            let comissaoGerentePerc = parseFloat(document.getElementById("comissaoGerente").value.replace(",", ".")) || 15;
 
 
             const investidorRate = (tipoCompra === 'bradesco') ? 0.10 : 0.08;
@@ -192,7 +195,7 @@
             let saldoSubtracao = novoSaldo - saldoDevedor - desconto;
             
             let investidor = saldoDevedor * investidorRate;
-            let gerente = saldoSubtracao * 0.15;
+            let gerente = saldoSubtracao * (comissaoGerentePerc / 100);
             valorGeral = saldoSubtracao - investidor - gerente;
 
             const resultadoParcialDiv = document.getElementById("resultadoParcial");
@@ -213,7 +216,7 @@
                     <p><strong>Saldo Devedor Aproximado (Total):</strong> ${formatarMoeda(saldoDevedor)}</p>
                     <p><strong>Valor Bruto Liberado:</strong> ${formatarMoeda(saldoSubtracao)}</p>
                     <p><strong>Comissão do Investidor (${(investidorRate * 100).toFixed(0)}%):</strong> ${formatarMoeda(investidor)}</p>
-                    <p><strong>Comissão do Gerente (15%):</strong> ${formatarMoeda(gerente)}</p>
+                    <p><strong>Comissão do Gerente (${comissaoGerentePerc}%):</strong> ${formatarMoeda(gerente)}</p>
                     <hr>
                     <p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>
                 `;

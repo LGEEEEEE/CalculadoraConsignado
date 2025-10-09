@@ -48,16 +48,13 @@
             <input type="text" id="desconto" placeholder="Ex: 1.000,00">
             
             <div class="row mb-2">
-                <div class="col-8">
-                    <label>A agência do cliente é DF?</label>
-                    <select id="agencia" class="form-select" required>
-                        <option value="sim">Sim</option>
-                        <option value="nao">Não</option>
-                    </select>
-                </div>
-                <div class="col-4">
+                <div class="col-6">
                     <label for="coeficiente">Coeficiente</label>
                     <input type="text" id="coeficiente" class="form-control" value="0.0190">
+                </div>
+                <div class="col-6">
+                    <label for="comissaoGerente">Comissão Gerente (%)</label>
+                    <input type="text" id="comissaoGerente" class="form-control" value="15">
                 </div>
             </div>
 
@@ -180,13 +177,12 @@
             let parcela = moedaParaFloat(document.getElementById("parcela").value);
             let saldoDevedor = moedaParaFloat(document.getElementById("saldodevedor").value);
             let desconto = moedaParaFloat(document.getElementById("desconto").value);
-            let agencia = document.getElementById("agencia").value;
             let coeficiente = parseFloat(document.getElementById("coeficiente").value.replace(",", ".")) || 0.0190;
+            let comissaoGerentePerc = parseFloat(document.getElementById("comissaoGerente").value.replace(",", ".")) || 15;
 
             let novoSaldo = parcela / coeficiente;
             let saldoSubtracao = novoSaldo - saldoDevedor - desconto;
-            let taxaGerente = (agencia === "sim") ? 0.15 : 0.30;
-            let gerente = saldoSubtracao * taxaGerente;
+            let gerente = saldoSubtracao * (comissaoGerentePerc / 100);
             valorGeral = saldoSubtracao - gerente;
 
             document.getElementById("resultadoParcial").style.display = "block";
@@ -195,7 +191,7 @@
                 <p><strong>Valor da Parcela (Total):</strong> ${formatarMoeda(parcela)}</p>
                 <p><strong>Saldo Devedor (Total):</strong> ${formatarMoeda(saldoDevedor)}</p>
                 <p><strong>Valor Geral Bruto:</strong> ${formatarMoeda(saldoSubtracao)}</p>
-                <p><strong>Comissão do Gerente (${taxaGerente * 100}%):</strong> ${formatarMoeda(gerente)}</p>
+                <p><strong>Comissão do Gerente (${comissaoGerentePerc}%):</strong> ${formatarMoeda(gerente)}</p>
                 <p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>
             `;
             document.getElementById("calcForm2").style.display = "block";
