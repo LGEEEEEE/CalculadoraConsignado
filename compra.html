@@ -70,7 +70,6 @@
 
     let clienteNomePDF = '', clienteCpfPDF = '', parcelasSelecionadasPDF = [], totalParcelasUnificadasPDF = 0, saldoDevedorTotalPDF = 0, valorOfertaPDF = 0, valorGeral = 0;
 
-    // CORREÇÃO FINAL AQUI: A função agora remove o "R$" antes de converter o texto para número.
     function moedaParaFloat(v) { return parseFloat(String(v||'').replace('R$', '').trim().replace(/\./g,"").replace(",","."))||0; }
     
     function formatarMoeda(v) { return v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"}); }
@@ -79,6 +78,10 @@
     document.getElementById("pdf-upload").addEventListener("change", async function(event) {
         const file = event.target.files[0];
         if (!file) return;
+
+        clienteNomePDF = '';
+        clienteCpfPDF = '';
+
         document.getElementById("loading").style.display = "block";
         const listaEmprestimosEl = document.getElementById("listaEmprestimos");
         const unificarContainerEl = document.getElementById("unificar-container-pdf");
@@ -96,16 +99,13 @@
                     text += textContent.items.map(item => item.str).join('\n');
                 }
                 
-                function extractData(text, regex, groupIndex = 1) {
-                    const match = text.match(regex);
-                    return match ? match[groupIndex].trim() : null;
+                // --- CORREÇÃO AQUI: Nova lógica de extração de Nome e CPF ---
+                const headerRegex = /Órgão\nCPF\nMatrícula\nNome\n([^\n]+)\n([^\n]+)\n([^\n]+)\n([^\n]+)/;
+                const headerMatch = text.match(headerRegex);
+                if (headerMatch) {
+                    clienteCpfPDF = headerMatch[2].trim();
+                    clienteNomePDF = headerMatch[4].trim();
                 }
-
-                const nomeRegex = /Nome\n(?:.*\n){3}(.*)/;
-                const cpfRegex = /(\d{3}\.\d{3}\.\d{3}-\d{2})/;
-
-                clienteNomePDF = extractData(text, nomeRegex);
-                clienteCpfPDF = extractData(text, cpfRegex);
                 
                 let htmlCliente = '';
                 if (clienteNomePDF || clienteCpfPDF) {
@@ -118,28 +118,29 @@
                 const listaDiv = document.getElementById("listaEmprestimos");
                 listaDiv.innerHTML = `${htmlCliente}<h3 class="fs-5 text-center mb-3">Selecione os Contratos para Unificar</h3>`;
                 
-                const rgxEmprestimos = /EMPREST BCO OFICIAL - CEF(?:.|\n)*?(R\$\s*[\d\.,]+)\n(\d{2}\/\d{2,3})/g;
+                // --- CORREÇÃO AQUI: Ordem de captura na Regex de empréstimos ajustada ---
+                const rgxEmprestimos = /(EMPREST[^\n]+)\n(?:.|\n)*?(R\$\s*[\d\.,]+)\n(\d{2,3}\/\d{2,3})/g;
                 let matches = [...text.matchAll(rgxEmprestimos)];
                 
                 if (matches.length === 0) {
                     alert("AVISO: Nenhum contrato de empréstimo encontrado no formato esperado.");
-                    if(htmlCliente) listaDiv.style.display = "block";
+                    if(htmlCliente && clienteNomePDF) listaDiv.style.display = "block";
                     return;
                 }
                 
                 matches.forEach((match, index) => {
-                    const [_, valor, parcelasStr] = match;
+                    // --- CORREÇÃO AQUI: Ordem de desestruturação ajustada ---
+                    const [_, nomeBanco, valor, parcelasStr] = match;
+                    const cleanNomeBanco = nomeBanco.replace(/^\d{5}\s*-\s*/, '').trim();
                     const [pagas, total] = parcelasStr.split('/');
-                    const nomeBanco = "EMPREST BCO OFICIAL - CEF";
                     const valorParcelaNum = moedaParaFloat(valor);
                     
                     const parcelasRestantes = parseInt(total, 10) - parseInt(pagas, 10);
                     const saldoAproximado = valorParcelaNum * parcelasRestantes; 
 
                     const itemDiv = document.createElement('div');
-                    const itemClass = listaDiv.querySelector('.loan-list-item') ? 'loan-list-item' : ''; 
-                    itemDiv.className = itemClass;
-                    itemDiv.innerHTML = `<div class="form-check"><input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${saldoAproximado}" data-parcela="${valorParcelaNum}" data-banco="${nomeBanco}" id="loan-${index}"><label class="form-check-label" for="loan-${index}"><strong>${nomeBanco}</strong><br><small>Saldo Aprox.: ${formatarMoeda(saldoAproximado)} | Parcela: ${formatarMoeda(valorParcelaNum)} | Status: ${pagas} de ${total}</small></label></div>`;
+                    itemDiv.className = 'loan-list-item';
+                    itemDiv.innerHTML = `<div class="form-check"><input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${saldoAproximado}" data-parcela="${valorParcelaNum}" data-banco="${cleanNomeBanco}" id="loan-${index}"><label class="form-check-label" for="loan-${index}"><strong>${cleanNomeBanco}</strong><br><small>Saldo Aprox.: ${formatarMoeda(saldoAproximado)} | Parcela: ${formatarMoeda(valorParcelaNum)} | Status: ${pagas} de ${total}</small></label></div>`;
                     listaDiv.appendChild(itemDiv);
                 });
 
@@ -160,7 +161,6 @@
         fileReader.readAsArrayBuffer(file);
     });
     
-    // --- O RESTANTE DO SEU CÓDIGO PERMANECE IGUAL ---
     if (document.getElementById("unificarBtnPdf")) {
         document.getElementById("unificarBtnPdf").addEventListener("click", function() {
             let totalSaldo = 0, totalParcela = 0;
@@ -200,7 +200,7 @@
                 let comissaoG = parseFloat(document.getElementById("comissaoGerente").value.replace(",","."))||0;
                 const investidorR = (document.getElementById("tipoCompra").value === 'bradesco') ? 0.10 : 0.08;
                 let novoS = p / coef, sub = novoS - s - d, investidor = s * investidorR, gerente = sub * (comissaoG / 100);
-                valorGeral = sub - investidor - gerente;
+                valorGeral = sub - investor - gerente;
                 const resDiv = document.getElementById("resultadoParcial");
                 resDiv.style.display = "block";
                 if (sub < 0 || valorGeral < 0) {
