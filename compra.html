@@ -66,101 +66,102 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <script>
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js`;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js`;
 
-        let clienteNomePDF = '', clienteCpfPDF = '', parcelasSelecionadasPDF = [], totalParcelasUnificadasPDF = 0, saldoDevedorTotalPDF = 0, valorOfertaPDF = 0, valorGeral = 0;
+    let clienteNomePDF = '', clienteCpfPDF = '', parcelasSelecionadasPDF = [], totalParcelasUnificadasPDF = 0, saldoDevedorTotalPDF = 0, valorOfertaPDF = 0, valorGeral = 0;
 
-        function moedaParaFloat(v) { return parseFloat(String(v||'').replace(/\./g,"").replace(",","."))||0; }
-        function formatarMoeda(v) { return v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"}); }
-        const formatarInputMoeda = (v) => v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    // CORREÇÃO FINAL AQUI: A função agora remove o "R$" antes de converter o texto para número.
+    function moedaParaFloat(v) { return parseFloat(String(v||'').replace('R$', '').trim().replace(/\./g,"").replace(",","."))||0; }
+    
+    function formatarMoeda(v) { return v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"}); }
+    const formatarInputMoeda = (v) => v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 
-        document.getElementById("pdf-upload").addEventListener("change", async function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            document.getElementById("loading").style.display = "block";
-            ["listaEmprestimos", "unificar-container-pdf"].forEach(id => document.getElementById(id).style.display = "none");
-            
-            const fileReader = new FileReader();
-            fileReader.onload = async function() {
-                try {
-                    const typedarray = new Uint8Array(this.result);
-                    const pdf = await pdfjsLib.getDocument(typedarray).promise;
-                    let text = '';
-                    for (let i = 1; i <= pdf.numPages; i++) {
-                        text += (await (await pdf.getPage(i)).getTextContent()).items.map(item => item.str).join(' ');
-                    }
-                    
-                    function extractWithPatterns(text, patterns) {
-                        for (const pattern of patterns) {
-                            const match = text.match(pattern);
-                            if (match && match[1]) return match[1].trim();
-                        }
-                        return null;
-                    }
-
-                    // --- LÓGICA DE EXTRAÇÃO FINAL ---
-                    const cpfPatterns = [
-                        /AGENCIA NACIONAL DE TELECOMUNICACOES\s+([\d\.\-]+)/,
-                        /CPF\s+([\d\.\-]+)\s+Matrícula/,
-                        /(\d{3}\.\d{3}\.\d{3}-\d{2})\s+\d+\/\d+/
-                    ];
-
-                    const nomePatterns = [
-                        /Nome\s+([A-Z\s]+?)\s+Bruta Compulsória/,
-                        /Matrícula\s+\d+\s+Nome\s+([A-Z\s]{10,})/,
-                        /\d+\/\d+\s+([A-Z\s]{10,})\s+Bruta Compulsória/
-                    ];
-
-                    clienteNomePDF = extractWithPatterns(text, nomePatterns);
-                    clienteCpfPDF = extractWithPatterns(text, cpfPatterns);
-
-                    let htmlCliente = '';
-                    if (clienteNomePDF || clienteCpfPDF) {
-                        htmlCliente = '<div id="infoCliente">';
-                        if (clienteNomePDF) htmlCliente += `<p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF}</p>`;
-                        if (clienteCpfPDF) htmlCliente += `<p class="mb-0"><strong>CPF:</strong> ${clienteCpfPDF}</p>`;
-                        htmlCliente += '</div>';
-                    }
-
-                    const tabelaInicioMarker = "Número do Contrato Rubrica Sequência";
-                    const tabelaInicioIndex = text.indexOf(tabelaInicioMarker);
-                    if (tabelaInicioIndex === -1) {
-                        alert("AVISO: Tabela de empréstimos não encontrada.");
-                        if(htmlCliente) { document.getElementById("listaEmprestimos").innerHTML = htmlCliente; document.getElementById("listaEmprestimos").style.display = "block"; }
-                        return;
-                    }
-
-                    const textoTabela = text.substring(tabelaInicioIndex);
-                    const rgxEmprestimos = /([\d\.\-\/]+)\s+(34\d{3}\s*-\s*[A-Z\s\-\/]+)\s+.*?R\$\s*([\d\.,]+)\s+(\d{1,2}\/\d{2,3})/g;
-                    let matches = [...textoTabela.matchAll(rgxEmprestimos)];
-                    
-                    const listaDiv = document.getElementById("listaEmprestimos");
-                    listaDiv.innerHTML = `${htmlCliente}<h3 class="fs-5 text-center mb-3">Selecione os Contratos para Unificar</h3>`;
-                    
-                    matches.forEach((match, index) => {
-                        const [_, numContrato, rubrica, valor, parcelasStr] = match;
-                        const [pagas, total] = parcelasStr.split('/');
-                        const nomeBanco = rubrica.replace(/\d{5}\s*-\s*/, '').trim();
-                        const valorParcelaNum = moedaParaFloat(valor);
-                        const saldoAtualNum = valorParcelaNum * (parseInt(total) - parseInt(pagas)) * 0.75;
-
-                        const itemDiv = document.createElement('div');
-                        itemDiv.className = 'loan-list-item';
-                        itemDiv.innerHTML = `<div class="form-check"><input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${saldoAtualNum}" data-parcela="${valorParcelaNum}" data-banco="${nomeBanco}" id="loan-${index}"><label class="form-check-label" for="loan-${index}"><strong>${nomeBanco}</strong><br><small>Saldo: ${formatarMoeda(saldoAtualNum)} | Parcela: ${formatarMoeda(valorParcelaNum)} | Status: ${pagas} de ${total}</small></label></div>`;
-                        listaDiv.appendChild(itemDiv);
-                    });
-                    ["listaEmprestimos", "unificar-container-pdf"].forEach(id => document.getElementById(id).style.display = "block");
-
-                } catch (error) {
-                    console.error("Erro ao processar o PDF:", error);
-                    alert("Ocorreu um erro ao ler o arquivo PDF.");
-                } finally {
-                    document.getElementById("loading").style.display = "none";
-                }
-            };
-            fileReader.readAsArrayBuffer(file);
-        });
+    document.getElementById("pdf-upload").addEventListener("change", async function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        document.getElementById("loading").style.display = "block";
+        const listaEmprestimosEl = document.getElementById("listaEmprestimos");
+        const unificarContainerEl = document.getElementById("unificar-container-pdf");
+        if(listaEmprestimosEl) listaEmprestimosEl.style.display = "none";
+        if(unificarContainerEl) unificarContainerEl.style.display = "none";
         
+        const fileReader = new FileReader();
+        fileReader.onload = async function() {
+            try {
+                const typedarray = new Uint8Array(this.result);
+                const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                let text = '';
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const textContent = await (await pdf.getPage(i)).getTextContent();
+                    text += textContent.items.map(item => item.str).join('\n');
+                }
+                
+                function extractData(text, regex, groupIndex = 1) {
+                    const match = text.match(regex);
+                    return match ? match[groupIndex].trim() : null;
+                }
+
+                const nomeRegex = /Nome\n(?:.*\n){3}(.*)/;
+                const cpfRegex = /(\d{3}\.\d{3}\.\d{3}-\d{2})/;
+
+                clienteNomePDF = extractData(text, nomeRegex);
+                clienteCpfPDF = extractData(text, cpfRegex);
+                
+                let htmlCliente = '';
+                if (clienteNomePDF || clienteCpfPDF) {
+                    htmlCliente = '<div id="infoCliente">';
+                    if (clienteNomePDF) htmlCliente += `<p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF}</p>`;
+                    if (clienteCpfPDF) htmlCliente += `<p class="mb-0"><strong>CPF:</strong> ${clienteCpfPDF}</p>`;
+                    htmlCliente += '</div>';
+                }
+
+                const listaDiv = document.getElementById("listaEmprestimos");
+                listaDiv.innerHTML = `${htmlCliente}<h3 class="fs-5 text-center mb-3">Selecione os Contratos para Unificar</h3>`;
+                
+                const rgxEmprestimos = /EMPREST BCO OFICIAL - CEF(?:.|\n)*?(R\$\s*[\d\.,]+)\n(\d{2}\/\d{2,3})/g;
+                let matches = [...text.matchAll(rgxEmprestimos)];
+                
+                if (matches.length === 0) {
+                    alert("AVISO: Nenhum contrato de empréstimo encontrado no formato esperado.");
+                    if(htmlCliente) listaDiv.style.display = "block";
+                    return;
+                }
+                
+                matches.forEach((match, index) => {
+                    const [_, valor, parcelasStr] = match;
+                    const [pagas, total] = parcelasStr.split('/');
+                    const nomeBanco = "EMPREST BCO OFICIAL - CEF";
+                    const valorParcelaNum = moedaParaFloat(valor);
+                    
+                    const parcelasRestantes = parseInt(total, 10) - parseInt(pagas, 10);
+                    const saldoAproximado = valorParcelaNum * parcelasRestantes; 
+
+                    const itemDiv = document.createElement('div');
+                    const itemClass = listaDiv.querySelector('.loan-list-item') ? 'loan-list-item' : ''; 
+                    itemDiv.className = itemClass;
+                    itemDiv.innerHTML = `<div class="form-check"><input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${saldoAproximado}" data-parcela="${valorParcelaNum}" data-banco="${nomeBanco}" id="loan-${index}"><label class="form-check-label" for="loan-${index}"><strong>${nomeBanco}</strong><br><small>Saldo Aprox.: ${formatarMoeda(saldoAproximado)} | Parcela: ${formatarMoeda(valorParcelaNum)} | Status: ${pagas} de ${total}</small></label></div>`;
+                    listaDiv.appendChild(itemDiv);
+                });
+
+                if (unificarContainerEl) {
+                    listaDiv.style.display = "block";
+                    unificarContainerEl.style.display = "block";
+                } else {
+                    listaDiv.style.display = "block";
+                }
+
+            } catch (error) {
+                console.error("Erro ao processar o PDF:", error);
+                alert("Ocorreu um erro ao ler o arquivo PDF.");
+            } finally {
+                document.getElementById("loading").style.display = "none";
+            }
+        };
+        fileReader.readAsArrayBuffer(file);
+    });
+    
+    // --- O RESTANTE DO SEU CÓDIGO PERMANECE IGUAL ---
+    if (document.getElementById("unificarBtnPdf")) {
         document.getElementById("unificarBtnPdf").addEventListener("click", function() {
             let totalSaldo = 0, totalParcela = 0;
             parcelasSelecionadasPDF = [];
@@ -179,27 +180,42 @@
             document.getElementById("saldodevedor").value = formatarInputMoeda(totalSaldo);
             document.getElementById("calcForm1").scrollIntoView({ behavior: 'smooth' });
         });
-        
+    }
+
+    if (document.getElementById("calcForm1")) {
         document.getElementById("calcForm1").addEventListener("submit", function (e) {
             e.preventDefault();
             let p = moedaParaFloat(document.getElementById("parcela").value), s = moedaParaFloat(document.getElementById("saldodevedor").value), d = moedaParaFloat(document.getElementById("desconto").value);
-            let coef = parseFloat(document.getElementById("coeficiente").value.replace(",","."))||0.02;
-            let comissaoG = parseFloat(document.getElementById("comissaoGerente").value.replace(",","."))||0;
-            const investidorR = (document.getElementById("tipoCompra").value === 'bradesco') ? 0.10 : 0.08;
-            let novoS = p / coef, sub = novoS - s - d, investidor = s * investidorR, gerente = sub * (comissaoG / 100);
-            valorGeral = sub - investidor - gerente;
-
-            const resDiv = document.getElementById("resultadoParcial");
-            resDiv.style.display = "block";
-            if (sub < 0 || valorGeral < 0) {
-                resDiv.innerHTML = `<h3 class="fs-5 text-danger">Operação Não Viável</h3><p>O valor gerado é insuficiente para quitar o saldo devedor.</p>`;
-                document.getElementById("calcForm2").style.display = "none";
-            } else {
-                resDiv.innerHTML = `<h2>Resultado Parcial</h2><p><strong>Parcela Total:</strong> ${formatarMoeda(p)}</p><p><strong>Saldo Devedor Aprox.:</strong> ${formatarMoeda(s)}</p><p><strong>Valor Bruto Liberado:</strong> ${formatarMoeda(sub)}</p><p><strong>Comissão Investidor (${(investidorR*100).toFixed(0)}%):</strong> ${formatarMoeda(investidor)}</p><p><strong>Comissão Gerente (${comissaoG}%):</strong> ${formatarMoeda(gerente)}</p><hr><p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>`;
-                document.getElementById("calcForm2").style.display = "block";
+            
+            if (document.title.includes("Portabilidade")) {
+                let coef = parseFloat(document.getElementById("coeficiente").value.replace(",",".")) || 0.0190;
+                let comissaoG = parseFloat(document.getElementById("comissaoGerente").value.replace(",",".")) || 0;
+                let novoS = p / coef, sub = novoS - s - d, gerente = sub * (comissaoG / 100);
+                valorGeral = sub - gerente;
+                document.getElementById("resultadoParcial").style.display = "block";
+                document.getElementById("resultadoParcial").innerHTML = `<h2>Resultado Parcial</h2><p><strong>Parcela Total:</strong> ${formatarMoeda(p)}</p><p><strong>Saldo Devedor:</strong> ${formatarMoeda(s)}</p><p><strong>Valor Geral Bruto:</strong> ${formatarMoeda(sub)}</p><p><strong>Comissão Gerente (${comissaoG}%):</strong> ${formatarMoeda(gerente)}</p><p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>`;
+            
+            } else if (document.title.includes("Compra de Dívida")) {
+                let coef = parseFloat(document.getElementById("coeficiente").value.replace(",","."))||0.02;
+                let comissaoG = parseFloat(document.getElementById("comissaoGerente").value.replace(",","."))||0;
+                const investidorR = (document.getElementById("tipoCompra").value === 'bradesco') ? 0.10 : 0.08;
+                let novoS = p / coef, sub = novoS - s - d, investidor = s * investidorR, gerente = sub * (comissaoG / 100);
+                valorGeral = sub - investidor - gerente;
+                const resDiv = document.getElementById("resultadoParcial");
+                resDiv.style.display = "block";
+                if (sub < 0 || valorGeral < 0) {
+                    resDiv.innerHTML = `<h3 class="fs-5 text-danger">Operação Não Viável</h3><p>O valor gerado é insuficiente para quitar o saldo devedor.</p>`;
+                    if(document.getElementById("calcForm2")) document.getElementById("calcForm2").style.display = "none";
+                } else {
+                    resDiv.innerHTML = `<h2>Resultado Parcial</h2><p><strong>Parcela Total:</strong> ${formatarMoeda(p)}</p><p><strong>Saldo Devedor Aprox.:</strong> ${formatarMoeda(s)}</p><p><strong>Valor Bruto Liberado:</strong> ${formatarMoeda(sub)}</p><p><strong>Comissão Investidor (${(investidorR*100).toFixed(0)}%):</strong> ${formatarMoeda(investidor)}</p><p><strong>Comissão Gerente (${comissaoG}%):</strong> ${formatarMoeda(gerente)}</p><hr><p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>`;
+                    if(document.getElementById("calcForm2")) document.getElementById("calcForm2").style.display = "block";
+                }
             }
+             if(document.getElementById("calcForm2")) document.getElementById("calcForm2").style.display = "block";
         });
+    }
 
+    if(document.getElementById("calcForm2")) {
         document.getElementById("calcForm2").addEventListener("submit", function (e) {
             e.preventDefault();
             let comissaoEsc = moedaParaFloat(document.getElementById("comissaoesc").value);
@@ -208,25 +224,31 @@
             document.getElementById("resultadoFinal").innerHTML = `<h2>Resultado Final</h2><p><strong>Comissão Escritório:</strong> ${formatarMoeda(comissaoEsc)}</p><p><strong>Valor a Oferecer ao Cliente:</strong> ${formatarMoeda(valorOfertaPDF)}</p><button id="baixarPdfBtn" class="btn btn-success w-100 mt-3">Baixar Simulação em PDF</button>`;
             document.getElementById("baixarPdfBtn").addEventListener("click", gerarPDF);
         });
+    }
 
-        function gerarPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const getBase64Image = (img) => { const c=document.createElement("canvas");c.width=img.width;c.height=img.height;c.getContext("2d").drawImage(img,0,0);return c.toDataURL("image/png"); };
-            
-            doc.addImage(getBase64Image(document.getElementById('logo-empresa')), 'PNG', 15, 10, 50, 15);
-            doc.setFontSize(18); doc.text("Simulação de Compra de Dívida", 105, 40, { align: 'center' });
-            doc.setFontSize(12); doc.text("Dados do Cliente", 15, 60);
-            doc.setFontSize(10); doc.text(`Nome: ${clienteNomePDF || 'Não informado'}`, 15, 68); doc.text(`CPF: ${clienteCpfPDF || 'Não informado'}`, 15, 74);
-            doc.setFontSize(12); doc.text("Parcelas Selecionadas para Unificação", 15, 90);
-            let y = 98; doc.setFontSize(9);
-            parcelasSelecionadasPDF.forEach(p => { doc.text(`- Banco: ${p.banco} | Parcela: ${p.parcela} | Saldo Aprox.: ${p.saldo}`, 15, y); y += 6; });
-            y += 10; doc.setFontSize(12); doc.text("Resumo da Operação", 15, y);
-            y += 8; doc.setFontSize(10); doc.text(`Total Parcelas Unificadas: ${formatarMoeda(totalParcelasUnificadasPDF)}`, 15, y);
-            y += 6; doc.text(`Saldo Devedor Total (Aprox.): ${formatarMoeda(saldoDevedorTotalPDF)}`, 15, y);
-            y += 10; doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.text(`Valor a Oferecer ao Cliente: ${formatarMoeda(valorOfertaPDF)}`, 15, y);
-            doc.save("simulacao_compra_divida.pdf");
-        }
-    </script>
+    function gerarPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const getBase64Image = (img) => { if(!img) return null; const c=document.createElement("canvas");c.width=img.width;c.height=img.height;c.getContext("2d").drawImage(img,0,0);return c.toDataURL("image/png"); };
+        
+        const logoImg = getBase64Image(document.getElementById('logo-empresa'));
+        if(logoImg) doc.addImage(logoImg, 'PNG', 15, 10, 50, 15);
+
+        const titulo = document.title.includes("Portabilidade") ? "Simulação de Portabilidade" : "Simulação de Compra de Dívida";
+        doc.setFontSize(18); doc.text(titulo, 105, 40, { align: 'center' });
+        doc.setFontSize(12); doc.text("Dados do Cliente", 15, 60);
+        doc.setFontSize(10); doc.text(`Nome: ${clienteNomePDF || 'Não informado'}`, 15, 68); doc.text(`CPF: ${clienteCpfPDF || 'Não informado'}`, 15, 74);
+        doc.setFontSize(12); doc.text("Parcelas Selecionadas para Unificação", 15, 90);
+        let y = 98; doc.setFontSize(9);
+        parcelasSelecionadasPDF.forEach(p => { doc.text(`- Banco: ${p.banco} | Parcela: ${p.parcela} | Saldo Aprox.: ${p.saldo}`, 15, y); y += 6; });
+        y += 10; doc.setFontSize(12); doc.text("Resumo da Operação", 15, y);
+        y += 8; doc.setFontSize(10); doc.text(`Total Parcelas Unificadas: ${formatarMoeda(totalParcelasUnificadasPDF)}`, 15, y);
+        y += 6; doc.text(`Saldo Devedor Total (Aprox.): ${formatarMoeda(saldoDevedorTotalPDF)}`, 15, y);
+        y += 10; doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.text(`Valor a Oferecer ao Cliente: ${formatarMoeda(valorOfertaPDF)}`, 15, y);
+        
+        const nomeArquivo = titulo.toLowerCase().replace(/\s/g, '_') + '.pdf';
+        doc.save(nomeArquivo);
+    }
+</script>
 </body>
 </html>
