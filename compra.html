@@ -99,7 +99,6 @@
                     text += textContent.items.map(item => item.str).join('\n');
                 }
                 
-                // --- CORREÇÃO AQUI: Nova lógica de extração de Nome e CPF ---
                 const headerRegex = /Órgão\nCPF\nMatrícula\nNome\n([^\n]+)\n([^\n]+)\n([^\n]+)\n([^\n]+)/;
                 const headerMatch = text.match(headerRegex);
                 if (headerMatch) {
@@ -118,7 +117,6 @@
                 const listaDiv = document.getElementById("listaEmprestimos");
                 listaDiv.innerHTML = `${htmlCliente}<h3 class="fs-5 text-center mb-3">Selecione os Contratos para Unificar</h3>`;
                 
-                // --- CORREÇÃO AQUI: Ordem de captura na Regex de empréstimos ajustada ---
                 const rgxEmprestimos = /(EMPREST[^\n]+)\n(?:.|\n)*?(R\$\s*[\d\.,]+)\n(\d{2,3}\/\d{2,3})/g;
                 let matches = [...text.matchAll(rgxEmprestimos)];
                 
@@ -129,14 +127,13 @@
                 }
                 
                 matches.forEach((match, index) => {
-                    // --- CORREÇÃO AQUI: Ordem de desestruturação ajustada ---
                     const [_, nomeBanco, valor, parcelasStr] = match;
                     const cleanNomeBanco = nomeBanco.replace(/^\d{5}\s*-\s*/, '').trim();
                     const [pagas, total] = parcelasStr.split('/');
                     const valorParcelaNum = moedaParaFloat(valor);
                     
                     const parcelasRestantes = parseInt(total, 10) - parseInt(pagas, 10);
-                    const saldoAproximado = valorParcelaNum * parcelasRestantes; 
+                    const saldoAproximado = valorParcelaNum * parcelasRestantes * 0.75; 
 
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'loan-list-item';
@@ -200,7 +197,8 @@
                 let comissaoG = parseFloat(document.getElementById("comissaoGerente").value.replace(",","."))||0;
                 const investidorR = (document.getElementById("tipoCompra").value === 'bradesco') ? 0.10 : 0.08;
                 let novoS = p / coef, sub = novoS - s - d, investidor = s * investidorR, gerente = sub * (comissaoG / 100);
-                valorGeral = sub - investor - gerente;
+                // --- CORREÇÃO AQUI: "investor" corrigido para "investidor" ---
+                valorGeral = sub - investidor - gerente;
                 const resDiv = document.getElementById("resultadoParcial");
                 resDiv.style.display = "block";
                 if (sub < 0 || valorGeral < 0) {
