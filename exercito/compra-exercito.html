@@ -20,7 +20,7 @@
     </style>
 </head>
 <body>
-    <a href="exercito.html" class="btn-voltar">← Voltar</a>
+    <a href="index.html" class="btn-voltar">← Voltar</a>
     <div class="container">
         <h1 class="text-center">Calculadora Compra de Dívida (Exército)</h1>
         <div class="text-center"><img src="logoheader.png" id="logo-empresa" class="mx-auto" style="max-width: 200px; display: none;"></div>
@@ -100,7 +100,8 @@
                 }
                 
                 const cpfRegex = /(\d{3}\.\d{3}\.\d{3}-\d{2})/;
-                const nomeRegex = /\d{3}\.\d{3}\.\d{3}-\d{2}\s*-\s*([A-Z\s]+)\n([A-Z\s]+)/;
+                // --- CORREÇÃO AQUI: Regex do nome mais precisa para evitar capturar linhas extras ---
+                const nomeRegex = /\d{3}\.\d{3}\.\d{3}-\d{2}\s*-\s*([A-Z ]+)\n([A-Z ]+)/;
 
                 clienteCpfPDF = (text.match(cpfRegex) || [])[0] || '';
                 const nomeMatch = text.match(nomeRegex);
@@ -124,7 +125,6 @@
                 
                 blocos.forEach((bloco, index) => {
                     if (bloco.includes('EMPRÉSTIMO')) {
-                        // --- CORREÇÃO AQUI: Lógica de captura do nome do banco melhorada ---
                         const bancoMatch = bloco.match(/(\d{3}\s*-\s*[\s\S]*?)(?=\n\s*\d{6,})/);
                         const valorMatch = bloco.match(/(R\$\s*[\d.,]+)/);
                         const parcelasMatch = bloco.match(/(\d+)\n\s*\n(\d+)\n\s*Em\nAndamento/);
