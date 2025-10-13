@@ -249,7 +249,7 @@
         y += 6;
         doc.text(`Saldo Devedor Total (Aprox.): ${formatarMoeda(saldoDevedorAtual)}`, 15, y);
         y += 10; doc.setFontSize(14); doc.setFont('helvetica', 'bold');
-        doc.text(`Valor a Oferecer ao Cliente: ${formatarMoeda(valorOfertaPDF)}`, 15, y);
+        doc.text(`Valor Líquido: ${formatarMoeda(valorOfertaPDF)}`, 15, y);
         
         const nomeArquivo = titulo.toLowerCase().replace(/\s/g, '_') + '.pdf';
         doc.save(nomeArquivo);
