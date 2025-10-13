@@ -48,7 +48,7 @@
             </div>
             <label>Valor da Parcela</label><input type="text" id="parcela" required placeholder="Ex: 1.157,55">
             <label>Saldo Devedor</label><input type="text" id="saldodevedor" required placeholder="Ex: 20.000,00">
-            <label>Valor a Descontar</label><input type="text" id="desconto" placeholder="Ex: 1.000,00">
+            <label>Produto</label><input type="text" id="desconto" placeholder="Ex: 1.000,00">
             <button class="btn btn-primary w-100 mt-3" type="submit">Calcular Valor Geral</button>
         </form>
 
@@ -219,7 +219,7 @@
             let comissaoEsc = moedaParaFloat(document.getElementById("comissaoesc").value);
             valorOfertaPDF = valorGeral - comissaoEsc;
             document.getElementById("resultadoFinal").style.display = "block";
-            document.getElementById("resultadoFinal").innerHTML = `<h2>Resultado Final</h2><p><strong>Comissão Escritório:</strong> ${formatarMoeda(comissaoEsc)}</p><p><strong>Valor a Oferecer ao Cliente:</strong> ${formatarMoeda(valorOfertaPDF)}</p><button id="baixarPdfBtn" class="btn btn-success w-100 mt-3">Baixar Simulação em PDF</button>`;
+            document.getElementById("resultadoFinal").innerHTML = `<h2>Resultado Final</h2><p><strong>Comissão Escritório:</strong> ${formatarMoeda(comissaoEsc)}</p><p><strong>Valor Líquido:</strong> ${formatarMoeda(valorOfertaPDF)}</p><button id="baixarPdfBtn" class="btn btn-success w-100 mt-3">Baixar Simulação em PDF</button>`;
             document.getElementById("baixarPdfBtn").addEventListener("click", gerarPDF);
         });
     }

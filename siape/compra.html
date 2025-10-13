@@ -48,7 +48,7 @@
             </div>
             <label>Valor da Parcela</label><input type="text" id="parcela" required placeholder="Ex: 1.157,55">
             <label>Saldo Devedor</label><input type="text" id="saldodevedor" required placeholder="Ex: 20.000,00">
-            <label>Valor a Descontar</label><input type="text" id="desconto" placeholder="Ex: 1.000,00">
+            <label>Produto</label><input type="text" id="desconto" placeholder="Ex: 1.000,00">
             <button class="btn btn-primary w-100 mt-3" type="submit">Calcular Valor Geral</button>
         </form>
 
@@ -69,6 +69,7 @@
     pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js`;
 
     let clienteNomePDF = '', clienteCpfPDF = '', parcelasSelecionadasPDF = [], valorOfertaPDF = 0, valorGeral = 0;
+    let calculoDetalhado = {}; 
 
     function moedaParaFloat(v) { return parseFloat(String(v||'').replace('R$', '').trim().replace(/\./g,"").replace(",","."))||0; }
     
@@ -180,33 +181,37 @@
     if (document.getElementById("calcForm1")) {
         document.getElementById("calcForm1").addEventListener("submit", function (e) {
             e.preventDefault();
+            calculoDetalhado = {}; 
             let p = moedaParaFloat(document.getElementById("parcela").value), s = moedaParaFloat(document.getElementById("saldodevedor").value), d = moedaParaFloat(document.getElementById("desconto").value);
             
-            if (document.title.includes("Portabilidade")) {
-                let coef = parseFloat(document.getElementById("coeficiente").value.replace(",",".")) || 0.0190;
-                let comissaoG = parseFloat(document.getElementById("comissaoGerente").value.replace(",",".")) || 0;
-                let novoS = p / coef, sub = novoS - s - d, gerente = sub * (comissaoG / 100);
-                valorGeral = sub - gerente;
-                document.getElementById("resultadoParcial").style.display = "block";
-                document.getElementById("resultadoParcial").innerHTML = `<h2>Resultado Parcial</h2><p><strong>Parcela Total:</strong> ${formatarMoeda(p)}</p><p><strong>Saldo Devedor:</strong> ${formatarMoeda(s)}</p><p><strong>Valor Geral Bruto:</strong> ${formatarMoeda(sub)}</p><p><strong>Comissão Gerente (${comissaoG}%):</strong> ${formatarMoeda(gerente)}</p><p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>`;
-            
-            } else if (document.title.includes("Compra de Dívida")) {
+            if (document.title.includes("Compra de Dívida")) {
                 let coef = parseFloat(document.getElementById("coeficiente").value.replace(",","."))||0.02;
                 let comissaoG = parseFloat(document.getElementById("comissaoGerente").value.replace(",","."))||0;
                 const investidorR = (document.getElementById("tipoCompra").value === 'bradesco') ? 0.10 : 0.08;
                 let novoS = p / coef, sub = novoS - s - d, investidor = s * investidorR, gerente = sub * (comissaoG / 100);
                 valorGeral = sub - investidor - gerente;
+
+                calculoDetalhado = {p, s, d, sub, investidorR, investidor, comissaoG, gerente, valorGeral};
+
                 const resDiv = document.getElementById("resultadoParcial");
                 resDiv.style.display = "block";
                 if (sub < 0 || valorGeral < 0) {
                     resDiv.innerHTML = `<h3 class="fs-5 text-danger">Operação Não Viável</h3><p>O valor gerado é insuficiente para quitar o saldo devedor.</p>`;
                     if(document.getElementById("calcForm2")) document.getElementById("calcForm2").style.display = "none";
                 } else {
-                    resDiv.innerHTML = `<h2>Resultado Parcial</h2><p><strong>Parcela Total:</strong> ${formatarMoeda(p)}</p><p><strong>Saldo Devedor Aprox.:</strong> ${formatarMoeda(s)}</p><p><strong>Valor Bruto Liberado:</strong> ${formatarMoeda(sub)}</p><p><strong>Comissão Investidor (${(investidorR*100).toFixed(0)}%):</strong> ${formatarMoeda(investidor)}</p><p><strong>Comissão Gerente (${comissaoG}%):</strong> ${formatarMoeda(gerente)}</p><hr><p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>`;
+                    // --- ALTERAÇÃO AQUI: Adicionado o campo Produto ---
+                    resDiv.innerHTML = `<h2>Resultado Parcial</h2>
+                    <p><strong>Parcela Total:</strong> ${formatarMoeda(p)}</p>
+                    <p><strong>Saldo Devedor Aprox.:</strong> ${formatarMoeda(s)}</p>
+                    <p><strong>Produto:</strong> ${formatarMoeda(d)}</p>
+                    <p><strong>Valor Bruto Liberado:</strong> ${formatarMoeda(sub)}</p>
+                    <p><strong>Comissão Investidor (${(investidorR*100).toFixed(0)}%):</strong> ${formatarMoeda(investidor)}</p>
+                    <p><strong>Comissão Gerente (${comissaoG}%):</strong> ${formatarMoeda(gerente)}</p>
+                    <hr>
+                    <p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>`;
                     if(document.getElementById("calcForm2")) document.getElementById("calcForm2").style.display = "block";
                 }
             }
-             if(document.getElementById("calcForm2")) document.getElementById("calcForm2").style.display = "block";
         });
     }
 
@@ -215,44 +220,87 @@
             e.preventDefault();
             let comissaoEsc = moedaParaFloat(document.getElementById("comissaoesc").value);
             valorOfertaPDF = valorGeral - comissaoEsc;
+            calculoDetalhado.comissaoEsc = comissaoEsc;
+            calculoDetalhado.valorOfertaPDF = valorOfertaPDF;
+
             document.getElementById("resultadoFinal").style.display = "block";
-            document.getElementById("resultadoFinal").innerHTML = `<h2>Resultado Final</h2><p><strong>Comissão Escritório:</strong> ${formatarMoeda(comissaoEsc)}</p><p><strong>Valor a Oferecer ao Cliente:</strong> ${formatarMoeda(valorOfertaPDF)}</p><button id="baixarPdfBtn" class="btn btn-success w-100 mt-3">Baixar Simulação em PDF</button>`;
-            document.getElementById("baixarPdfBtn").addEventListener("click", gerarPDF);
+            document.getElementById("resultadoFinal").innerHTML = `<h2>Resultado Final</h2>
+                <p><strong>Comissão Escritório:</strong> ${formatarMoeda(comissaoEsc)}</p>
+                <p><strong>Valor Líquido:</strong> ${formatarMoeda(valorOfertaPDF)}</p>
+                <button id="baixarPdfClienteBtn" class="btn btn-success w-100 mt-3">Baixar Simulação Cliente</button>
+                <button id="baixarPdfEscritorioBtn" class="btn btn-secondary w-100 mt-2">Baixar Simulação Escritório</button>`;
+            
+            document.getElementById("baixarPdfClienteBtn").addEventListener("click", gerarPDFCliente);
+            document.getElementById("baixarPdfEscritorioBtn").addEventListener("click", gerarPDFEscritorio);
         });
     }
-
-    function gerarPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-
-        // --- FUNÇÃO ATUALIZADA AQUI ---
-        // Lê os valores atuais diretamente dos campos do formulário
-        const totalParcelasAtual = moedaParaFloat(document.getElementById("parcela").value);
-        const saldoDevedorAtual = moedaParaFloat(document.getElementById("saldodevedor").value);
-
-        const getBase64Image = (img) => { if(!img) return null; const c=document.createElement("canvas");c.width=img.width;c.height=img.height;c.getContext("2d").drawImage(img,0,0);return c.toDataURL("image/png"); };
-        
+    
+    function gerarPDFBase(doc, tipo) {
+        const getBase64Image = (img) => { if (!img) return null; const c = document.createElement("canvas"); c.width = img.width; c.height = img.height; c.getContext("2d").drawImage(img, 0, 0); return c.toDataURL("image/png"); };
         const logoImg = getBase64Image(document.getElementById('logo-empresa'));
-        if(logoImg) doc.addImage(logoImg, 'PNG', 15, 10, 50, 15);
+        if (logoImg) doc.addImage(logoImg, 'PNG', 15, 10, 50, 15);
 
-        const titulo = document.title.includes("Portabilidade") ? "Simulação de Portabilidade" : "Simulação de Compra de Dívida";
+        const titulo = `Simulação de Compra de Dívida (${tipo})`;
         doc.setFontSize(18); doc.text(titulo, 105, 40, { align: 'center' });
         doc.setFontSize(12); doc.text("Dados do Cliente", 15, 60);
         doc.setFontSize(10); doc.text(`Nome: ${clienteNomePDF || 'Não informado'}`, 15, 68); doc.text(`CPF: ${clienteCpfPDF || 'Não informado'}`, 15, 74);
-        doc.setFontSize(12); doc.text("Parcelas Selecionadas para Unificação", 15, 90);
-        let y = 98; doc.setFontSize(9);
-        parcelasSelecionadasPDF.forEach(p => { doc.text(`- Banco: ${p.banco} | Parcela: ${p.parcela} | Saldo Aprox.: ${p.saldo}`, 15, y); y += 6; });
+        
+        if (parcelasSelecionadasPDF.length > 0) {
+            doc.setFontSize(12); doc.text("Parcelas Selecionadas para Unificação", 15, 90);
+            let y = 98; doc.setFontSize(9);
+            parcelasSelecionadasPDF.forEach(p => { doc.text(`- Banco: ${p.banco} | Parcela: ${p.parcela} | Saldo Aprox.: ${p.saldo}`, 15, y); y += 6; });
+            return y; 
+        }
+        return 80; 
+    }
+
+    function gerarPDFCliente() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        let y = gerarPDFBase(doc, "Cliente");
+
         y += 10; doc.setFontSize(12); doc.text("Resumo da Operação", 15, y);
         y += 8; doc.setFontSize(10);
-        // Usa os valores lidos do formulário
-        doc.text(`Total Parcelas Unificadas: ${formatarMoeda(totalParcelasAtual)}`, 15, y);
+        doc.text(`Total Parcelas Unificadas: ${formatarMoeda(moedaParaFloat(document.getElementById("parcela").value))}`, 15, y);
         y += 6;
-        doc.text(`Saldo Devedor Total (Aprox.): ${formatarMoeda(saldoDevedorAtual)}`, 15, y);
+        doc.text(`Saldo Devedor Total (Aprox.): ${formatarMoeda(moedaParaFloat(document.getElementById("saldodevedor").value))}`, 15, y);
         y += 10; doc.setFontSize(14); doc.setFont('helvetica', 'bold');
-        doc.text(`Valor Líquido: ${formatarMoeda(valorOfertaPDF)}`, 15, y);
+        doc.text(`Valor Líquido para o Cliente: ${formatarMoeda(valorOfertaPDF)}`, 15, y);
         
-        const nomeArquivo = titulo.toLowerCase().replace(/\s/g, '_') + '.pdf';
-        doc.save(nomeArquivo);
+        doc.save('simulacao_cliente_compra.pdf');
+    }
+
+    function gerarPDFEscritorio() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        let y = gerarPDFBase(doc, "Escritório");
+
+        y += 10; doc.setFontSize(12); doc.text("Detalhes da Operação (Uso Interno)", 15, y);
+        y += 8; doc.setFontSize(10);
+        doc.text(`Valor da Parcela: ${formatarMoeda(calculoDetalhado.p)}`, 15, y);
+        y += 6;
+        doc.text(`Saldo Devedor Aprox.: ${formatarMoeda(calculoDetalhado.s)}`, 15, y);
+         y += 6;
+        doc.text(`Produto: ${formatarMoeda(calculoDetalhado.d)}`, 15, y);
+        y += 6;
+        doc.text("-----------------------------------------------------------------------------------------", 15, y);
+        y += 6;
+        doc.text(`Valor Bruto Liberado: ${formatarMoeda(calculoDetalhado.sub)}`, 15, y);
+        y += 6;
+        doc.text(`Comissão Investidor (${(calculoDetalhado.investidorR * 100).toFixed(0)}%): - ${formatarMoeda(calculoDetalhado.investidor)}`, 15, y);
+        y += 6;
+        doc.text(`Comissão Gerente (${calculoDetalhado.comissaoG}%): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y);
+        y += 6;
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Valor Geral Líquido: ${formatarMoeda(calculoDetalhado.valorGeral)}`, 15, y);
+        y += 6;
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Comissão Escritório: - ${formatarMoeda(calculoDetalhado.comissaoEsc)}`, 15, y);
+        y += 8;
+        doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+        doc.text(`Valor Líquido Cliente: ${formatarMoeda(calculoDetalhado.valorOfertaPDF)}`, 15, y);
+
+        doc.save('simulacao_escritorio_compra.pdf');
     }
 </script> 
 </body>
