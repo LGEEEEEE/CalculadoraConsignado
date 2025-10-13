@@ -65,7 +65,7 @@
     <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js`;
 
-    let clienteNomePDF = '', clienteCpfPDF = '', parcelasSelecionadasPDF = [], totalParcelasUnificadasPDF = 0, saldoDevedorTotalPDF = 0, valorOfertaPDF = 0, valorGeral = 0;
+    let clienteNomePDF = '', clienteCpfPDF = '', parcelasSelecionadasPDF = [], valorOfertaPDF = 0, valorGeral = 0;
 
     function moedaParaFloat(v) { return parseFloat(String(v||'').replace('R$', '').trim().replace(/\./g,"").replace(",","."))||0; }
     
@@ -96,7 +96,6 @@
                     text += textContent.items.map(item => item.str).join('\n');
                 }
                 
-                // --- CORREÇÃO AQUI: Nova lógica de extração de Nome e CPF ---
                 const headerRegex = /Órgão\nCPF\nMatrícula\nNome\n([^\n]+)\n([^\n]+)\n([^\n]+)\n([^\n]+)/;
                 const headerMatch = text.match(headerRegex);
                 if (headerMatch) {
@@ -115,7 +114,6 @@
                 const listaDiv = document.getElementById("listaEmprestimos");
                 listaDiv.innerHTML = `${htmlCliente}<h3 class="fs-5 text-center mb-3">Selecione os Contratos para Unificar</h3>`;
                 
-                // --- CORREÇÃO AQUI: Ordem de captura na Regex de empréstimos ajustada ---
                 const rgxEmprestimos = /(EMPREST[^\n]+)\n(?:.|\n)*?(R\$\s*[\d\.,]+)\n(\d{2,3}\/\d{2,3})/g;
                 let matches = [...text.matchAll(rgxEmprestimos)];
                 
@@ -126,14 +124,13 @@
                 }
                 
                 matches.forEach((match, index) => {
-                    // --- CORREÇÃO AQUI: Ordem de desestruturação ajustada ---
                     const [_, nomeBanco, valor, parcelasStr] = match;
                     const cleanNomeBanco = nomeBanco.replace(/^\d{5}\s*-\s*/, '').trim();
                     const [pagas, total] = parcelasStr.split('/');
                     const valorParcelaNum = moedaParaFloat(valor);
                     
                     const parcelasRestantes = parseInt(total, 10) - parseInt(pagas, 10);
-                    const saldoAproximado = valorParcelaNum * parcelasRestantes * 0.75; 
+                    const saldoAproximado = valorParcelaNum * parcelasRestantes; 
 
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'loan-list-item';
@@ -171,8 +168,6 @@
                 parcelasSelecionadasPDF.push({banco:cb.dataset.banco, parcela:formatarMoeda(parseFloat(cb.dataset.parcela)), saldo:formatarMoeda(parseFloat(cb.dataset.saldo))});
             });
             
-            totalParcelasUnificadasPDF = totalParcela;
-            saldoDevedorTotalPDF = totalSaldo;
             document.getElementById("parcela").value = formatarInputMoeda(totalParcela);
             document.getElementById("saldodevedor").value = formatarInputMoeda(totalSaldo);
             document.getElementById("calcForm1").scrollIntoView({ behavior: 'smooth' });
@@ -197,7 +192,7 @@
                 let comissaoG = parseFloat(document.getElementById("comissaoGerente").value.replace(",","."))||0;
                 const investidorR = (document.getElementById("tipoCompra").value === 'bradesco') ? 0.10 : 0.08;
                 let novoS = p / coef, sub = novoS - s - d, investidor = s * investidorR, gerente = sub * (comissaoG / 100);
-                valorGeral = sub - investor - gerente;
+                valorGeral = sub - investidor - gerente;
                 const resDiv = document.getElementById("resultadoParcial");
                 resDiv.style.display = "block";
                 if (sub < 0 || valorGeral < 0) {
@@ -226,6 +221,12 @@
     function gerarPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
+        
+        // --- FUNÇÃO ATUALIZADA AQUI ---
+        // Lê os valores atuais diretamente dos campos do formulário
+        const totalParcelasAtual = moedaParaFloat(document.getElementById("parcela").value);
+        const saldoDevedorAtual = moedaParaFloat(document.getElementById("saldodevedor").value);
+
         const getBase64Image = (img) => { if(!img) return null; const c=document.createElement("canvas");c.width=img.width;c.height=img.height;c.getContext("2d").drawImage(img,0,0);return c.toDataURL("image/png"); };
         
         const logoImg = getBase64Image(document.getElementById('logo-empresa'));
@@ -239,9 +240,13 @@
         let y = 98; doc.setFontSize(9);
         parcelasSelecionadasPDF.forEach(p => { doc.text(`- Banco: ${p.banco} | Parcela: ${p.parcela} | Saldo Aprox.: ${p.saldo}`, 15, y); y += 6; });
         y += 10; doc.setFontSize(12); doc.text("Resumo da Operação", 15, y);
-        y += 8; doc.setFontSize(10); doc.text(`Total Parcelas Unificadas: ${formatarMoeda(totalParcelasUnificadasPDF)}`, 15, y);
-        y += 6; doc.text(`Saldo Devedor Total (Aprox.): ${formatarMoeda(saldoDevedorTotalPDF)}`, 15, y);
-        y += 10; doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.text(`Valor Líquido: ${formatarMoeda(valorOfertaPDF)}`, 15, y);
+        y += 8; doc.setFontSize(10);
+        // Usa os valores lidos do formulário
+        doc.text(`Total Parcelas Unificadas: ${formatarMoeda(totalParcelasAtual)}`, 15, y);
+        y += 6;
+        doc.text(`Saldo Devedor Total (Aprox.): ${formatarMoeda(saldoDevedorAtual)}`, 15, y);
+        y += 10; doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+        doc.text(`Valor Líquido: ${formatarMoeda(valorOfertaPDF)}`, 15, y);
         
         const nomeArquivo = titulo.toLowerCase().replace(/\s/g, '_') + '.pdf';
         doc.save(nomeArquivo);
