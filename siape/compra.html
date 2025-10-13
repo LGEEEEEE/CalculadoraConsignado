@@ -133,7 +133,7 @@
                     const valorParcelaNum = moedaParaFloat(valor);
                     
                     const parcelasRestantes = parseInt(total, 10) - parseInt(pagas, 10);
-                    const saldoAproximado = valorParcelaNum * parcelasRestantes; 
+                    const saldoAproximado = valorParcelaNum * parcelasRestantes * 0.70; 
 
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'loan-list-item';
