@@ -17,6 +17,7 @@
         #pdf-upload { display: none; }
         .loan-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #ddd; }
         #infoCliente { padding-bottom: 10px; margin-bottom: 15px; border-bottom: 2px solid #ddd; }
+        #infoNegativado { background-color: #fff3cd; border-color: #ffeeba; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -27,7 +28,10 @@
         <div class="text-center" style="display: none;">
             <img src="../images/logoheader.png" id="logo-alianca" class="mx-auto">
             <img src="../images/polo-promotora.png" id="logo-polo" class="mx-auto">
+            <img src="../images/siape.png" id="convenio-logo" class="mx-auto">
         </div>
+
+        <div id="infoNegativado" class="resultado" style="display:none;"></div>
 
         <div id="upload-container">
             <h2 class="text-center fs-4 my-3">Carregar Extrato</h2>
@@ -36,8 +40,7 @@
             <p id="loading" class="text-center" style="display:none;">Analisando...</p>
         </div>
 
-        <div class="resultado" id="listaEmprestimos" style="display:none;">
-        </div>
+        <div class="resultado" id="listaEmprestimos" style="display:none;"></div>
         
         <div id="unificar-container-pdf" class="text-center" style="display:none; margin: 15px auto;">
             <button id="unificarBtnPdf" class="btn btn-success w-100">Unificar Parcelas Selecionadas</button>
@@ -79,26 +82,61 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <script>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js`;
-
     let clienteNomePDF = '', clienteCpfPDF = '', parcelasSelecionadasPDF = [], valorOfertaPDF = 0, valorGeral = 0;
     let calculoDetalhado = {}; 
+    let dadosNegativado = null;
 
+    document.addEventListener('DOMContentLoaded', () => {
+        const data = sessionStorage.getItem('calculoNegativadoData');
+        if (data) {
+            try {
+                const parsedData = JSON.parse(data);
+                if (parsedData && typeof parsedData.novaParcela !== 'undefined') {
+                    dadosNegativado = parsedData;
+                    clienteNomePDF = parsedData.nome || '';
+                    clienteCpfPDF = parsedData.cpf || '';
+
+                    const infoDiv = document.getElementById('infoNegativado');
+                    document.getElementById('parcela').value = (parsedData.novaParcela || 0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+                    document.getElementById('saldodevedor').value = (parsedData.saldoDevedor || 0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+                    infoDiv.style.display = 'block';
+                    infoDiv.innerHTML = `
+                        <h4 class="fs-5">Resumo da Operação Negativado</h4>
+                        <p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF || 'Não informado'}</p>
+                        <p class="mb-1"><strong>CPF:</strong> ${clienteCpfPDF || 'Não informado'}</p>
+                        <hr>
+                        <p class="mb-1"><strong>Parcelas Originais:</strong> ${(parsedData.totalParcelas || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</p>
+                        <p class="mb-1"><strong>Valor Negativo:</strong> ${(parsedData.negativo || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</p>
+                        <p class="mb-0"><strong>Nova Parcela (enviada para cá):</strong> ${(parsedData.novaParcela || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</p>
+                    `;
+                }
+            } catch (e) {
+                console.error("Erro ao processar dados:", e);
+            } finally {
+                sessionStorage.removeItem('calculoNegativadoData');
+            }
+        }
+    });
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js`;
     function moedaParaFloat(v) { return parseFloat(String(v||'').replace('R$', '').trim().replace(/\./g,"").replace(",","."))||0; }
-    
     function formatarMoeda(v) { return v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"}); }
     const formatarInputMoeda = (v) => v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 
     document.getElementById("pdf-upload").addEventListener("change", async function(event) {
         const file = event.target.files[0];
         if (!file) return;
-        clienteNomePDF = '';
-        clienteCpfPDF = '';
+
+        let tempClienteNome = clienteNomePDF;
+        let tempClienteCpf = clienteCpfPDF;
+
         document.getElementById("loading").style.display = "block";
         const listaEmprestimosEl = document.getElementById("listaEmprestimos");
         const unificarContainerEl = document.getElementById("unificar-container-pdf");
         if(listaEmprestimosEl) listaEmprestimosEl.style.display = "none";
         if(unificarContainerEl) unificarContainerEl.style.display = "none";
+        
         const fileReader = new FileReader();
         fileReader.onload = async function() {
             try {
@@ -111,10 +149,10 @@
                 }
                 const headerRegex = /Órgão\nCPF\nMatrícula\nNome\n([^\n]+)\n([^\n]+)\n([^\n]+)\n([^\n]+)/;
                 const headerMatch = text.match(headerRegex);
-                if (headerMatch) {
-                    clienteCpfPDF = headerMatch[2].trim();
-                    clienteNomePDF = headerMatch[4].trim();
-                }
+
+                clienteCpfPDF = headerMatch ? headerMatch[2].trim() : tempClienteCpf;
+                clienteNomePDF = headerMatch ? headerMatch[4].trim() : tempClienteNome;
+                
                 let htmlCliente = '';
                 if (clienteNomePDF || clienteCpfPDF) {
                     htmlCliente = '<div id="infoCliente">';
@@ -124,7 +162,6 @@
                 }
                 const listaDiv = document.getElementById("listaEmprestimos");
                 
-                // --- ALTERAÇÃO AQUI: Adiciona o checkbox "Selecionar Todos" ---
                 listaDiv.innerHTML = `${htmlCliente}
                     <h3 class="fs-5 text-center mb-3">Selecione os Contratos para Unificar</h3>
                     <div class="form-check mb-2 border-bottom pb-2">
@@ -152,19 +189,13 @@
                     listaDiv.appendChild(itemDiv);
                 });
 
-                // --- ALTERAÇÃO AQUI: Adiciona o evento para o "Selecionar Todos" ---
                 document.getElementById('selectAllCheckbox').addEventListener('change', function() {
-                    const isChecked = this.checked;
-                    document.querySelectorAll('.loan-checkbox').forEach(checkbox => {
-                        checkbox.checked = isChecked;
-                    });
+                    document.querySelectorAll('.loan-checkbox').forEach(checkbox => checkbox.checked = this.checked);
                 });
 
                 if (unificarContainerEl) {
                     listaDiv.style.display = "block";
                     unificarContainerEl.style.display = "block";
-                } else {
-                    listaDiv.style.display = "block";
                 }
             } catch (error) {
                 console.error("Erro ao processar o PDF:", error);
@@ -198,30 +229,28 @@
             e.preventDefault();
             calculoDetalhado = {}; 
             let p = moedaParaFloat(document.getElementById("parcela").value), s = moedaParaFloat(document.getElementById("saldodevedor").value), d = moedaParaFloat(document.getElementById("desconto").value);
-            if (document.title.includes("Compra de Dívida")) {
-                let coef = parseFloat(document.getElementById("coeficiente").value.replace(",","."))||0.02;
-                let comissaoG = parseFloat(document.getElementById("comissaoGerente").value.replace(",","."))||0;
-                const investidorR = (document.getElementById("tipoCompra").value === 'bradesco') ? 0.10 : 0.08;
-                let novoS = p / coef, sub = novoS - s - d, investidor = s * investidorR, gerente = sub * (comissaoG / 100);
-                valorGeral = sub - investidor - gerente;
-                calculoDetalhado = {p, s, d, sub, investidorR, investidor, comissaoG, gerente, valorGeral};
-                const resDiv = document.getElementById("resultadoParcial");
-                resDiv.style.display = "block";
-                if (sub < 0 || valorGeral < 0) {
-                    resDiv.innerHTML = `<h3 class="fs-5 text-danger">Operação Não Viável</h3><p>O valor gerado é insuficiente para quitar o saldo devedor.</p>`;
-                    if(document.getElementById("calcForm2")) document.getElementById("calcForm2").style.display = "none";
-                } else {
-                    resDiv.innerHTML = `<h2>Resultado Parcial</h2>
-                    <p><strong>Parcela Total:</strong> ${formatarMoeda(p)}</p>
-                    <p><strong>Saldo Devedor Aprox.:</strong> ${formatarMoeda(s)}</p>
-                    <p><strong>Produto:</strong> ${formatarMoeda(d)}</p>
-                    <p><strong>Valor Bruto Liberado:</strong> ${formatarMoeda(sub)}</p>
-                    <p><strong>Comissão Investidor (${(investidorR*100).toFixed(0)}%):</strong> ${formatarMoeda(investidor)}</p>
-                    <p><strong>Comissão Gerente (${comissaoG}%):</strong> ${formatarMoeda(gerente)}</p>
-                    <hr>
-                    <p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>`;
-                    if(document.getElementById("calcForm2")) document.getElementById("calcForm2").style.display = "block";
-                }
+            let coef = parseFloat(document.getElementById("coeficiente").value.replace(",","."))||0.02;
+            let comissaoG = parseFloat(document.getElementById("comissaoGerente").value.replace(",","."))||0;
+            const investidorR = (document.getElementById("tipoCompra").value === 'bradesco') ? 0.10 : 0.08;
+            let novoS = p / coef, sub = novoS - s - d, investidor = s * investidorR, gerente = sub * (comissaoG / 100);
+            valorGeral = sub - investidor - gerente;
+            calculoDetalhado = {p, s, d, sub, investidorR, investidor, comissaoG, gerente, valorGeral};
+            const resDiv = document.getElementById("resultadoParcial");
+            resDiv.style.display = "block";
+            if (sub < 0 || valorGeral < 0) {
+                resDiv.innerHTML = `<h3 class="fs-5 text-danger">Operação Não Viável</h3><p>O valor gerado é insuficiente para quitar o saldo devedor.</p>`;
+                if(document.getElementById("calcForm2")) document.getElementById("calcForm2").style.display = "none";
+            } else {
+                resDiv.innerHTML = `<h2>Resultado Parcial</h2>
+                <p><strong>Parcela Total:</strong> ${formatarMoeda(p)}</p>
+                <p><strong>Saldo Devedor Aprox.:</strong> ${formatarMoeda(s)}</p>
+                <p><strong>Produto:</strong> ${formatarMoeda(d)}</p>
+                <p><strong>Valor Bruto Liberado:</strong> ${formatarMoeda(sub)}</p>
+                <p><strong>Comissão Investidor (${(investidorR*100).toFixed(0)}%):</strong> ${formatarMoeda(investidor)}</p>
+                <p><strong>Comissão Gerente (${comissaoG}%):</strong> ${formatarMoeda(gerente)}</p>
+                <hr>
+                <p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>`;
+                if(document.getElementById("calcForm2")) document.getElementById("calcForm2").style.display = "block";
             }
         });
     }
@@ -246,21 +275,36 @@
     
     function gerarPDFBase(doc, tipo) {
         const getBase64Image = (img) => { if (!img) return null; const c = document.createElement("canvas"); c.width = img.width; c.height = img.height; c.getContext("2d").drawImage(img, 0, 0); return c.toDataURL("image/png"); };
+        
         const selectedEmpresa = document.getElementById('empresaSelect').value;
         const logoId = (selectedEmpresa === 'polo') ? 'logo-polo' : 'logo-alianca';
         const logoImg = document.getElementById(logoId);
         const logoBase64 = getBase64Image(logoImg);
+
+        const convenioImgElem = document.getElementById('convenio-logo');
+        const convenioBase64 = getBase64Image(convenioImgElem);
+
         let y = 15;
-        if (logoBase64) {
+        let maxHeight = 0;
+
+        if (logoBase64 && logoImg) {
             const imgWidth = 40;
             const imgHeight = logoImg.naturalHeight * (imgWidth / logoImg.naturalWidth);
-            const xPos = 15;
-            doc.addImage(logoBase64, 'PNG', xPos, y, imgWidth, imgHeight);
-            y += imgHeight + 10;
-        } else {
-            y = 40;
+            doc.addImage(logoBase64, 'PNG', 15, y, imgWidth, imgHeight);
+            maxHeight = Math.max(maxHeight, imgHeight);
         }
-        const tipoSimulacao = document.title.includes("Portabilidade") ? "Portabilidade" : "Compra de Dívida";
+
+        if (convenioBase64 && convenioImgElem) {
+            const imgWidth = 30;
+            const imgHeight = convenioImgElem.naturalHeight * (imgWidth / convenioImgElem.naturalWidth);
+            const pageWidth = doc.internal.pageSize.getWidth();
+            doc.addImage(convenioBase64, 'PNG', pageWidth - imgWidth - 15, y, imgWidth, imgHeight);
+            maxHeight = Math.max(maxHeight, imgHeight);
+        }
+        
+        y += maxHeight > 0 ? maxHeight + 10 : 25;
+
+        const tipoSimulacao = "Compra de Dívida";
         const titulo = `Simulação de ${tipoSimulacao} (${tipo})`;
         doc.setFontSize(18); 
         doc.text(titulo, 105, y, { align: 'center' });
@@ -287,16 +331,40 @@
         return y + 16;
     }
 
-    function gerarNomeArquivo(tipoSimulacao) {
+    function gerarNomeArquivo(tipoPdf) {
+        const hoje = new Date();
+        const dia = String(hoje.getDate()).padStart(2, '0');
+        const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+        const ano = hoje.getFullYear();
+        const dataFormatada = `${dia}-${mes}-${ano}`;
+        
         let nomeCliente = (clienteNomePDF || 'cliente').trim().toLowerCase().replace(/\s+/g, '_');
-        nomeCliente = nomeCliente.replace(/[^a-z0-9_]/g, ''); // Remove caracteres especiais
-        return `simulacao_${tipoSimulacao}_${nomeCliente}.pdf`;
+        nomeCliente = nomeCliente.replace(/[^a-z0-9_]/g, '');
+        
+        return `compra-siape_${nomeCliente}_${tipoPdf}_${dataFormatada}.pdf`;
     }
 
     function gerarPDFCliente() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         let y = gerarPDFBase(doc, "Cliente");
+
+        if (dadosNegativado) {
+            y += 5;
+            doc.setFontSize(12);
+            doc.text("Resumo do Cálculo Negativado", 15, y);
+            y += 8;
+            doc.setFontSize(10);
+            doc.text(`Valor das Parcelas Originais: ${formatarMoeda(dadosNegativado.totalParcelas)}`, 15, y);
+            y += 6;
+            doc.text(`Valor Negativo Deduzido: ${formatarMoeda(dadosNegativado.negativo)}`, 15, y);
+            y += 6;
+            doc.setFont('helvetica', 'bold');
+            doc.text(`Parcela Final para Cálculo: ${formatarMoeda(dadosNegativado.novaParcela)}`, 15, y);
+            y += 6;
+            doc.setFont('helvetica', 'normal');
+        }
+
         y += 10; doc.setFontSize(12); doc.text("Resumo da Operação", 15, y);
         y += 8; doc.setFontSize(10);
         doc.text(`Total Parcelas Unificadas: ${formatarMoeda(moedaParaFloat(document.getElementById("parcela").value))}`, 15, y);
@@ -305,15 +373,30 @@
         y += 10; doc.setFontSize(14); doc.setFont('helvetica', 'bold');
         doc.text(`Valor Líquido para o Cliente: ${formatarMoeda(valorOfertaPDF)}`, 15, y);
 
-        // --- ALTERAÇÃO AQUI: Nome dinâmico do arquivo ---
-        const nomeArquivo = gerarNomeArquivo('compra');
-        doc.save(nomeArquivo);
+        doc.save(gerarNomeArquivo('cliente'));
     }
 
     function gerarPDFEscritorio() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         let y = gerarPDFBase(doc, "Escritório");
+
+        if (dadosNegativado) {
+            y += 5;
+            doc.setFontSize(12);
+            doc.text("Resumo do Cálculo Negativado", 15, y);
+            y += 8;
+            doc.setFontSize(10);
+            doc.text(`Valor das Parcelas Originais: ${formatarMoeda(dadosNegativado.totalParcelas)}`, 15, y);
+            y += 6;
+            doc.text(`Valor Negativo Deduzido: ${formatarMoeda(dadosNegativado.negativo)}`, 15, y);
+            y += 6;
+            doc.setFont('helvetica', 'bold');
+            doc.text(`Parcela Final para Cálculo: ${formatarMoeda(dadosNegativado.novaParcela)}`, 15, y);
+            y += 6;
+            doc.setFont('helvetica', 'normal');
+        }
+
         y += 10; doc.setFontSize(12); doc.text("Detalhes da Operação (Uso Interno)", 15, y);
         y += 8; doc.setFontSize(10);
         doc.text(`Valor da Parcela: ${formatarMoeda(calculoDetalhado.p)}`, 15, y);
@@ -339,9 +422,7 @@
         doc.setFontSize(14); doc.setFont('helvetica', 'bold');
         doc.text(`Valor Líquido Cliente: ${formatarMoeda(calculoDetalhado.valorOfertaPDF)}`, 15, y);
         
-        // --- ALTERAÇÃO AQUI: Nome dinâmico do arquivo ---
-        const nomeArquivo = gerarNomeArquivo('compra_escritorio');
-        doc.save(nomeArquivo);
+        doc.save(gerarNomeArquivo('escritorio'));
     }
 </script> 
 </body>

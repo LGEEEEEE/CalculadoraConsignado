@@ -64,8 +64,9 @@
 
         <div class="resultado" id="resultado" style="display:none;"></div>
         
-        <div class="text-center mt-3" id="portabilidade-container" style="display:none;">
-            <button class="btn btn-primary w-100" id="goToPortabilidadeBtn">Ir para a portabilidade dessa parcela</button>
+        <div id="redirect-buttons-container" class="mt-3 d-grid gap-2" style="display:none;">
+            <button class="btn btn-primary" id="goToPortabilidadeBtn">Ir para a Portabilidade com este resultado</button>
+            <button class="btn btn-secondary" id="goToCompraBtn">Ir para a Compra de Dívida com este resultado</button>
         </div>
     </div>
 
@@ -200,14 +201,19 @@
                 <h2>Resultado</h2>
                 <p><strong>Valor Total das Parcelas Originais:</strong> ${formatarMoeda(totalParcelas)}</p>
                 <p><strong>Valor Negativo do Cliente:</strong> ${formatarMoeda(negativo)}</p>
-                <p><strong>Valor da Nova Parcela (para Portabilidade):</strong> ${formatarMoeda(novaParcela)}</p>
+                <p><strong>Valor da Nova Parcela:</strong> ${formatarMoeda(novaParcela)}</p>
             `;
-            document.getElementById("portabilidade-container").style.display = "block";
+            document.getElementById("redirect-buttons-container").style.display = "grid";
         });
 
         document.getElementById("goToPortabilidadeBtn").addEventListener("click", function() {
-            sessionStorage.setItem('portabilidadeData', JSON.stringify(resultadoCalculo));
+            sessionStorage.setItem('calculoNegativadoData', JSON.stringify(resultadoCalculo));
             window.location.href = '/siape/port-auto.html';
+        });
+
+        document.getElementById("goToCompraBtn").addEventListener("click", function() {
+            sessionStorage.setItem('calculoNegativadoData', JSON.stringify(resultadoCalculo));
+            window.location.href = '/siape/compra.html';
         });
     </script>
 </body>

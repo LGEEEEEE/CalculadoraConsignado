@@ -26,6 +26,7 @@
         <div class="text-center" style="display: none;">
             <img src="../images/logoheader.png" id="logo-alianca" class="mx-auto">
             <img src="../images/polo-promotora.png" id="logo-polo" class="mx-auto">
+            <img src="../images/exercito.png" id="convenio-logo" class="mx-auto">
         </div>
 
         <div id="upload-container">
@@ -86,18 +87,16 @@
     const formatarInputMoeda = (v) => v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 
     document.getElementById("pdf-upload").addEventListener("change", async function(event) {
+        // ... (A sua lógica de extração de PDF que já funciona permanece aqui, sem alterações)
         const file = event.target.files[0];
         if (!file) return;
-
         clienteNomePDF = '';
         clienteCpfPDF = '';
-
         document.getElementById("loading").style.display = "block";
         const listaEmprestimosEl = document.getElementById("listaEmprestimos");
         const unificarContainerEl = document.getElementById("unificar-container-pdf");
         if(listaEmprestimosEl) listaEmprestimosEl.style.display = "none";
         if(unificarContainerEl) unificarContainerEl.style.display = "none";
-        
         const fileReader = new FileReader();
         fileReader.onload = async function() {
             try {
@@ -105,27 +104,23 @@
                 const pdf = await pdfjsLib.getDocument(typedarray).promise;
                 let text = '';
                 for (let i = 1; i <= pdf.numPages; i++) {
-                    const textContent = await (await pdf.getPage(i)).getTextContent();
-                    text += textContent.items.map(item => item.str).join('\n');
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    text += textContent.items.map(item => item.str).join('\n') + '\n\n';
                 }
-                
+                let cleanText = text.replace(/--- FIM DA PÁGINA \d+ ---/g, '');
+                cleanText = cleanText.replace(/Consignatária\n\s*▴\s*▾[\s\S]+?Situação\n\s*▴\s*▾/g, '');
                 const cpfRegex = /(\d{3}\.\d{3}\.\d{3}-\d{2})/;
-                const nomeRegex = /\d{3}\.\d{3}\.\d{3}-\d{2}\s*-\s*([A-Z ]+)\n([A-Z ]+)/;
-
+                const nomeRegex = /\d{9}\s*-\s*\d{3}\.\d{3}\.\d{3}-\d{2}\s*-\s*([A-ZÀ-Ú ]+)\n([A-ZÀ-Ú ]+)/;
                 clienteCpfPDF = (text.match(cpfRegex) || [])[0] || '';
                 const nomeMatch = text.match(nomeRegex);
                 if (nomeMatch) {
                     clienteNomePDF = `${nomeMatch[1].trim()} ${nomeMatch[2].trim()}`;
                 }
-                
                 let htmlCliente = '';
                 if (clienteNomePDF || clienteCpfPDF) {
-                    htmlCliente = '<div id="infoCliente">';
-                    if (clienteNomePDF) htmlCliente += `<p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF}</p>`;
-                    if (clienteCpfPDF) htmlCliente += `<p class="mb-0"><strong>CPF:</strong> ${clienteCpfPDF}</p>`;
-                    htmlCliente += '</div>';
+                    htmlCliente = `<div id="infoCliente"><p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF}</p><p class="mb-0"><strong>CPF:</strong> ${clienteCpfPDF}</p></div>`;
                 }
-
                 const listaDiv = document.getElementById("listaEmprestimos");
                 listaDiv.innerHTML = `${htmlCliente}
                     <h3 class="fs-5 text-center mb-3">Selecione os Contratos para Unificar</h3>
@@ -133,27 +128,25 @@
                         <input class="form-check-input" type="checkbox" id="selectAllCheckbox">
                         <label class="form-check-label fw-bold" for="selectAllCheckbox">Selecionar Todos</label>
                     </div>`;
-
-                const blocos = text.split(/\n(?=\d{3}\s*-)/);
-                let count = 0;
-                
+                const blocos = cleanText.split(/\n(?=\d{3}\s*-\s*)/);
+                let loansFound = 0;
                 blocos.forEach((bloco, index) => {
-                    if (bloco.includes('EMPRÉSTIMO')) {
-                        const bancoMatch = bloco.match(/(\d{3}\s*-\s*[\s\S]*?)(?=\n\s*\d{6,})/);
-                        const valorMatch = bloco.match(/(R\$\s*[\d.,]+)/);
-                        const parcelasMatch = bloco.match(/(\d+)\n\s*\n(\d+)\n\s*Em\nAndamento/);
-
-                        if (bancoMatch && valorMatch && parcelasMatch) {
-                            count++;
+                    if (bloco.includes('EMPRÉSTIMO') && bloco.includes('Em\nAndamento')) {
+                        const bancoMatch = bloco.match(/^(\d{3}\s*-\s*[\s\S]+?)(?=\n\d{7}\n)/);
+                        const valorMatch = bloco.match(/R\$\s*[\d.,]+/);
+                        const parcelasMatch = /(\d+)\s*\n\s*(\d+)\s*\n\s*Em\nAndamento/;
+                        const parcelasResult = bloco.match(parcelasMatch);
+                        if (bancoMatch && valorMatch && parcelasResult) {
                             const nomeBanco = bancoMatch[1].replace(/\n/g, ' ').trim();
-                            const valor = valorMatch[1];
-                            const total = parcelasMatch[1];
-                            const pagas = parcelasMatch[2];
-                            
+                            const valor = valorMatch[0];
+                            const total = parcelasResult[1];
+                            const pagas = parcelasResult[2];
+                            if (total === 'Indet.') return;
+                            loansFound++;
                             const valorParcelaNum = moedaParaFloat(valor);
                             const parcelasRestantes = parseInt(total, 10) - parseInt(pagas, 10);
+                            if (parcelasRestantes < 0) return;
                             const saldoAproximado = valorParcelaNum * parcelasRestantes * 0.70;
-
                             const itemDiv = document.createElement('div');
                             itemDiv.className = 'loan-list-item';
                             itemDiv.innerHTML = `<div class="form-check"><input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${saldoAproximado}" data-parcela="${valorParcelaNum}" data-banco="${nomeBanco}" id="loan-${index}"><label class="form-check-label" for="loan-${index}"><strong>${nomeBanco}</strong><br><small>Saldo Aprox.: ${formatarMoeda(saldoAproximado)} | Parcela: ${formatarMoeda(valorParcelaNum)} | Status: ${pagas} de ${total}</small></label></div>`;
@@ -161,22 +154,18 @@
                         }
                     }
                 });
-
-                if (count === 0) {
-                    alert("AVISO: Nenhum contrato de empréstimo encontrado no formato esperado.");
+                if (loansFound === 0) {
+                    alert("AVISO: Nenhum contrato de empréstimo 'Em Andamento' foi encontrado no formato esperado.");
                     if(htmlCliente && clienteNomePDF) listaDiv.style.display = "block";
                     return;
                 }
-
                 document.getElementById('selectAllCheckbox').addEventListener('change', function() {
                     document.querySelectorAll('.loan-checkbox').forEach(checkbox => checkbox.checked = this.checked);
                 });
-
                 if (unificarContainerEl) {
                     listaDiv.style.display = "block";
                     unificarContainerEl.style.display = "block";
                 }
-
             } catch (error) {
                 console.error("Erro ao processar o PDF:", error);
                 alert("Ocorreu um erro ao ler o arquivo PDF.");
@@ -253,20 +242,35 @@
 
     function gerarPDFBase(doc, tipo) {
         const getBase64Image = (img) => { if (!img) return null; const c = document.createElement("canvas"); c.width = img.width; c.height = img.height; c.getContext("2d").drawImage(img, 0, 0); return c.toDataURL("image/png"); };
+        
         const selectedEmpresa = document.getElementById('empresaSelect').value;
         const logoId = (selectedEmpresa === 'polo') ? 'logo-polo' : 'logo-alianca';
         const logoImg = document.getElementById(logoId);
         const logoBase64 = getBase64Image(logoImg);
+
+        const convenioImgElem = document.getElementById('convenio-logo');
+        const convenioBase64 = getBase64Image(convenioImgElem);
+
         let y = 15;
-        if (logoBase64) {
+        let maxHeight = 0;
+
+        if (logoBase64 && logoImg) {
             const imgWidth = 40;
             const imgHeight = logoImg.naturalHeight * (imgWidth / logoImg.naturalWidth);
-            const xPos = 15;
-            doc.addImage(logoBase64, 'PNG', xPos, y, imgWidth, imgHeight);
-            y += imgHeight + 10;
-        } else {
-            y = 40;
+            doc.addImage(logoBase64, 'PNG', 15, y, imgWidth, imgHeight);
+            maxHeight = Math.max(maxHeight, imgHeight);
         }
+
+        if (convenioBase64 && convenioImgElem) {
+            const imgWidth = 30;
+            const imgHeight = convenioImgElem.naturalHeight * (imgWidth / convenioImgElem.naturalWidth);
+            const pageWidth = doc.internal.pageSize.getWidth();
+            doc.addImage(convenioBase64, 'PNG', pageWidth - imgWidth - 15, y, imgWidth, imgHeight);
+            maxHeight = Math.max(maxHeight, imgHeight);
+        }
+        
+        y += maxHeight > 0 ? maxHeight + 10 : 25;
+        
         const titulo = `Simulação de Compra de Dívida - Exército (${tipo})`;
         doc.setFontSize(18); 
         doc.text(titulo, 105, y, { align: 'center' });
@@ -293,6 +297,19 @@
         return y + 16;
     }
 
+    function gerarNomeArquivo(tipoPdf) {
+        const hoje = new Date();
+        const dia = String(hoje.getDate()).padStart(2, '0');
+        const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+        const ano = hoje.getFullYear();
+        const dataFormatada = `${dia}-${mes}-${ano}`;
+        
+        let nomeCliente = (clienteNomePDF || 'cliente').trim().toLowerCase().replace(/\s+/g, '_');
+        nomeCliente = nomeCliente.replace(/[^a-z0-9_]/g, '');
+        
+        return `compra-exercito_${nomeCliente}_${tipoPdf}_${dataFormatada}.pdf`;
+    }
+
     function gerarPDFCliente() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
@@ -305,8 +322,7 @@
         y += 10; doc.setFontSize(14); doc.setFont('helvetica', 'bold');
         doc.text(`Valor Líquido para o Cliente: ${formatarMoeda(valorOfertaPDF)}`, 15, y);
         
-        const safeClientName = (clienteNomePDF.trim().replace(/\s+/g, '_').toLowerCase()) || 'cliente';
-        doc.save(`simulacao_compra_exercito_${safeClientName}.pdf`);
+        doc.save(gerarNomeArquivo('cliente'));
     }
 
     function gerarPDFEscritorio() {
@@ -338,10 +354,8 @@
         doc.setFontSize(14); doc.setFont('helvetica', 'bold');
         doc.text(`Valor Líquido Cliente: ${formatarMoeda(calculoDetalhado.valorOfertaPDF)}`, 15, y);
         
-        const safeClientName = (clienteNomePDF.trim().replace(/\s+/g, '_').toLowerCase()) || 'escritorio';
-        doc.save(`simulacao_compra_exercito_escritorio_${safeClientName}.pdf`);
+        doc.save(gerarNomeArquivo('escritorio'));
     }
 </script> 
 </body>
 </html>
-}

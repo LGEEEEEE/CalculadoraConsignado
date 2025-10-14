@@ -18,6 +18,7 @@
         <div class="text-center" style="display: none;">
             <img src="../images/logoheader.png" id="logo-alianca" class="mx-auto">
             <img src="../images/polo-promotora.png" id="logo-polo" class="mx-auto">
+            <img src="../images/siape.png" id="convenio-logo" class="mx-auto">
         </div>
 
         <div id="infoNegativado" class="resultado" style="display:none;"></div>
@@ -104,7 +105,6 @@
                         document.getElementById('saldodevedor').value = (parsedData.saldoDevedor || 0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 
                         infoDiv.style.display = 'block';
-                        // CORREÇÃO APLICADA AQUI para usar os nomes corretos das variáveis
                         infoDiv.innerHTML = `
                             <h4 class="fs-5">Resumo da Operação Negativado</h4>
                             <p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF || 'Não informado'}</p>
@@ -272,20 +272,35 @@
         
         function gerarPDFBase(doc, tipo) {
             const getBase64Image = (img) => { if (!img) return null; const c = document.createElement("canvas"); c.width = img.width; c.height = img.height; c.getContext("2d").drawImage(img, 0, 0); return c.toDataURL("image/png"); };
+            
             const selectedEmpresa = document.getElementById('empresaSelect').value;
             const logoId = (selectedEmpresa === 'polo') ? 'logo-polo' : 'logo-alianca';
             const logoImg = document.getElementById(logoId);
             const logoBase64 = getBase64Image(logoImg);
+
+            const convenioImgElem = document.getElementById('convenio-logo');
+            const convenioBase64 = getBase64Image(convenioImgElem);
+
             let y = 15;
-            if (logoBase64) {
+            let maxHeight = 0;
+
+            if (logoBase64 && logoImg) {
                 const imgWidth = 40;
                 const imgHeight = logoImg.naturalHeight * (imgWidth / logoImg.naturalWidth);
-                const xPos = 15;
-                doc.addImage(logoBase64, 'PNG', xPos, y, imgWidth, imgHeight);
-                y += imgHeight + 10;
-            } else {
-                y = 40;
+                doc.addImage(logoBase64, 'PNG', 15, y, imgWidth, imgHeight);
+                maxHeight = Math.max(maxHeight, imgHeight);
             }
+
+            if (convenioBase64 && convenioImgElem) {
+                const imgWidth = 30;
+                const imgHeight = convenioImgElem.naturalHeight * (imgWidth / convenioImgElem.naturalWidth);
+                const pageWidth = doc.internal.pageSize.getWidth();
+                doc.addImage(convenioBase64, 'PNG', pageWidth - imgWidth - 15, y, imgWidth, imgHeight);
+                maxHeight = Math.max(maxHeight, imgHeight);
+            }
+            
+            y += maxHeight > 0 ? maxHeight + 10 : 25;
+
             const tipoSimulacao = "Portabilidade";
             const titulo = `Simulação de ${tipoSimulacao} (${tipo})`;
             doc.setFontSize(18);
@@ -311,6 +326,19 @@
                 return y;
             }
             return y + 16;
+        }
+
+        function gerarNomeArquivo(tipoSimulacao, tipoPdf) {
+            const hoje = new Date();
+            const dia = String(hoje.getDate()).padStart(2, '0');
+            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+            const ano = hoje.getFullYear();
+            const dataFormatada = `${dia}-${mes}-${ano}`;
+            
+            let nomeCliente = (clienteNomePDF || 'cliente').trim().toLowerCase().replace(/\s+/g, '_');
+            nomeCliente = nomeCliente.replace(/[^a-z0-9_]/g, '');
+            
+            return `${tipoSimulacao}_${nomeCliente}_${tipoPdf}_${dataFormatada}.pdf`;
         }
 
         function gerarPDFCliente() {
@@ -342,8 +370,7 @@
             y += 10; doc.setFontSize(14); doc.setFont('helvetica', 'bold');
             doc.text(`Valor Líquido para o Cliente: ${formatarMoeda(valorOfertaPDF)}`, 15, y);
             
-            const safeClientName = (clienteNomePDF.trim().replace(/\s+/g, '_').toLowerCase()) || 'cliente';
-            doc.save(`simulacao_portabilidade_${safeClientName}.pdf`);
+            doc.save(gerarNomeArquivo('portabilidade', 'cliente'));
         }
 
         function gerarPDFEscritorio() {
@@ -396,8 +423,7 @@
             doc.setFontSize(14); doc.setFont('helvetica', 'bold');
             doc.text(`Valor Líquido Cliente: ${formatarMoeda(calculoDetalhado.valorOfertaPDF)}`, 15, y);
             
-            const safeClientName = (clienteNomePDF.trim().replace(/\s+/g, '_').toLowerCase()) || 'escritorio';
-            doc.save(`simulacao_portabilidade_escritorio_${safeClientName}.pdf`);
+            doc.save(gerarNomeArquivo('portabilidade', 'escritorio'));
         }
     </script>
 </body>
