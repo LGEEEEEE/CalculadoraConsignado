@@ -1,168 +1,214 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
-    <title>Calculadora de Coeficiente</title>
+    <title>Calculadora de Cliente Negativado</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link rel="shortcut icon" href="icone.ico" type="image/x-icon">
-
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
-        crossorigin="anonymous">
+    <link rel="shortcut icon" href="/images/icone.ico" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: bisque;
-        }
-
-        .btn-voltar {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            background: #6c757d;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: background 0.3s ease;
-            z-index: 1000;
-        }
-
-        .btn-voltar:hover {
-            background: #5a6268;
-            color: white;
-        }
-
-        form {
-            max-width: 400px;
-            margin: auto;
-        }
-
-        label {
-            display: block;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-
-        input {
-            width: 100%;
-            padding: 6px;
-            margin-top: 4px;
-            border-radius: 8px;
-            font-size: 0.95rem;
-        }
-
-        button {
-            margin-top: 15px;
-            padding: 8px;
-            width: 100%;
-            background: #28a745;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 20px;
-            font-size: 1rem;
-            transition: background 0.3s ease;
-        }
-
-        button:hover {
-            background: #218838;
-        }
-
-        .resultado {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f1f1f1;
-            border-radius: 8px;
-        }
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: bisque; }
+        .btn-voltar { position: fixed; top: 15px; left: 15px; background: #6c757d; color: white; padding: 6px 12px; border-radius: 8px; text-decoration: none; font-size: 0.9rem; z-index: 1000; }
+        .container { max-width: 600px; margin: auto; }
+        form { border: 1px solid #ddd; padding: 20px; border-radius: 10px; background-color: #fff; margin-bottom: 20px; }
+        input, select { width: 100%; padding: 6px; margin-top: 4px; border-radius: 8px; font-size: 0.95rem; }
+        .resultado { margin-top: 20px; padding: 15px; background: #f1f1f1; border-radius: 8px; }
+        .upload-area { border: 2px dashed #0d6efd; padding: 25px; text-align: center; cursor: pointer; background-color: #f8f9fa; margin-bottom: 20px; }
+        #pdf-upload { display: none; }
+        .loan-list-item { display: flex; align-items: flex-start; padding: 10px; border-bottom: 1px solid #ddd; }
+        .loan-details { margin-left: 10px; font-size: 0.9rem; }
+        #infoCliente { padding-bottom: 10px; margin-bottom: 15px; border-bottom: 2px solid #ddd; }
+        .section-divider { text-align: center; border-bottom: 1px solid #ccc; line-height: 0.1em; margin: 25px 0; }
+        .section-divider span { background: bisque; padding: 0 10px; color: #6c757d; }
     </style>
 </head>
-
 <body>
-
     <a href="index.html" class="btn-voltar">← Voltar</a>
-
-    <h1 class="text-center">Calculadora de Cliente Negativado</h1>
-
-    <div class="text-center">
-        <img src="/images/logoheader.png" class="mx-auto">
-    </div>
-
-    <form id="Negativado">
-        <label>Valor da Parcela</label>
-        <div id="parcelasContainer">
-            <input type="text" class="parcela-input" required placeholder="Ex: 3562,25">
+    <div class="container">
+        <h1 class="text-center">Calculadora de Cliente Negativado</h1>
+        <div class="text-center mb-4">
+            <img src="/images/logoheader.png" class="mx-auto" style="max-width:200px;">
         </div>
 
-        <div class="buttons text-center">
-            <button class="btn btn-primary" type="button" id="addParcela" role="button">Incluir Nova Parcela</button>
+        <div id="upload-container">
+            <h2 class="text-center fs-4 my-3">1. Carregar Extrato (Opcional)</h2>
+            <input type="file" id="pdf-upload" accept=".pdf">
+            <label for="pdf-upload" class="upload-area" id="upload-label">Clique aqui para ler dados do PDF</label>
+            <p id="loading" class="text-center" style="display:none;">Analisando...</p>
         </div>
 
-        <label>Valor Negativo do Cliente</label>
-        <input type="text" id="negativo" required placeholder="Ex: 1000,00">
+        <div class="resultado" id="listaEmprestimos" style="display:none;"></div>
+        <div id="selecionar-todos-container" class="form-check my-2" style="display:none;">
+            <input class="form-check-input" type="checkbox" id="selecionarTodos">
+            <label class="form-check-label" for="selecionarTodos">Selecionar Todas as Parcelas</label>
+        </div>
+        <div id="unificar-container-pdf" class="text-center" style="display:none; margin: 15px auto;">
+            <button id="unificarBtnPdf" class="btn btn-info w-100">Usar Parcelas Selecionadas no Cálculo</button>
+        </div>
 
-        <button class="btn btn-primary" type="submit">Calcular Nova Parcela</button>
-    </form>
+        <div class="section-divider"><span>OU</span></div>
 
-    <div class="resultado" id="resultado" style="display:none;"></div>
+        <form id="Negativado">
+            <h2 class="text-center fs-4 my-3">2. Preencher Dados</h2>
+            <label>Valor da Parcela (ou Soma das Parcelas)</label>
+            <div id="parcelasContainer">
+                <input type="text" class="parcela-input form-control mb-2" required placeholder="Ex: 3562,25">
+            </div>
+            <button class="btn btn-outline-secondary btn-sm w-100 mb-3" type="button" id="addParcela">Adicionar outra Parcela Manualmente</button>
 
-    <br><br>
-    <div class="buttons text-center">
-        <a class="btn btn-primary" href="port.html" role="button">Ir para a portabilidade dessa parcela</a>
+            <label>Valor Negativo do Cliente</label>
+            <input type="text" id="negativo" class="form-control" required placeholder="Ex: 1000,00">
+
+            <button class="btn btn-success w-100 mt-3" type="submit">Calcular Nova Parcela</button>
+        </form>
+
+        <div class="resultado" id="resultado" style="display:none;"></div>
+        
+        <div class="text-center mt-3" id="portabilidade-container" style="display:none;">
+            <button class="btn btn-primary w-100" id="goToPortabilidadeBtn">Ir para a portabilidade dessa parcela</button>
+        </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
     <script>
-        function moedaParaFloat(valor) {
-            valor = valor.replace(/\./g, "").replace(",", ".");
-            return parseFloat(valor) || 0;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js`;
+        let totalSaldoDevedorPDF = 0;
+        let resultadoCalculo = {};
+        let clienteNomePDF = '', clienteCpfPDF = '';
+
+        function moedaParaFloat(v) { return parseFloat(String(v || '').replace('R$', '').trim().replace(/\./g, "").replace(",", ".")) || 0; }
+        function formatarMoeda(v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); }
+        const formatarInputMoeda = (v) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        document.getElementById("pdf-upload").addEventListener("change", async function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            document.getElementById("loading").style.display = "block";
+            const UIElements = [
+                document.getElementById("listaEmprestimos"),
+                document.getElementById("unificar-container-pdf"),
+                document.getElementById("selecionar-todos-container")
+            ];
+            UIElements.forEach(el => el.style.display = "none");
+
+            const fileReader = new FileReader();
+            fileReader.onload = async function() {
+                try {
+                    const typedarray = new Uint8Array(this.result);
+                    const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                    let text = '';
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        text += (await (await pdf.getPage(i)).getTextContent()).items.map(item => item.str).join('\n');
+                    }
+                    
+                    const headerRegex = /Órgão\nCPF\nMatrícula\nNome\n([^\n]+)\n([^\n]+)\n([^\n]+)\n([^\n]+)/;
+                    const headerMatch = text.match(headerRegex);
+                    if (headerMatch) {
+                        clienteCpfPDF = headerMatch[2].trim();
+                        clienteNomePDF = headerMatch[4].trim();
+                    }
+                    
+                    let htmlCliente = '';
+                    if (clienteNomePDF || clienteCpfPDF) {
+                        htmlCliente = `<div id="infoCliente"><p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF}</p><p class="mb-0"><strong>CPF:</strong> ${clienteCpfPDF}</p></div>`;
+                    }
+
+                    const listaDiv = document.getElementById("listaEmprestimos");
+                    listaDiv.innerHTML = `${htmlCliente}<h3 class="fs-5 text-center my-3">Selecione os Contratos para o Cálculo</h3>`;
+                    
+                    const rgxEmprestimos = /(EMPREST[^\n]+)\n(?:.|\n)*?(R\$\s*[\d\.,]+)\n(\d{2,3}\/\d{2,3})/g;
+                    let matches = [...text.matchAll(rgxEmprestimos)];
+                    if (matches.length === 0) {
+                        alert("AVISO: Nenhum contrato de empréstimo encontrado no formato esperado.");
+                        return;
+                    }
+                    matches.forEach((match, index) => {
+                        const [_, nomeBanco, valor, parcelasStr] = match;
+                        const cleanNomeBanco = nomeBanco.replace(/^\d{5}\s*-\s*/, '').trim();
+                        const [pagas, total] = parcelasStr.split('/');
+                        const valorParcelaNum = moedaParaFloat(valor);
+                        const saldoAproximado = valorParcelaNum * (parseInt(total, 10) - parseInt(pagas, 10)) * 0.70;
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'loan-list-item';
+                        itemDiv.innerHTML = `
+                            <div class="form-check">
+                                <input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${saldoAproximado}" data-parcela="${valorParcelaNum}" id="loan-${index}">
+                            </div>
+                            <div class="loan-details">
+                                <strong>${cleanNomeBanco}</strong><br>
+                                <span><strong>Parcela:</strong> ${formatarMoeda(valorParcelaNum)}</span> | 
+                                <span><strong>Status:</strong> ${pagas} de ${total}</span><br>
+                                <span><strong>Saldo Aprox.:</strong> ${formatarMoeda(saldoAproximado)}</span>
+                            </div>`;
+                        listaDiv.appendChild(itemDiv);
+                    });
+                    UIElements.forEach(el => el.style.display = "block");
+                } catch (error) {
+                    alert("Ocorreu um erro ao ler o arquivo PDF.");
+                } finally {
+                    document.getElementById("loading").style.display = "none";
+                }
+            };
+            fileReader.readAsArrayBuffer(file);
+        });
+
+        if (document.getElementById("selecionarTodos")) {
+            document.getElementById("selecionarTodos").addEventListener("change", function(e) {
+                document.querySelectorAll('.loan-checkbox').forEach(cb => cb.checked = e.target.checked);
+            });
         }
 
-        function formatarDecimal(valor) {
-            return valor.toFixed(2).replace(".", ",");
+        if (document.getElementById("unificarBtnPdf")) {
+            document.getElementById("unificarBtnPdf").addEventListener("click", function() {
+                let totalParcela = 0;
+                totalSaldoDevedorPDF = 0;
+                const checkboxes = document.querySelectorAll('.loan-checkbox:checked');
+                if (checkboxes.length === 0) return alert("Selecione pelo menos uma parcela.");
+                checkboxes.forEach(cb => {
+                    totalParcela += parseFloat(cb.dataset.parcela);
+                    totalSaldoDevedorPDF += parseFloat(cb.dataset.saldo);
+                });
+                document.querySelector(".parcela-input").value = formatarInputMoeda(totalParcela);
+                document.getElementById("Negativado").scrollIntoView({ behavior: 'smooth' });
+            });
         }
-
-        // Adiciona um event listener para o botão de incluir nova parcela
-        document.getElementById("addParcela").addEventListener("click", function () {
+        
+        document.getElementById("addParcela").addEventListener("click", function() {
             let container = document.getElementById("parcelasContainer");
-
-            // Cria um novo campo de input
             let novoInput = document.createElement("input");
             novoInput.type = "text";
-            novoInput.className = "parcela-input";
+            novoInput.className = "parcela-input form-control mb-2";
             novoInput.required = true;
             novoInput.placeholder = "Ex: 3562,25";
-
-            // Adiciona o novo campo ao contêiner
             container.appendChild(novoInput);
         });
 
-
-        document.getElementById("Negativado").addEventListener("submit", function (e) {
+        document.getElementById("Negativado").addEventListener("submit", function(e) {
             e.preventDefault();
-
             let totalParcelas = 0;
-            let inputsParcela = document.getElementsByClassName("parcela-input");
-
-            for (let i = 0; i < inputsParcela.length; i++) {
-                totalParcelas += moedaParaFloat(inputsParcela[i].value);
-            }
+            document.querySelectorAll(".parcela-input").forEach(input => {
+                totalParcelas += moedaParaFloat(input.value);
+            });
 
             let negativo = moedaParaFloat(document.getElementById("negativo").value);
             let novaParcela = totalParcelas - negativo;
+            
+            resultadoCalculo = { totalParcelas, negativo, novaParcela, saldoDevedor: totalSaldoDevedorPDF, nome: clienteNomePDF, cpf: clienteCpfPDF };
 
             document.getElementById("resultado").style.display = "block";
             document.getElementById("resultado").innerHTML = `
                 <h2>Resultado</h2>
-                <p><strong>Valor Total das Parcelas:</strong> R$ ${formatarDecimal(totalParcelas)}</p>
-                <p><strong>Valor Negativo do Cliente:</strong> R$ ${formatarDecimal(negativo)}</p>
-                <p><strong>Valor da nova Parcela:</strong> R$ ${formatarDecimal(novaParcela)}</p>
+                <p><strong>Valor Total das Parcelas Originais:</strong> ${formatarMoeda(totalParcelas)}</p>
+                <p><strong>Valor Negativo do Cliente:</strong> ${formatarMoeda(negativo)}</p>
+                <p><strong>Valor da Nova Parcela (para Portabilidade):</strong> ${formatarMoeda(novaParcela)}</p>
             `;
+            document.getElementById("portabilidade-container").style.display = "block";
+        });
+
+        document.getElementById("goToPortabilidadeBtn").addEventListener("click", function() {
+            sessionStorage.setItem('portabilidadeData', JSON.stringify(resultadoCalculo));
+            window.location.href = '/siape/port-auto.html';
         });
     </script>
 </body>
-
 </html>
