@@ -512,7 +512,6 @@
             doc.text(`Total Parcelas Unificadas: ${formatarMoeda(moedaParaFloat(document.getElementById("parcela").value))}`, 15, y);
             y += 6;
             // --- LINHA ADICIONADA ---
-            doc.text(`Novo Saldo Devedor (Valor Financiado): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
             doc.text(`Saldo Devedor Total a Quitar (Aprox.): ${formatarMoeda(moedaParaFloat(document.getElementById("saldodevedor").value))}`, 15, y);
             y += 10; doc.setFontSize(14); doc.setFont('helvetica', 'bold');
             doc.text(`Valor Líquido para o Cliente: ${formatarMoeda(valorOfertaPDF)}`, 15, y);
