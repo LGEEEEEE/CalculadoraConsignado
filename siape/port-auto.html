@@ -3,9 +3,9 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Calculadora de Compra de Dívida - SIAPE</title>
+    <title>Calculadora de Portabilidade - SIAPE</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" href="/images/icone.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="../icone.ico" type="image/x-icon">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background-color: bisque; }
@@ -16,7 +16,7 @@
         .resultado { margin-top: 20px; padding: 15px; background: #f1f1f1; border-radius: 8px; }
         .upload-area { border: 2px dashed #0d6efd; padding: 25px; text-align: center; cursor: pointer; background-color: #f8f9fa; margin-bottom: 20px; }
         #pdf-upload { display: none; }
-        .loan-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #ddd; }
+        .loan-list-item { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #ddd; }
         #infoCliente { padding-bottom: 10px; margin-bottom: 15px; border-bottom: 2px solid #ddd; }
         #infoNegativado { background-color: #fff3cd; border-color: #ffeeba; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
     </style>
@@ -25,7 +25,7 @@
 <body>
     <a href="/siape/siape.html" class="btn-voltar">← Voltar</a>
     <div class="container">
-        <h1 class="text-center">Calculadora Compra de Dívida (SIAPE)</h1>
+        <h1 class="text-center">Calculadora de Portabilidade (SIAPE)</h1>
         <div class="text-center" style="display: none;">
             <img src="../images/logoheader.png" id="logo-alianca" class="mx-auto">
             <img src="../images/polo-promotora.png" id="logo-polo" class="mx-auto">
@@ -72,14 +72,8 @@
             <div id="manualEntryContainer" style="display:none;">
                 <h3 class="text-center fs-5 mb-3">Dados do Cliente (Manual)</h3>
                 <div class="row mb-3">
-                    <div class="col-md-6 mb-2">
-                        <label for="clienteNome">Nome do Cliente</label>
-                        <input type="text" id="clienteNome" class="form-control">
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <label for="clienteCpf">CPF do Cliente</label>
-                        <input type="text" id="clienteCpf" class="form-control" placeholder="000.000.000-00">
-                    </div>
+                    <div class="col-md-6 mb-2"><label for="clienteNome">Nome do Cliente</label><input type="text" id="clienteNome" class="form-control"></div>
+                    <div class="col-md-6 mb-2"><label for="clienteCpf">CPF do Cliente</label><input type="text" id="clienteCpf" class="form-control" placeholder="000.000.000-00"></div>
                 </div>
                 <div id="manual-loan-entry" class="p-3 mb-3" style="border: 1px solid #ccc; border-radius: 8px;">
                     <h3 class="fs-5 text-center mb-3">Adicionar Contratos Manualmente</h3>
@@ -95,10 +89,24 @@
             <label>Valor da Parcela</label><input type="text" id="parcela" required placeholder="Ex: 1.157,55">
             <label>Saldo Devedor</label><input type="text" id="saldodevedor" required placeholder="Ex: 20.000,00">
             <label>Produto</label><input type="text" id="desconto" placeholder="Ex: 1.000,00">
+            
+            <div class="mt-3 mb-3">
+                <label>Houve quitação de algum valor?</label><br>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="quitacao" id="quitacaoNao" value="nao" checked><label class="form-check-label" for="quitacaoNao">Não</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="quitacao" id="quitacaoSim" value="sim"><label class="form-check-label" for="quitacaoSim">Sim</label>
+                </div>
+            </div>
+            <div id="quitadoContainer" style="display:none;" class="mb-3">
+                <label for="valorQuitado">Valor a ser quitado</label>
+                <input type="text" id="valorQuitado" class="form-control" placeholder="Ex: 5.000,00">
+            </div>
+            
             <div class="row mb-2 mt-3">
-                <div class="col-8"><label for="tipoCompra">Tipo de Compra</label><select id="tipoCompra" class="form-select"><option value="bradesco" selected>Bradesco (Comissão Investidor 10%)</option><option value="cef">Caixa (CEF) (Comissão Investidor 8%)</option></select></div>
-                <div class="col-4"><label for="coeficiente">Coeficiente</label><input type="text" id="coeficiente" class="form-control" value="0.02"></div>
-                <label for="comissaoGerente">Comissão Gerente (%)</label><input type="text" id="comissaoGerente" class="form-control" value="15">
+                <div class="col-8"><label for="coeficiente">Coeficiente</label><input type="text" id="coeficiente" class="form-control" value="0.0190"></div>
+                <div class="col-4"><label for="comissaoGerente">Comissão Gerente (%)</label><input type="text" id="comissaoGerente" class="form-control" value="15"></div>
             </div>
             <button class="btn btn-primary w-100 mt-3" type="submit">Calcular Valor Geral</button>
         </form>
@@ -161,6 +169,13 @@
             });
         });
 
+        document.querySelectorAll('input[name="quitacao"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                document.getElementById('quitadoContainer').style.display = this.value === 'sim' ? 'block' : 'none';
+                if (this.value === 'nao') document.getElementById('valorQuitado').value = '';
+            });
+        });
+        
         document.getElementById("pdf-upload").addEventListener("change", async function (event) {
             const file = event.target.files[0]; if (!file) return;
             document.getElementById("loading").style.display = "block";
@@ -255,21 +270,29 @@
                 e.preventDefault();
                 calculoDetalhado = {};
                 let p = moedaParaFloat(document.getElementById("parcela").value), s = moedaParaFloat(document.getElementById("saldodevedor").value), d = moedaParaFloat(document.getElementById("desconto").value);
-                let coef = parseFloat(document.getElementById("coeficiente").value.replace(",", ".")) || 0.02;
+                let coef = parseFloat(document.getElementById("coeficiente").value.replace(",", ".")) || 0.0190;
                 let comissaoG = parseFloat(document.getElementById("comissaoGerente").value.replace(",", ".")) || 0;
-                const investidorR = (document.getElementById("tipoCompra").value === 'bradesco') ? 0.10 : 0.08;
-                let novoS = p / coef, sub = novoS - s - d, investidor = s * investidorR, gerente = sub * (comissaoG / 100);
-                valorGeral = sub - investidor - gerente;
-                calculoDetalhado = { p, s, d, sub, investidorR, investidor, comissaoG, gerente, valorGeral };
+                let novoS = p / coef, valorBrutoLiberado = novoS - s - d, sub = valorBrutoLiberado;
+                let htmlQuitacao = '';
+                calculoDetalhado = { p, s, d, valorBrutoLiberado, comissaoG, gerente:0, valorQuitado: 0, comissaoQuitado: 0, valorGeral:0 };
+                if (document.getElementById('quitacaoSim').checked) {
+                    const valorQuitado = moedaParaFloat(document.getElementById('valorQuitado').value);
+                    if (valorQuitado > 0) {
+                        const comissaoQuitado = valorQuitado * 0.10;
+                        sub -= (valorQuitado + comissaoQuitado);
+                        calculoDetalhado.valorQuitado = valorQuitado;
+                        calculoDetalhado.comissaoQuitado = comissaoQuitado;
+                        htmlQuitacao = `<p><strong>Valor Quitado:</strong> ${formatarMoeda(valorQuitado)}</p><p><strong>Comissão Quitação (10%):</strong> ${formatarMoeda(comissaoQuitado)}</p>`;
+                    }
+                }
+                let gerente = sub * (comissaoG / 100);
+                valorGeral = sub - gerente;
+                calculoDetalhado.gerente = gerente;
+                calculoDetalhado.valorGeral = valorGeral;
                 const resDiv = document.getElementById("resultadoParcial");
                 resDiv.style.display = "block";
-                if (sub < 0 || valorGeral < 0) {
-                    resDiv.innerHTML = `<h3 class="fs-5 text-danger">Operação Não Viável</h3><p>O valor gerado é insuficiente para quitar o saldo devedor.</p>`;
-                    if(document.getElementById("calcForm2")) document.getElementById("calcForm2").style.display = "none";
-                } else {
-                    resDiv.innerHTML = `<h2>Resultado Parcial</h2><p><strong>Parcela Total:</strong> ${formatarMoeda(p)}</p><p><strong>Saldo Devedor Aprox.:</strong> ${formatarMoeda(s)}</p><p><strong>Produto:</strong> ${formatarMoeda(d)}</p><p><strong>Valor Bruto Liberado:</strong> ${formatarMoeda(sub)}</p><p><strong>Comissão Investidor (${(investidorR*100).toFixed(0)}%):</strong> ${formatarMoeda(investidor)}</p><p><strong>Comissão Gerente (${comissaoG}%):</strong> ${formatarMoeda(gerente)}</p><hr><p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>`;
-                    if(document.getElementById("calcForm2")) document.getElementById("calcForm2").style.display = "block";
-                }
+                resDiv.innerHTML = `<h2>Resultado Parcial</h2><p><strong>Parcela Total:</strong> ${formatarMoeda(p)}</p><p><strong>Saldo Devedor:</strong> ${formatarMoeda(s)}</p><p><strong>Produto:</strong> ${formatarMoeda(d)}</p><p><strong>Valor Geral Bruto:</strong> ${formatarMoeda(valorBrutoLiberado)}</p>${htmlQuitacao}<p><strong>Comissão Gerente (${comissaoG}%):</strong> ${formatarMoeda(gerente)}</p><hr><p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>`;
+                document.getElementById("calcForm2").style.display = 'block';
             });
         }
         if (document.getElementById("calcForm2")) {
@@ -289,8 +312,8 @@
             const getBase64Image = (img) => { if (!img) return null; const c = document.createElement("canvas"); c.width = img.width; c.height = img.height; c.getContext("2d").drawImage(img, 0, 0); return c.toDataURL("image/png"); };
             const selectedEmpresa = document.getElementById('empresaSelect').value;
             let logoId;
-            if (selectedEmpresa === 'polo') { logoId = 'logo-polo'; } 
-            else if (selectedEmpresa === 'estilo') { logoId = 'logo-estilo'; } 
+            if (selectedEmpresa === 'polo') { logoId = 'logo-polo'; }
+            else if (selectedEmpresa === 'estilo') { logoId = 'logo-estilo'; }
             else { logoId = 'logo-alianca'; }
             const logoPrincipalImg = document.getElementById(logoId);
             const convenioImgElem = document.getElementById('convenio-logo');
@@ -307,7 +330,7 @@
             if (logoPrincipalBase64) doc.addImage(logoPrincipalBase64, 'PNG', 15, logoPrincipalY, logoPrincipalWidth, logoPrincipalHeight);
             if (convenioBase64) doc.addImage(convenioBase64, 'PNG', pageWidth - logoConvenioWidth - 15, logoConvenioY, logoConvenioWidth, logoConvenioHeight);
             y += maxHeight > 0 ? maxHeight + 10 : 25;
-            doc.setFontSize(18); doc.text(`Simulação de Compra de Dívida (${tipo})`, 105, y, { align: 'center' }); y += 20;
+            doc.setFontSize(18); doc.text(`Simulação de Portabilidade (${tipo})`, 105, y, { align: 'center' }); y += 20;
             const nomeFinal = document.getElementById('clienteNome').value.trim() || clienteNomePDF || 'Não informado';
             const cpfFinal = document.getElementById('clienteCpf').value.trim() || clienteCpfPDF || 'Não informado';
             const listaDeParcelas = parcelasManuais.length > 0 ? parcelasManuais.map(p => ({ banco: p.banco, parcela: formatarMoeda(p.parcela), saldo: formatarMoeda(p.parcela * 96 * 0.70) })) : parcelasSelecionadasPDF;
@@ -325,7 +348,7 @@
             const dataFormatada = `${String(hoje.getDate()).padStart(2,'0')}-${String(hoje.getMonth()+1).padStart(2,'0')}-${hoje.getFullYear()}`;
             const nomeManual = document.getElementById('clienteNome').value.trim();
             let nomeCliente = (nomeManual || clienteNomePDF || 'cliente').trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-            return `compra-siape_${nomeCliente}_${tipoPdf}_${dataFormatada}.pdf`;
+            return `portabilidade_${nomeCliente}_${tipoPdf}_${dataFormatada}.pdf`;
         }
         function gerarPDFCliente() {
             const { jsPDF } = window.jspdf; const doc = new jsPDF();
@@ -354,11 +377,14 @@
             }
             y += 10; doc.setFontSize(12); doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
             doc.text(`Valor da Parcela: ${formatarMoeda(calculoDetalhado.p)}`, 15, y); y += 6;
-            doc.text(`Saldo Devedor Aprox.: ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 6;
+            doc.text(`Saldo Devedor: ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 6;
             doc.text(`Produto: ${formatarMoeda(calculoDetalhado.d)}`, 15, y); y += 6;
             doc.text("--------------------------------------------------", 15, y); y += 6;
-            doc.text(`Valor Bruto Liberado: ${formatarMoeda(calculoDetalhado.sub)}`, 15, y); y += 6;
-            doc.text(`Comissão Investidor (${(calculoDetalhado.investidorR * 100).toFixed(0)}%): - ${formatarMoeda(calculoDetalhado.investidor)}`, 15, y); y += 6;
+            doc.text(`Valor Geral Bruto: ${formatarMoeda(calculoDetalhado.valorBrutoLiberado)}`, 15, y); y += 6;
+            if (calculoDetalhado.valorQuitado > 0) {
+                doc.text(`Valor Quitado: - ${formatarMoeda(calculoDetalhado.valorQuitado)}`, 15, y); y += 6;
+                doc.text(`Comissão Quitação (10%): - ${formatarMoeda(calculoDetalhado.comissaoQuitado)}`, 15, y); y += 6;
+            }
             doc.text(`Comissão Gerente (${calculoDetalhado.comissaoG}%): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += 6;
             doc.setFont('helvetica', 'bold');
             doc.text(`Valor Geral Líquido: ${formatarMoeda(calculoDetalhado.valorGeral)}`, 15, y); y += 6;
