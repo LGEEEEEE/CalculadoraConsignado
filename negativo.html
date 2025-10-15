@@ -50,6 +50,16 @@
 
         <form id="Negativado">
             <h2 class="text-center fs-4 my-3">2. Preencher Dados</h2>
+             <div class="row mb-3">
+                <div class="col-md-6 mb-2">
+                    <label for="clienteNomeManual">Nome do Cliente</label>
+                    <input type="text" id="clienteNomeManual" class="form-control">
+                </div>
+                <div class="col-md-6 mb-2">
+                    <label for="clienteCpfManual">CPF do Cliente</label>
+                    <input type="text" id="clienteCpfManual" class="form-control" placeholder="000.000.000-00">
+                </div>
+            </div>
             <label>Valor da Parcela (ou Soma das Parcelas)</label>
             <div id="parcelasContainer">
                 <input type="text" class="parcela-input form-control mb-2" required placeholder="Ex: 3562,25">
@@ -82,14 +92,9 @@
         const formatarInputMoeda = (v) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
         document.getElementById("pdf-upload").addEventListener("change", async function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+            const file = event.target.files[0]; if (!file) return;
             document.getElementById("loading").style.display = "block";
-            const UIElements = [
-                document.getElementById("listaEmprestimos"),
-                document.getElementById("unificar-container-pdf"),
-                document.getElementById("selecionar-todos-container")
-            ];
+            const UIElements = [document.getElementById("listaEmprestimos"), document.getElementById("unificar-container-pdf"), document.getElementById("selecionar-todos-container")];
             UIElements.forEach(el => el.style.display = "none");
 
             const fileReader = new FileReader();
@@ -98,57 +103,32 @@
                     const typedarray = new Uint8Array(this.result);
                     const pdf = await pdfjsLib.getDocument(typedarray).promise;
                     let text = '';
-                    for (let i = 1; i <= pdf.numPages; i++) {
-                        text += (await (await pdf.getPage(i)).getTextContent()).items.map(item => item.str).join('\n');
-                    }
-                    
-                    const headerRegex = /Órgão\nCPF\nMatrícula\nNome\n([^\n]+)\n([^\n]+)\n([^\n]+)\n([^\n]+)/;
+                    for (let i = 1; i <= pdf.numPages; i++) { text += (await (await pdf.getPage(i)).getTextContent()).items.map(item => item.str).join('\n'); }
+                    const headerRegex = /Órgão\nCPF\nMatrícula\nNome\n[^\n]+\n([^\n]+)\n[^\n]+\n([^\n]+)/;
                     const headerMatch = text.match(headerRegex);
-                    if (headerMatch) {
-                        clienteCpfPDF = headerMatch[2].trim();
-                        clienteNomePDF = headerMatch[4].trim();
-                    }
+                    if (headerMatch) { clienteCpfPDF = headerMatch[1].trim(); clienteNomePDF = headerMatch[2].trim(); }
                     
                     let htmlCliente = '';
-                    if (clienteNomePDF || clienteCpfPDF) {
-                        htmlCliente = `<div id="infoCliente"><p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF}</p><p class="mb-0"><strong>CPF:</strong> ${clienteCpfPDF}</p></div>`;
-                    }
+                    if (clienteNomePDF || clienteCpfPDF) { htmlCliente = `<div id="infoCliente"><p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF}</p><p class="mb-0"><strong>CPF:</strong> ${clienteCpfPDF}</p></div>`; }
 
                     const listaDiv = document.getElementById("listaEmprestimos");
                     listaDiv.innerHTML = `${htmlCliente}<h3 class="fs-5 text-center my-3">Selecione os Contratos para o Cálculo</h3>`;
                     
                     const rgxEmprestimos = /(EMPREST[^\n]+)\n(?:.|\n)*?(R\$\s*[\d\.,]+)\n(\d{2,3}\/\d{2,3})/g;
                     let matches = [...text.matchAll(rgxEmprestimos)];
-                    if (matches.length === 0) {
-                        alert("AVISO: Nenhum contrato de empréstimo encontrado no formato esperado.");
-                        return;
-                    }
                     matches.forEach((match, index) => {
                         const [_, nomeBanco, valor, parcelasStr] = match;
-                        const cleanNomeBanco = nomeBanco.replace(/^\d{5}\s*-\s*/, '').trim();
                         const [pagas, total] = parcelasStr.split('/');
                         const valorParcelaNum = moedaParaFloat(valor);
                         const saldoAproximado = valorParcelaNum * (parseInt(total, 10) - parseInt(pagas, 10)) * 0.70;
                         const itemDiv = document.createElement('div');
                         itemDiv.className = 'loan-list-item';
-                        itemDiv.innerHTML = `
-                            <div class="form-check">
-                                <input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${saldoAproximado}" data-parcela="${valorParcelaNum}" id="loan-${index}">
-                            </div>
-                            <div class="loan-details">
-                                <strong>${cleanNomeBanco}</strong><br>
-                                <span><strong>Parcela:</strong> ${formatarMoeda(valorParcelaNum)}</span> | 
-                                <span><strong>Status:</strong> ${pagas} de ${total}</span><br>
-                                <span><strong>Saldo Aprox.:</strong> ${formatarMoeda(saldoAproximado)}</span>
-                            </div>`;
+                        itemDiv.innerHTML = `<div class="form-check"><input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${saldoAproximado}" data-parcela="${valorParcelaNum}" id="loan-${index}"></div><div class="loan-details"><strong>${nomeBanco.replace(/^\d{5}\s*-\s*/, '').trim()}</strong><br><span><strong>Parcela:</strong> ${formatarMoeda(valorParcelaNum)}</span> | <span><strong>Status:</strong> ${pagas} de ${total}</span><br><span><strong>Saldo Aprox.:</strong> ${formatarMoeda(saldoAproximado)}</span></div>`;
                         listaDiv.appendChild(itemDiv);
                     });
                     UIElements.forEach(el => el.style.display = "block");
-                } catch (error) {
-                    alert("Ocorreu um erro ao ler o arquivo PDF.");
-                } finally {
-                    document.getElementById("loading").style.display = "none";
-                }
+                } catch (error) { alert("Ocorreu um erro ao ler o arquivo PDF."); } 
+                finally { document.getElementById("loading").style.display = "none"; }
             };
             fileReader.readAsArrayBuffer(file);
         });
@@ -175,11 +155,10 @@
         }
         
         document.getElementById("addParcela").addEventListener("click", function() {
-            let container = document.getElementById("parcelasContainer");
-            let novoInput = document.createElement("input");
+            const container = document.getElementById("parcelasContainer");
+            const novoInput = document.createElement("input");
             novoInput.type = "text";
             novoInput.className = "parcela-input form-control mb-2";
-            novoInput.required = true;
             novoInput.placeholder = "Ex: 3562,25";
             container.appendChild(novoInput);
         });
@@ -194,15 +173,13 @@
             let negativo = moedaParaFloat(document.getElementById("negativo").value);
             let novaParcela = totalParcelas - negativo;
             
-            resultadoCalculo = { totalParcelas, negativo, novaParcela, saldoDevedor: totalSaldoDevedorPDF, nome: clienteNomePDF, cpf: clienteCpfPDF };
+            const nomeFinal = document.getElementById('clienteNomeManual').value.trim() || clienteNomePDF;
+            const cpfFinal = document.getElementById('clienteCpfManual').value.trim() || clienteCpfPDF;
+
+            resultadoCalculo = { totalParcelas, negativo, novaParcela, saldoDevedor: totalSaldoDevedorPDF, nome: nomeFinal, cpf: cpfFinal };
 
             document.getElementById("resultado").style.display = "block";
-            document.getElementById("resultado").innerHTML = `
-                <h2>Resultado</h2>
-                <p><strong>Valor Total das Parcelas Originais:</strong> ${formatarMoeda(totalParcelas)}</p>
-                <p><strong>Valor Negativo do Cliente:</strong> ${formatarMoeda(negativo)}</p>
-                <p><strong>Valor da Nova Parcela:</strong> ${formatarMoeda(novaParcela)}</p>
-            `;
+            document.getElementById("resultado").innerHTML = `<h2>Resultado</h2><p><strong>Total Parcelas Originais:</strong> ${formatarMoeda(totalParcelas)}</p><p><strong>Valor Negativo:</strong> ${formatarMoeda(negativo)}</p><hr><p><strong>Nova Parcela para Cálculo:</strong> ${formatarMoeda(novaParcela)}</p>`;
             document.getElementById("redirect-buttons-container").style.display = "grid";
         });
 

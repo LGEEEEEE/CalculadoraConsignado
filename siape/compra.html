@@ -119,8 +119,8 @@
         let parcelasManuais = [];
         let dadosNegativado = null;
         function moedaParaFloat(v) { return parseFloat(String(v || '').replace('R$', '').trim().replace(/\./g, "").replace(",", ".")) || 0; }
-        function formatarMoeda(v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); }
-        const formatarInputMoeda = (v) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        function formatarMoeda(v) { return (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); }
+        const formatarInputMoeda = (v) => (v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
         document.addEventListener('DOMContentLoaded', () => {
             const data = sessionStorage.getItem('calculoNegativadoData');
@@ -130,11 +130,14 @@
                     dadosNegativado = parsedData;
                     clienteNomePDF = parsedData.nome || '';
                     clienteCpfPDF = parsedData.cpf || '';
-                    document.getElementById('parcela').value = formatarInputMoeda(parsedData.novaParcela || 0);
-                    document.getElementById('saldodevedor').value = formatarInputMoeda(parsedData.saldoDevedor || 0);
+                    document.getElementById('parcela').value = formatarInputMoeda(parsedData.novaParcela);
+                    if (parsedData.saldoDevedor > 0) {
+                        document.getElementById('saldodevedor').value = formatarInputMoeda(parsedData.saldoDevedor);
+                    }
                     const infoDiv = document.getElementById('infoNegativado');
+                    const summaryHtml = `<h4 class="fs-5">Resumo da Operação Negativado</h4><p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF}</p><p class="mb-1"><strong>CPF:</strong> ${clienteCpfPDF}</p><hr><p class="mb-1"><strong>Parcelas Originais:</strong> ${formatarMoeda(parsedData.totalParcelas)}</p><p class="mb-1"><strong>Valor Negativo:</strong> ${formatarMoeda(parsedData.negativo)}</p><p class="mb-0"><strong>Nova Parcela:</strong> ${formatarMoeda(parsedData.novaParcela)}</p>`;
+                    infoDiv.innerHTML = summaryHtml;
                     infoDiv.style.display = 'block';
-                    infoDiv.innerHTML = `<h4 class="fs-5">Resumo da Operação Negativado</h4><p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF}</p><p class="mb-1"><strong>CPF:</strong> ${clienteCpfPDF}</p><hr><p class="mb-1"><strong>Parcelas Originais:</strong> ${formatarMoeda(parsedData.totalParcelas)}</p><p class="mb-1"><strong>Valor Negativo:</strong> ${formatarMoeda(parsedData.negativo)}</p><p class="mb-0"><strong>Nova Parcela:</strong> ${formatarMoeda(parsedData.novaParcela)}</p>`;
                 } catch (e) { console.error("Erro ao processar dados:", e); }
                 finally { sessionStorage.removeItem('calculoNegativadoData'); }
             }
@@ -264,15 +267,7 @@
                     resDiv.innerHTML = `<h3 class="fs-5 text-danger">Operação Não Viável</h3><p>O valor gerado é insuficiente para quitar o saldo devedor.</p>`;
                     if(document.getElementById("calcForm2")) document.getElementById("calcForm2").style.display = "none";
                 } else {
-                    resDiv.innerHTML = `<h2>Resultado Parcial</h2>
-                        <p><strong>Parcela Total:</strong> ${formatarMoeda(p)}</p>
-                        <p><strong>Saldo Devedor Aprox.:</strong> ${formatarMoeda(s)}</p>
-                        <p><strong>Produto:</strong> ${formatarMoeda(d)}</p>
-                        <p><strong>Valor Bruto Liberado:</strong> ${formatarMoeda(sub)}</p>
-                        <p><strong>Comissão Investidor (${(investidorR*100).toFixed(0)}%):</strong> ${formatarMoeda(investidor)}</p>
-                        <p><strong>Comissão Gerente (${comissaoG}%):</strong> ${formatarMoeda(gerente)}</p>
-                        <hr>
-                        <p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>`;
+                    resDiv.innerHTML = `<h2>Resultado Parcial</h2><p><strong>Parcela Total:</strong> ${formatarMoeda(p)}</p><p><strong>Saldo Devedor Aprox.:</strong> ${formatarMoeda(s)}</p><p><strong>Produto:</strong> ${formatarMoeda(d)}</p><p><strong>Valor Bruto Liberado:</strong> ${formatarMoeda(sub)}</p><p><strong>Comissão Investidor (${(investidorR*100).toFixed(0)}%):</strong> ${formatarMoeda(investidor)}</p><p><strong>Comissão Gerente (${comissaoG}%):</strong> ${formatarMoeda(gerente)}</p><hr><p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>`;
                     if(document.getElementById("calcForm2")) document.getElementById("calcForm2").style.display = "block";
                 }
             });
