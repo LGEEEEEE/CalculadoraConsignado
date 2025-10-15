@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <title>Calculadora de Portabilidade</title>
@@ -7,14 +8,96 @@
     <link rel="shortcut icon" href="../icone.ico" type="image/x-icon">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body{font-family:Arial,sans-serif;margin:20px;background-color:bisque}.btn-voltar{position:fixed;top:15px;left:15px;background:#6c757d;color:#fff;padding:6px 12px;border-radius:8px;text-decoration:none;font-size:.9rem;z-index:1000}.container{max-width:600px;margin:auto}form{border:1px solid #ddd;padding:20px;border-radius:10px;background-color:#fff;margin-bottom:20px}input,select{width:100%;padding:6px;margin-top:4px;border-radius:8px;font-size:.95rem}.resultado{margin-top:20px;padding:15px;background:#f1f1f1;border-radius:8px}.upload-area{border:2px dashed #0d6efd;padding:25px;text-align:center;cursor:pointer;background-color:#f8f9fa;margin-bottom:20px}#pdf-upload{display:none}.loan-list-item{display:flex;align-items:center;padding:10px;border-bottom:1px solid #ddd}#infoCliente{padding-bottom:10px;margin-bottom:15px;border-bottom:2px solid #ddd}#infoNegativado{background-color:#fff3cd;border-color:#ffeeba;color:#856404;padding:15px;border-radius:8px;margin-bottom:20px}
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: bisque
+        }
+
+        .btn-voltar {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background: #6c757d;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: .9rem;
+            z-index: 1000
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto
+        }
+
+        form {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #fff;
+            margin-bottom: 20px
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 6px;
+            margin-top: 4px;
+            border-radius: 8px;
+            font-size: .95rem
+        }
+
+        .resultado {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f1f1f1;
+            border-radius: 8px
+        }
+
+        .upload-area {
+            border: 2px dashed #0d6efd;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            background-color: #f8f9fa;
+            margin-bottom: 20px
+        }
+
+        #pdf-upload {
+            display: none
+        }
+
+        .loan-list-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd
+        }
+
+        #infoCliente {
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #ddd
+        }
+
+        #infoNegativado {
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px
+        }
     </style>
 </head>
+
 <body>
     <a href="siape.html" class="btn-voltar">← Voltar</a>
     <div class="container">
         <h1 class="text-center">Calculadora de Portabilidade</h1>
-        
+
         <div class="text-center" style="display: none;">
             <img src="../images/logoheader.png" id="logo-alianca" class="mx-auto">
             <img src="../images/polo-promotora.png" id="logo-polo" class="mx-auto">
@@ -48,8 +131,10 @@
                     <option value="polo">Polo Promotora</option>
                 </select>
             </div>
-            <label>Valor da Parcela (ou Soma)</label><input type="text" id="parcela" required placeholder="Ex: 1.157,55">
-            <label>Saldo Devedor (ou Soma)</label><input type="text" id="saldodevedor" required placeholder="Ex: 20.000,00">
+            <label>Valor da Parcela (ou Soma)</label><input type="text" id="parcela" required
+                placeholder="Ex: 1.157,55">
+            <label>Saldo Devedor (ou Soma)</label><input type="text" id="saldodevedor" required
+                placeholder="Ex: 20.000,00">
             <label>Produto</label><input type="text" id="desconto" placeholder="Ex: 1.000,00">
             <div class="mt-3">
                 <label>Houve quitação de algum valor?</label><br>
@@ -67,15 +152,18 @@
                 <input type="text" id="valorQuitado" placeholder="Ex: 5.000,00">
             </div>
             <div class="row mb-2 mt-3">
-                <div class="col-6"><label for="coeficiente">Coeficiente</label><input type="text" id="coeficiente" class="form-control" value="0.0190"></div>
-                <div class="col-6"><label for="comissaoGerente">Comissão Gerente (%)</label><input type="text" id="comissaoGerente" class="form-control" value="15" placeholder="Ex: 15"></div>
+                <div class="col-6"><label for="coeficiente">Coeficiente</label><input type="text" id="coeficiente"
+                        class="form-control" value="0.0190"></div>
+                <div class="col-6"><label for="comissaoGerente">Comissão Gerente (%)</label><input type="text"
+                        id="comissaoGerente" class="form-control" value="15" placeholder="Ex: 15"></div>
             </div>
             <button class="btn btn-primary w-100 mt-3" type="submit">Calcular Valor Geral</button>
         </form>
 
         <div class="resultado" id="resultadoParcial" style="display:none;"></div>
         <form id="calcForm2" style="display:none;">
-            <label>Comissão Final do Escritório</label><input type="text" id="comissaoesc" required placeholder="Ex: 500,00"><br><br>
+            <label>Comissão Final do Escritório</label><input type="text" id="comissaoesc" required
+                placeholder="Ex: 500,00"><br><br>
             <button class="btn btn-primary" type="submit">Calcular Oferta </button>
         </form>
         <div class="resultado" id="resultadoFinal" style="display:none;"></div>
@@ -92,17 +180,17 @@
             if (data) {
                 try {
                     const parsedData = JSON.parse(data);
-                    
+
                     if (parsedData && typeof parsedData.novaParcela !== 'undefined') {
                         dadosNegativado = parsedData;
-                        
+
                         clienteNomePDF = parsedData.nome || '';
                         clienteCpfPDF = parsedData.cpf || '';
 
                         const infoDiv = document.getElementById('infoNegativado');
-                        
-                        document.getElementById('parcela').value = (parsedData.novaParcela || 0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-                        document.getElementById('saldodevedor').value = (parsedData.saldoDevedor || 0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+                        document.getElementById('parcela').value = (parsedData.novaParcela || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        document.getElementById('saldodevedor').value = (parsedData.saldoDevedor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
                         infoDiv.style.display = 'block';
                         infoDiv.innerHTML = `
@@ -110,9 +198,9 @@
                             <p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF || 'Não informado'}</p>
                             <p class="mb-1"><strong>CPF:</strong> ${clienteCpfPDF || 'Não informado'}</p>
                             <hr>
-                            <p class="mb-1"><strong>Parcelas Originais:</strong> ${(parsedData.totalParcelas || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</p>
-                            <p class="mb-1"><strong>Valor Negativo:</strong> ${(parsedData.negativo || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</p>
-                            <p class="mb-0"><strong>Nova Parcela (enviada para cá):</strong> ${(parsedData.novaParcela || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</p>
+                            <p class="mb-1"><strong>Parcelas Originais:</strong> ${(parsedData.totalParcelas || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
+                            <p class="mb-1"><strong>Valor Negativo:</strong> ${(parsedData.negativo || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
+                            <p class="mb-0"><strong>Nova Parcela (enviada para cá):</strong> ${(parsedData.novaParcela || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
                         `;
                     }
                 } catch (e) {
@@ -126,14 +214,14 @@
         pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js`;
         let parcelasSelecionadasPDF = [], valorOfertaPDF = 0, valorGeral = 0;
         let calculoDetalhado = {};
-        function moedaParaFloat(v) { return parseFloat(String(v||'').replace('R$','').trim().replace(/\./g,"").replace(",","."))||0; }
-        function formatarMoeda(v) { return v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"}); }
+        function moedaParaFloat(v) { return parseFloat(String(v || '').replace('R$', '').trim().replace(/\./g, "").replace(",", ".")) || 0; }
+        function formatarMoeda(v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); }
         const formatarInputMoeda = (v) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
         document.getElementById("pdf-upload").addEventListener("change", async function (event) {
             const file = event.target.files[0];
             if (!file) return;
-            
+
             let tempClienteNome = clienteNomePDF;
             let tempClienteCpf = clienteCpfPDF;
 
@@ -156,7 +244,7 @@
                     }
                     const headerRegex = /Órgão\nCPF\nMatrícula\nNome\n([^\n]+)\n([^\n]+)\n([^\n]+)\n([^\n]+)/;
                     const headerMatch = text.match(headerRegex);
-                    
+
                     clienteCpfPDF = headerMatch ? headerMatch[2].trim() : tempClienteCpf;
                     clienteNomePDF = headerMatch ? headerMatch[4].trim() : tempClienteNome;
 
@@ -196,7 +284,7 @@
         });
 
         if (document.getElementById("selecionarTodos")) {
-            document.getElementById("selecionarTodos").addEventListener("change", function(e) {
+            document.getElementById("selecionarTodos").addEventListener("change", function (e) {
                 document.querySelectorAll('.loan-checkbox').forEach(cb => cb.checked = e.target.checked);
             });
         }
@@ -269,40 +357,60 @@
                 document.getElementById("baixarPdfEscritorioBtn").addEventListener("click", gerarPDFEscritorio);
             });
         }
-        
+
         function gerarPDFBase(doc, tipo) {
             const getBase64Image = (img) => { if (!img) return null; const c = document.createElement("canvas"); c.width = img.width; c.height = img.height; c.getContext("2d").drawImage(img, 0, 0); return c.toDataURL("image/png"); };
-            
+
             const selectedEmpresa = document.getElementById('empresaSelect').value;
             const logoId = (selectedEmpresa === 'polo') ? 'logo-polo' : 'logo-alianca';
             const logoImg = document.getElementById(logoId);
-            const logoBase64 = getBase64Image(logoImg);
-
             const convenioImgElem = document.getElementById('convenio-logo');
+
+            const logoBase64 = getBase64Image(logoImg);
             const convenioBase64 = getBase64Image(convenioImgElem);
 
-            let y = 15;
-            let maxHeight = 0;
+            let y = 15; // Posição inicial do cabeçalho
+            const pageWidth = doc.internal.pageSize.getWidth();
 
-            if (logoBase64 && logoImg) {
-                const imgWidth = 40;
-                const imgHeight = logoImg.naturalHeight * (imgWidth / logoImg.naturalWidth);
-                doc.addImage(logoBase64, 'PNG', 15, y, imgWidth, imgHeight);
-                maxHeight = Math.max(maxHeight, imgHeight);
+            // --- INÍCIO DA CORREÇÃO ---
+
+            // Define larguras fixas para consistência
+            const logoPrincipalWidth = 40;
+            const logoConvenioWidth = 30;
+
+            // Calcula a altura proporcional de cada logo
+            const logoPrincipalHeight = logoImg ? logoImg.naturalHeight * (logoPrincipalWidth / logoImg.naturalWidth) : 0;
+            const logoConvenioHeight = convenioImgElem ? convenioImgElem.naturalHeight * (logoConvenioWidth / convenioImgElem.naturalWidth) : 0;
+
+            // Encontra a maior altura entre as duas logos
+            const maxHeight = Math.max(logoPrincipalHeight, logoConvenioHeight);
+
+            // Calcula a posição Y de cada logo para centralizá-la verticalmente
+            const logoPrincipalY = y + (maxHeight - logoPrincipalHeight) / 2;
+            const logoConvenioY = y + (maxHeight - logoConvenioHeight) / 2;
+
+            // Adiciona as imagens com suas posições Y corrigidas e centralizadas
+            if (logoBase64 && logoPrincipalHeight > 0) {
+                doc.addImage(logoBase64, 'PNG', 15, logoPrincipalY, logoPrincipalWidth, logoPrincipalHeight);
+            }
+            if (convenioBase64 && logoConvenioHeight > 0) {
+                doc.addImage(convenioBase64, 'PNG', pageWidth - logoConvenioWidth - 15, logoConvenioY, logoConvenioWidth, logoConvenioHeight);
             }
 
-            if (convenioBase64 && convenioImgElem) {
-                const imgWidth = 30;
-                const imgHeight = convenioImgElem.naturalHeight * (imgWidth / convenioImgElem.naturalWidth);
-                const pageWidth = doc.internal.pageSize.getWidth();
-                doc.addImage(convenioBase64, 'PNG', pageWidth - imgWidth - 15, y, imgWidth, imgHeight);
-                maxHeight = Math.max(maxHeight, imgHeight);
-            }
-            
+            // Atualiza a posição y para o conteúdo abaixo do cabeçalho
             y += maxHeight > 0 ? maxHeight + 10 : 25;
 
-            const tipoSimulacao = "Portabilidade";
-            const titulo = `Simulação de ${tipoSimulacao} (${tipo})`;
+            // --- FIM DA CORREÇÃO ---
+
+            // O restante da função permanece igual...
+            const tipoSimulacaoMap = {
+                'compra.html': 'Compra de Dívida',
+                'compra-exercito.html': 'Compra de Dívida - Exército',
+                'port-auto.html': 'Portabilidade'
+            };
+            const currentPage = window.location.pathname.split('/').pop();
+            const titulo = `Simulação de ${tipoSimulacaoMap[currentPage] || 'Operação'} (${tipo})`;
+
             doc.setFontSize(18);
             doc.text(titulo, 105, y, { align: 'center' });
             y += 20;
@@ -334,10 +442,10 @@
             const mes = String(hoje.getMonth() + 1).padStart(2, '0');
             const ano = hoje.getFullYear();
             const dataFormatada = `${dia}-${mes}-${ano}`;
-            
+
             let nomeCliente = (clienteNomePDF || 'cliente').trim().toLowerCase().replace(/\s+/g, '_');
             nomeCliente = nomeCliente.replace(/[^a-z0-9_]/g, '');
-            
+
             return `${tipoSimulacao}_${nomeCliente}_${tipoPdf}_${dataFormatada}.pdf`;
         }
 
@@ -369,7 +477,7 @@
             doc.text(`Saldo Devedor Total (Aprox.): ${formatarMoeda(moedaParaFloat(document.getElementById("saldodevedor").value))}`, 15, y);
             y += 10; doc.setFontSize(14); doc.setFont('helvetica', 'bold');
             doc.text(`Valor Líquido para o Cliente: ${formatarMoeda(valorOfertaPDF)}`, 15, y);
-            
+
             doc.save(gerarNomeArquivo('portabilidade', 'cliente'));
         }
 
@@ -393,7 +501,7 @@
                 y += 6;
                 doc.setFont('helvetica', 'normal');
             }
-            
+
             y += 10; doc.setFontSize(12); doc.text("Detalhes da Operação de Portabilidade (Uso Interno)", 15, y);
             y += 8; doc.setFontSize(10);
             doc.text(`Valor da Parcela (ou Soma): ${formatarMoeda(calculoDetalhado.p)}`, 15, y);
@@ -422,9 +530,10 @@
             y += 8;
             doc.setFontSize(14); doc.setFont('helvetica', 'bold');
             doc.text(`Valor Líquido Cliente: ${formatarMoeda(calculoDetalhado.valorOfertaPDF)}`, 15, y);
-            
+
             doc.save(gerarNomeArquivo('portabilidade', 'escritorio'));
         }
     </script>
 </body>
+
 </html>
