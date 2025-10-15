@@ -366,7 +366,7 @@
             y += 10; doc.setFontSize(12); doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
             doc.text(`Valor da Parcela: ${formatarMoeda(calculoDetalhado.p)}`, 15, y); y += 6;
             // --- LINHA ADICIONADA ---
-            doc.text(`Novo Saldo Devedor (Valor Financiado): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
+            doc.text(`Novo Saldo (Valor que cai na conta do cliente): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
             doc.text(`Saldo Devedor Aprox. a Quitar: ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 6;
             doc.text(`Produto: ${formatarMoeda(calculoDetalhado.d)}`, 15, y); y += 6;
             doc.text("--------------------------------------------------", 15, y); y += 6;
