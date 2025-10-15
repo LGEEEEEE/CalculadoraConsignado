@@ -274,7 +274,8 @@
                 let comissaoG = parseFloat(document.getElementById("comissaoGerente").value.replace(",", ".")) || 0;
                 let novoS = p / coef, valorBrutoLiberado = novoS - s - d, sub = valorBrutoLiberado;
                 let htmlQuitacao = '';
-                calculoDetalhado = { p, s, d, valorBrutoLiberado, comissaoG, gerente:0, valorQuitado: 0, comissaoQuitado: 0, valorGeral:0 };
+                // --- LINHA MODIFICADA ---
+                calculoDetalhado = { p, s, d, novoS, valorBrutoLiberado, comissaoG, gerente:0, valorQuitado: 0, comissaoQuitado: 0, valorGeral:0 };
                 if (document.getElementById('quitacaoSim').checked) {
                     const valorQuitado = moedaParaFloat(document.getElementById('valorQuitado').value);
                     if (valorQuitado > 0) {
@@ -291,7 +292,16 @@
                 calculoDetalhado.valorGeral = valorGeral;
                 const resDiv = document.getElementById("resultadoParcial");
                 resDiv.style.display = "block";
-                resDiv.innerHTML = `<h2>Resultado Parcial</h2><p><strong>Parcela Total:</strong> ${formatarMoeda(p)}</p><p><strong>Saldo Devedor:</strong> ${formatarMoeda(s)}</p><p><strong>Produto:</strong> ${formatarMoeda(d)}</p><p><strong>Valor Geral Bruto:</strong> ${formatarMoeda(valorBrutoLiberado)}</p>${htmlQuitacao}<p><strong>Comissão Gerente (${comissaoG}%):</strong> ${formatarMoeda(gerente)}</p><hr><p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>`;
+                // --- BLOCO MODIFICADO ---
+                resDiv.innerHTML = `<h2>Resultado Parcial</h2>
+                                    <p><strong>Parcela Total:</strong> ${formatarMoeda(p)}</p>
+                                    <p><strong>Novo Saldo (Valor que cai na conta do cliente):</strong> ${formatarMoeda(novoS)}</p>
+                                    <p><strong>Saldo Devedor a Quitar:</strong> ${formatarMoeda(s)}</p>
+                                    <p><strong>Produto:</strong> ${formatarMoeda(d)}</p>
+                                    <p><strong>Valor Geral Bruto (Troco):</strong> ${formatarMoeda(valorBrutoLiberado)}</p>
+                                    ${htmlQuitacao}
+                                    <p><strong>Comissão Gerente (${comissaoG}%):</strong> ${formatarMoeda(gerente)}</p><hr>
+                                    <p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>`;
                 document.getElementById("calcForm2").style.display = 'block';
             });
         }
@@ -360,10 +370,12 @@
                 doc.text(`Nova Parcela: ${formatarMoeda(dadosNegativado.novaParcela)}`, 15, y);
             }
             y += 10; doc.setFontSize(12); doc.text("Resumo da Operação", 15, y); y += 8; doc.setFontSize(10);
-            doc.text(`Total Parcelas Unificadas: ${formatarMoeda(calculoDetalhado.p)}`, 15, y); y += 6;
-            doc.text(`Saldo Devedor Total (Aprox.): ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 10;
+            doc.text(`Total Parcelas Portadas: ${formatarMoeda(calculoDetalhado.p)}`, 15, y); y += 6;
+            // --- LINHA ADICIONADA ---
+            doc.text(`Valor do Novo Contrato: ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
+            doc.text(`Saldo Devedor Total a Quitar (Aprox.): ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 10;
             doc.setFontSize(14); doc.setFont('helvetica', 'bold');
-            doc.text(`Valor Líquido para o Cliente: ${formatarMoeda(valorOfertaPDF)}`, 15, y);
+            doc.text(`Valor Líquido para o Cliente (Troco): ${formatarMoeda(valorOfertaPDF)}`, 15, y);
             doc.save(gerarNomeArquivo('cliente'));
         }
         function gerarPDFEscritorio() {
@@ -377,10 +389,12 @@
             }
             y += 10; doc.setFontSize(12); doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
             doc.text(`Valor da Parcela: ${formatarMoeda(calculoDetalhado.p)}`, 15, y); y += 6;
-            doc.text(`Saldo Devedor: ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 6;
+            // --- LINHA ADICIONADA ---
+            doc.text(`Valor do Novo Contrato: ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
+            doc.text(`Saldo Devedor a Quitar: ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 6;
             doc.text(`Produto: ${formatarMoeda(calculoDetalhado.d)}`, 15, y); y += 6;
             doc.text("--------------------------------------------------", 15, y); y += 6;
-            doc.text(`Valor Geral Bruto: ${formatarMoeda(calculoDetalhado.valorBrutoLiberado)}`, 15, y); y += 6;
+            doc.text(`Valor Geral Bruto (Troco): ${formatarMoeda(calculoDetalhado.valorBrutoLiberado)}`, 15, y); y += 6;
             if (calculoDetalhado.valorQuitado > 0) {
                 doc.text(`Valor Quitado: - ${formatarMoeda(calculoDetalhado.valorQuitado)}`, 15, y); y += 6;
                 doc.text(`Comissão Quitação (10%): - ${formatarMoeda(calculoDetalhado.comissaoQuitado)}`, 15, y); y += 6;
@@ -391,7 +405,7 @@
             doc.setFont('helvetica', 'normal');
             doc.text(`Comissão Escritório: - ${formatarMoeda(calculoDetalhado.comissaoEsc)}`, 15, y); y += 8;
             doc.setFontSize(14); doc.setFont('helvetica', 'bold');
-            doc.text(`Valor Líquido Cliente: ${formatarMoeda(calculoDetalhado.valorOfertaPDF)}`, 15, y);
+            doc.text(`Valor Líquido Cliente (Troco): ${formatarMoeda(calculoDetalhado.valorOfertaPDF)}`, 15, y);
             doc.save(gerarNomeArquivo('escritorio'));
         }
     </script>

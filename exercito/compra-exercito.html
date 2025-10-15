@@ -405,14 +405,24 @@
                 const investidorR = (document.getElementById("tipoCompra").value === 'bradesco') ? 0.10 : 0.08;
                 let novoS = p / coef, sub = novoS - s - d, investidor = s * investidorR, gerente = sub * (comissaoG / 100);
                 valorGeral = sub - investidor - gerente;
-                calculoDetalhado = { p, s, d, sub, investidorR, investidor, comissaoG, gerente, valorGeral };
+                // --- LINHA MODIFICADA ---
+                calculoDetalhado = { p, s, d, novoS, sub, investidorR, investidor, comissaoG, gerente, valorGeral };
                 const resDiv = document.getElementById("resultadoParcial");
                 resDiv.style.display = "block";
                 if (sub < 0 || valorGeral < 0) {
                     resDiv.innerHTML = `<h3 class="fs-5 text-danger">Operação Não Viável</h3><p>O valor gerado é insuficiente para quitar o saldo devedor.</p>`;
                     if (document.getElementById("calcForm2")) document.getElementById("calcForm2").style.display = "none";
                 } else {
-                    resDiv.innerHTML = `<h2>Resultado Parcial</h2><p><strong>Parcela Total:</strong> ${formatarMoeda(p)}</p><p><strong>Saldo Devedor Aprox.:</strong> ${formatarMoeda(s)}</p><p><strong>Produto:</strong> ${formatarMoeda(d)}</p><p><strong>Valor Bruto Liberado:</strong> ${formatarMoeda(sub)}</p><p><strong>Comissão Investidor (${(investidorR * 100).toFixed(0)}%):</strong> ${formatarMoeda(investidor)}</p><p><strong>Comissão Gerente (${comissaoG}%):</strong> ${formatarMoeda(gerente)}</p><hr><p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>`;
+                    // --- BLOCO MODIFICADO ---
+                    resDiv.innerHTML = `<h2>Resultado Parcial</h2>
+                                        <p><strong>Parcela Total:</strong> ${formatarMoeda(p)}</p>
+                                        <p><strong>Novo Saldo (Que cai na conta do cliente):</strong> ${formatarMoeda(novoS)}</p>
+                                        <p><strong>Saldo Devedor Aprox.:</strong> ${formatarMoeda(s)}</p>
+                                        <p><strong>Produto:</strong> ${formatarMoeda(d)}</p>
+                                        <p><strong>Valor Bruto Liberado:</strong> ${formatarMoeda(sub)}</p>
+                                        <p><strong>Comissão Investidor (${(investidorR * 100).toFixed(0)}%):</strong> ${formatarMoeda(investidor)}</p>
+                                        <p><strong>Comissão Gerente (${comissaoG}%):</strong> ${formatarMoeda(gerente)}</p><hr>
+                                        <p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>`;
                     if (document.getElementById("calcForm2")) document.getElementById("calcForm2").style.display = "block";
                 }
             });
@@ -440,30 +450,21 @@
         // --- FUNÇÕES DE GERAÇÃO DE PDF (ATUALIZADAS) ---
         function gerarPDFBase(doc, tipo) {
             const getBase64Image = (img) => { if (!img) return null; const c = document.createElement("canvas"); c.width = img.width; c.height = img.height; c.getContext("2d").drawImage(img, 0, 0); return c.toDataURL("image/png"); };
-
-            // --- INÍCIO DA ATUALIZAÇÃO ---
-            // Lógica para selecionar o logo correto com base no dropdown
             const selectedEmpresa = document.getElementById('empresaSelect').value;
             let logoId;
             if (selectedEmpresa === 'polo') {
                 logoId = 'logo-polo';
             } else if (selectedEmpresa === 'estilo') {
                 logoId = 'logo-estilo';
-            } else { // Padrão é 'alianca'
+            } else { 
                 logoId = 'logo-alianca';
             }
-
-            // Pega o logo da empresa selecionada (esquerda) e o do convênio (direita)
             const logoPrincipalImg = document.getElementById(logoId);
             const convenioImgElem = document.getElementById('convenio-logo');
-
             const logoPrincipalBase64 = getBase64Image(logoPrincipalImg);
             const convenioBase64 = getBase64Image(convenioImgElem);
-
             let y = 15;
             const pageWidth = doc.internal.pageSize.getWidth();
-
-            // Lógica de alinhamento para DOIS logos (esquerda e direita)
             const logoPrincipalWidth = 40;
             const logoConvenioWidth = 30;
             const logoPrincipalHeight = logoPrincipalImg ? logoPrincipalImg.naturalHeight * (logoPrincipalWidth / logoPrincipalImg.naturalWidth) : 0;
@@ -471,33 +472,18 @@
             const maxHeight = Math.max(logoPrincipalHeight, logoConvenioHeight);
             const logoPrincipalY = y + (maxHeight - logoPrincipalHeight) / 2;
             const logoConvenioY = y + (maxHeight - logoConvenioHeight) / 2;
-
-            // Adiciona os logos da esquerda e da direita
             if (logoPrincipalBase64) doc.addImage(logoPrincipalBase64, 'PNG', 15, logoPrincipalY, logoPrincipalWidth, logoPrincipalHeight);
             if (convenioBase64) doc.addImage(convenioBase64, 'PNG', pageWidth - logoConvenioWidth - 15, logoConvenioY, logoConvenioWidth, logoConvenioHeight);
-
             y += maxHeight > 0 ? maxHeight + 10 : 25;
-            // --- FIM DA ATUALIZAÇÃO ---
-
-            // O restante da função continua igual...
-            const nomeArquivo = window.location.pathname.split('/').pop();
-            let tituloSimulacao = "Simulação";
-            if (nomeArquivo === 'compra.html') tituloSimulacao = "Simulação de Compra de Dívida";
-            if (nomeArquivo === 'compra-exercito.html') tituloSimulacao = "Simulação de Compra de Dívida - Exército";
-            if (nomeArquivo === 'port-auto.html') tituloSimulacao = "Simulação de Portabilidade";
-
             doc.setFontSize(18);
-            doc.text(`${tituloSimulacao} (${tipo})`, 105, y, { align: 'center' });
+            doc.text(`Simulação de Compra de Dívida - Exército (${tipo})`, 105, y, { align: 'center' });
             y += 20;
-
             const nomeFinal = document.getElementById('clienteNome').value.trim() || clienteNomePDF || 'Não informado';
             const cpfFinal = document.getElementById('clienteCpf').value.trim() || clienteCpfPDF || 'Não informado';
             const listaDeParcelas = parcelasManuais.length > 0 ? parcelasManuais.map(p => ({ banco: p.banco, parcela: formatarMoeda(p.parcela), saldo: formatarMoeda(p.parcela * 96 * 0.70) })) : parcelasSelecionadasPDF;
-
             doc.setFontSize(12); doc.text("Dados do Cliente", 15, y); y += 8;
             doc.setFontSize(10); doc.text(`Nome: ${nomeFinal}`, 15, y); y += 6;
             doc.text(`CPF: ${cpfFinal}`, 15, y);
-
             if (listaDeParcelas.length > 0) {
                 y += 16; doc.setFontSize(12); doc.text("Parcelas para Unificação", 15, y); y += 8; doc.setFontSize(9);
                 listaDeParcelas.forEach(p => { doc.text(`- Banco: ${p.banco} | Parcela: ${p.parcela} | Saldo Aprox.: ${p.saldo}`, 15, y); y += 6; });
@@ -511,11 +497,9 @@
             const mes = String(hoje.getMonth() + 1).padStart(2, '0');
             const ano = hoje.getFullYear();
             const dataFormatada = `${dia}-${mes}-${ano}`;
-
             const nomeManual = document.getElementById('clienteNome').value.trim();
             let nomeCliente = (nomeManual || clienteNomePDF || 'cliente').trim().toLowerCase().replace(/\s+/g, '_');
             nomeCliente = nomeCliente.replace(/[^a-z0-9_]/g, '');
-
             return `compra-exercito_${nomeCliente}_${tipoPdf}_${dataFormatada}.pdf`;
         }
 
@@ -527,10 +511,11 @@
             y += 8; doc.setFontSize(10);
             doc.text(`Total Parcelas Unificadas: ${formatarMoeda(moedaParaFloat(document.getElementById("parcela").value))}`, 15, y);
             y += 6;
-            doc.text(`Saldo Devedor Total (Aprox.): ${formatarMoeda(moedaParaFloat(document.getElementById("saldodevedor").value))}`, 15, y);
+            // --- LINHA ADICIONADA ---
+            doc.text(`Novo Saldo Devedor (Valor Financiado): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
+            doc.text(`Saldo Devedor Total a Quitar (Aprox.): ${formatarMoeda(moedaParaFloat(document.getElementById("saldodevedor").value))}`, 15, y);
             y += 10; doc.setFontSize(14); doc.setFont('helvetica', 'bold');
             doc.text(`Valor Líquido para o Cliente: ${formatarMoeda(valorOfertaPDF)}`, 15, y);
-
             doc.save(gerarNomeArquivo('cliente'));
         }
 
@@ -542,7 +527,9 @@
             y += 8; doc.setFontSize(10);
             doc.text(`Valor da Parcela: ${formatarMoeda(calculoDetalhado.p)}`, 15, y);
             y += 6;
-            doc.text(`Saldo Devedor Aprox.: ${formatarMoeda(calculoDetalhado.s)}`, 15, y);
+             // --- LINHA ADICIONADA ---
+            doc.text(`Novo Saldo Devedor (Valor Financiado): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
+            doc.text(`Saldo Devedor Aprox. a Quitar: ${formatarMoeda(calculoDetalhado.s)}`, 15, y);
             y += 6;
             doc.text(`Produto: ${formatarMoeda(calculoDetalhado.d)}`, 15, y);
             y += 6;
@@ -562,7 +549,6 @@
             y += 8;
             doc.setFontSize(14); doc.setFont('helvetica', 'bold');
             doc.text(`Valor Líquido Cliente: ${formatarMoeda(calculoDetalhado.valorOfertaPDF)}`, 15, y);
-
             doc.save(gerarNomeArquivo('escritorio'));
         }
     </script>

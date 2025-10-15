@@ -260,14 +260,24 @@
                 const investidorR = (document.getElementById("tipoCompra").value === 'bradesco') ? 0.10 : 0.08;
                 let novoS = p / coef, sub = novoS - s - d, investidor = s * investidorR, gerente = sub * (comissaoG / 100);
                 valorGeral = sub - investidor - gerente;
-                calculoDetalhado = { p, s, d, sub, investidorR, investidor, comissaoG, gerente, valorGeral };
+                // --- LINHA MODIFICADA ---
+                calculoDetalhado = { p, s, d, novoS, sub, investidorR, investidor, comissaoG, gerente, valorGeral };
                 const resDiv = document.getElementById("resultadoParcial");
                 resDiv.style.display = "block";
                 if (sub < 0 || valorGeral < 0) {
                     resDiv.innerHTML = `<h3 class="fs-5 text-danger">Operação Não Viável</h3><p>O valor gerado é insuficiente para quitar o saldo devedor.</p>`;
                     if(document.getElementById("calcForm2")) document.getElementById("calcForm2").style.display = "none";
                 } else {
-                    resDiv.innerHTML = `<h2>Resultado Parcial</h2><p><strong>Parcela Total:</strong> ${formatarMoeda(p)}</p><p><strong>Saldo Devedor Aprox.:</strong> ${formatarMoeda(s)}</p><p><strong>Produto:</strong> ${formatarMoeda(d)}</p><p><strong>Valor Bruto Liberado:</strong> ${formatarMoeda(sub)}</p><p><strong>Comissão Investidor (${(investidorR*100).toFixed(0)}%):</strong> ${formatarMoeda(investidor)}</p><p><strong>Comissão Gerente (${comissaoG}%):</strong> ${formatarMoeda(gerente)}</p><hr><p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>`;
+                    // --- BLOCO MODIFICADO ---
+                    resDiv.innerHTML = `<h2>Resultado Parcial</h2>
+                                        <p><strong>Parcela Total:</strong> ${formatarMoeda(p)}</p>
+                                        <p><strong>Novo Saldo (Valor que cai na conta do cliente):</strong> ${formatarMoeda(novoS)}</p>
+                                        <p><strong>Saldo Devedor Aprox. a Quitar:</strong> ${formatarMoeda(s)}</p>
+                                        <p><strong>Produto:</strong> ${formatarMoeda(d)}</p>
+                                        <p><strong>Valor Bruto Liberado:</strong> ${formatarMoeda(sub)}</p>
+                                        <p><strong>Comissão Investidor (${(investidorR*100).toFixed(0)}%):</strong> ${formatarMoeda(investidor)}</p>
+                                        <p><strong>Comissão Gerente (${comissaoG}%):</strong> ${formatarMoeda(gerente)}</p><hr>
+                                        <p><strong>Valor Geral Líquido:</strong> ${formatarMoeda(valorGeral)}</p>`;
                     if(document.getElementById("calcForm2")) document.getElementById("calcForm2").style.display = "block";
                 }
             });
@@ -338,7 +348,9 @@
             }
             y += 10; doc.setFontSize(12); doc.text("Resumo da Operação", 15, y); y += 8; doc.setFontSize(10);
             doc.text(`Total Parcelas Unificadas: ${formatarMoeda(calculoDetalhado.p)}`, 15, y); y += 6;
-            doc.text(`Saldo Devedor Total (Aprox.): ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 10;
+            // --- LINHA ADICIONADA ---
+            doc.text(`Novo Saldo Devedor (Valor Financiado): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
+            doc.text(`Saldo Devedor Total a Quitar (Aprox.): ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 10;
             doc.setFontSize(14); doc.setFont('helvetica', 'bold');
             doc.text(`Valor Líquido para o Cliente: ${formatarMoeda(valorOfertaPDF)}`, 15, y);
             doc.save(gerarNomeArquivo('cliente'));
@@ -354,7 +366,9 @@
             }
             y += 10; doc.setFontSize(12); doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
             doc.text(`Valor da Parcela: ${formatarMoeda(calculoDetalhado.p)}`, 15, y); y += 6;
-            doc.text(`Saldo Devedor Aprox.: ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 6;
+            // --- LINHA ADICIONADA ---
+            doc.text(`Novo Saldo Devedor (Valor Financiado): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
+            doc.text(`Saldo Devedor Aprox. a Quitar: ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 6;
             doc.text(`Produto: ${formatarMoeda(calculoDetalhado.d)}`, 15, y); y += 6;
             doc.text("--------------------------------------------------", 15, y); y += 6;
             doc.text(`Valor Bruto Liberado: ${formatarMoeda(calculoDetalhado.sub)}`, 15, y); y += 6;
