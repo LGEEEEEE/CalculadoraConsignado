@@ -148,16 +148,24 @@
 
                 <div id="manual-loan-entry" class="p-3 mb-3" style="border: 1px solid #ccc; border-radius: 8px;">
                     <h3 class="fs-5 text-center mb-3">Adicionar Contratos Manualmente</h3>
-                    <div class="row g-2 align-items-end">
-                        <div class="col-md-5">
+                    <div class="row g-2">
+                        <div class="col-md-7 mb-2">
                             <label for="manualBanco">Banco</label>
                             <input type="text" id="manualBanco" class="form-control" placeholder="Nome do Banco">
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-5 mb-2">
                             <label for="manualParcela">Valor da Parcela</label>
                             <input type="text" id="manualParcela" class="form-control" placeholder="Ex: 291,54">
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-6 col-md-4 mb-2">
+                            <label for="manualTotalParcelas">Total de Parcelas</label>
+                            <input type="number" id="manualTotalParcelas" class="form-control" placeholder="Ex: 84" value="96">
+                        </div>
+                        <div class="col-6 col-md-4 mb-2">
+                            <label for="manualParcelasPagas">Parcelas Pagas</label>
+                            <input type="number" id="manualParcelasPagas" class="form-control" placeholder="Ex: 20">
+                        </div>
+                        <div class="col-12 col-md-4 d-flex align-items-end mb-2">
                             <button type="button" id="addManualLoanBtn"
                                 class="btn btn-secondary w-100">Adicionar</button>
                         </div>
@@ -203,17 +211,14 @@
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js`;
 
-        // Variáveis Globais
         let clienteNomePDF = '', clienteCpfPDF = '', parcelasSelecionadasPDF = [], valorOfertaPDF = 0, valorGeral = 0;
         let calculoDetalhado = {};
         let parcelasManuais = [];
 
-        // Funções Utilitárias
         function moedaParaFloat(v) { return parseFloat(String(v || '').replace('R$', '').trim().replace(/\./g, "").replace(",", ".")) || 0; }
         function formatarMoeda(v) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); }
         const formatarInputMoeda = (v) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-        // --- LÓGICA PARA ALTERNAR MODO DE ENTRADA (PDF/MANUAL) ---
         document.querySelectorAll('input[name="entryMethod"]').forEach(radio => {
             radio.addEventListener('change', function () {
                 const manualContainer = document.getElementById('manualEntryContainer');
@@ -226,16 +231,14 @@
                     manualContainer.style.display = 'none';
                     pdfContainer.style.display = 'block';
 
-                    // Limpa dados manuais para não haver conflito
                     parcelasManuais = [];
                     document.getElementById('clienteNome').value = '';
                     document.getElementById('clienteCpf').value = '';
-                    renderizarListaManual(); // Limpa a lista visual e os totais
+                    renderizarListaManual();
                 }
             });
         });
 
-        // --- LÓGICA PARA LEITURA DO PDF (eConsig) ---
         document.getElementById("pdf-upload").addEventListener("change", async function (event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -298,7 +301,7 @@
                                 const saldoAproximado = valorParcelaNum * parcelasRestantes * 0.70;
                                 const itemDiv = document.createElement('div');
                                 itemDiv.className = 'loan-list-item';
-                                itemDiv.innerHTML = `<div class="form-check"><input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${saldoAproximado}" data-parcela="${valorParcelaNum}" data-banco="${nomeBanco}" id="loan-${index}"><label class="form-check-label" for="loan-${index}"><strong>${nomeBanco}</strong><br><small>Saldo Aprox.: ${formatarMoeda(saldoAproximado)} | Parcela: ${formatarMoeda(valorParcelaNum)} | Status: ${pagas} de ${total}</small></label></div>`;
+                                itemDiv.innerHTML = `<div class="form-check"><input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${saldoAproximado}" data-parcela="${valorParcelaNum}" data-banco="${nomeBanco}" data-status="${pagas} de ${total}" id="loan-${index}"><label class="form-check-label" for="loan-${index}"><strong>${nomeBanco}</strong><br><small>Saldo Aprox.: ${formatarMoeda(saldoAproximado)} | Parcela: ${formatarMoeda(valorParcelaNum)} | Status: ${pagas} de ${total}</small></label></div>`;
                                 listaDiv.appendChild(itemDiv);
                             }
                         }
@@ -325,7 +328,6 @@
             fileReader.readAsArrayBuffer(file);
         });
 
-        // --- LÓGICA PARA UNIFICAR PARCELAS DO PDF ---
         if (document.getElementById("unificarBtnPdf")) {
             document.getElementById("unificarBtnPdf").addEventListener("click", function () {
                 let totalSaldo = 0, totalParcela = 0;
@@ -336,7 +338,12 @@
                 checkboxes.forEach(cb => {
                     totalSaldo += parseFloat(cb.dataset.saldo);
                     totalParcela += parseFloat(cb.dataset.parcela);
-                    parcelasSelecionadasPDF.push({ banco: cb.dataset.banco, parcela: formatarMoeda(parseFloat(cb.dataset.parcela)), saldo: formatarMoeda(parseFloat(cb.dataset.saldo)) });
+                    parcelasSelecionadasPDF.push({
+                        banco: cb.dataset.banco,
+                        parcela: formatarMoeda(parseFloat(cb.dataset.parcela)),
+                        saldo: formatarMoeda(parseFloat(cb.dataset.saldo)),
+                        status: cb.dataset.status
+                    });
                 });
 
                 document.getElementById("parcela").value = formatarInputMoeda(totalParcela);
@@ -345,13 +352,15 @@
             });
         }
 
-        // --- LÓGICA PARA ENTRADA MANUAL DE PARCELAS ---
         function atualizarTotaisManuais() {
             let totalParcela = 0;
             let totalSaldo = 0;
             parcelasManuais.forEach(p => {
                 totalParcela += p.parcela;
-                totalSaldo += p.parcela * 96 * 0.70; // Estimativa de saldo
+                const parcelasRestantes = (p.totalParcelas || 0) - (p.parcelasPagas || 0);
+                if(parcelasRestantes > 0){
+                    totalSaldo += p.parcela * parcelasRestantes * 0.70;
+                }
             });
             document.getElementById("parcela").value = formatarInputMoeda(totalParcela);
             document.getElementById("saldodevedor").value = formatarInputMoeda(totalSaldo);
@@ -366,7 +375,7 @@
                 parcelasManuais.forEach((p, index) => {
                     const li = document.createElement('li');
                     li.className = 'list-group-item d-flex justify-content-between align-items-center';
-                    li.innerHTML = `<span><strong>${p.banco}</strong> - ${formatarMoeda(p.parcela)}</span>
+                    li.innerHTML = `<div><strong>${p.banco}</strong> - ${formatarMoeda(p.parcela)}<br><small class="text-muted">Status: ${p.parcelasPagas} de ${p.totalParcelas}</small></div>
                                 <button type="button" class="btn btn-danger btn-sm" onclick="removerParcelaManual(${index})">Remover</button>`;
                     ul.appendChild(li);
                 });
@@ -383,17 +392,25 @@
         document.getElementById('addManualLoanBtn').addEventListener('click', function () {
             const banco = document.getElementById('manualBanco').value;
             const parcelaValor = moedaParaFloat(document.getElementById('manualParcela').value);
-            if (banco && parcelaValor > 0) {
-                parcelasManuais.push({ banco: banco, parcela: parcelaValor });
+            const totalParcelas = parseInt(document.getElementById('manualTotalParcelas').value, 10);
+            const parcelasPagas = parseInt(document.getElementById('manualParcelasPagas').value, 10);
+            
+            if (banco && parcelaValor > 0 && totalParcelas > 0 && parcelasPagas >= 0) {
+                 if (parcelasPagas > totalParcelas) {
+                    alert("O número de parcelas pagas não pode ser maior que o total de parcelas.");
+                    return;
+                }
+                parcelasManuais.push({ banco, parcela: parcelaValor, totalParcelas, parcelasPagas });
                 document.getElementById('manualBanco').value = '';
                 document.getElementById('manualParcela').value = '';
+                document.getElementById('manualTotalParcelas').value = '';
+                document.getElementById('manualParcelasPagas').value = '';
                 renderizarListaManual();
             } else {
-                alert('Por favor, preencha o nome do banco e um valor de parcela válido.');
+                alert('Por favor, preencha todos os campos do contrato corretamente.');
             }
         });
 
-        // --- LÓGICA DOS FORMULÁRIOS DE CÁLCULO ---
         if (document.getElementById("calcForm1")) {
             document.getElementById("calcForm1").addEventListener("submit", function (e) {
                 e.preventDefault();
@@ -405,7 +422,6 @@
                 const investidorR = (document.getElementById("tipoCompra").value === 'bradesco') ? 0.10 : 0.08;
                 let novoS = p / coef, sub = novoS - s - d, investidor = s * investidorR, gerente = sub * (comissaoG / 100);
                 valorGeral = sub - investidor - gerente;
-                // --- LINHA MODIFICADA ---
                 calculoDetalhado = { p, s, d, novoS, sub, investidorR, investidor, comissaoG, gerente, valorGeral };
                 const resDiv = document.getElementById("resultadoParcial");
                 resDiv.style.display = "block";
@@ -413,7 +429,6 @@
                     resDiv.innerHTML = `<h3 class="fs-5 text-danger">Operação Não Viável</h3><p>O valor gerado é insuficiente para quitar o saldo devedor.</p>`;
                     if (document.getElementById("calcForm2")) document.getElementById("calcForm2").style.display = "none";
                 } else {
-                    // --- BLOCO MODIFICADO ---
                     resDiv.innerHTML = `<h2>Resultado Parcial</h2>
                                         <p><strong>Parcela Total:</strong> ${formatarMoeda(p)}</p>
                                         <p><strong>Novo Saldo (Que cai na conta do cliente):</strong> ${formatarMoeda(novoS)}</p>
@@ -447,7 +462,6 @@
             });
         }
 
-        // --- FUNÇÕES DE GERAÇÃO DE PDF (ATUALIZADAS) ---
         function gerarPDFBase(doc, tipo) {
             const getBase64Image = (img) => { if (!img) return null; const c = document.createElement("canvas"); c.width = img.width; c.height = img.height; c.getContext("2d").drawImage(img, 0, 0); return c.toDataURL("image/png"); };
             const selectedEmpresa = document.getElementById('empresaSelect').value;
@@ -480,13 +494,24 @@
             y += 20;
             const nomeFinal = document.getElementById('clienteNome').value.trim() || clienteNomePDF || 'Não informado';
             const cpfFinal = document.getElementById('clienteCpf').value.trim() || clienteCpfPDF || 'Não informado';
-            const listaDeParcelas = parcelasManuais.length > 0 ? parcelasManuais.map(p => ({ banco: p.banco, parcela: formatarMoeda(p.parcela), saldo: formatarMoeda(p.parcela * 96 * 0.70) })) : parcelasSelecionadasPDF;
+            const listaDeParcelas = parcelasManuais.length > 0 ? parcelasManuais.map(p => {
+                const parcelasRestantes = (p.totalParcelas || 0) - (p.parcelasPagas || 0);
+                const saldoManual = parcelasRestantes > 0 ? p.parcela * parcelasRestantes * 0.70 : 0;
+                return {
+                    banco: p.banco,
+                    parcela: formatarMoeda(p.parcela),
+                    saldo: formatarMoeda(saldoManual),
+                    status: `${p.parcelasPagas || 0} de ${p.totalParcelas || 0}`
+                };
+            }) : parcelasSelecionadasPDF;
             doc.setFontSize(12); doc.text("Dados do Cliente", 15, y); y += 8;
             doc.setFontSize(10); doc.text(`Nome: ${nomeFinal}`, 15, y); y += 6;
             doc.text(`CPF: ${cpfFinal}`, 15, y);
             if (listaDeParcelas.length > 0) {
                 y += 16; doc.setFontSize(12); doc.text("Parcelas para Unificação", 15, y); y += 8; doc.setFontSize(9);
-                listaDeParcelas.forEach(p => { doc.text(`- Banco: ${p.banco} | Parcela: ${p.parcela} | Saldo Aprox.: ${p.saldo}`, 15, y); y += 6; });
+                listaDeParcelas.forEach(p => { 
+                    doc.text(`- Banco: ${p.banco} | Parcela: ${p.parcela} | Saldo Aprox.: ${p.saldo} | Status: ${p.status}`, 15, y); 
+                    y += 6; });
             }
             return y;
         }
@@ -511,7 +536,7 @@
             y += 8; doc.setFontSize(10);
             doc.text(`Total Parcelas Unificadas: ${formatarMoeda(moedaParaFloat(document.getElementById("parcela").value))}`, 15, y);
             y += 6;
-            // --- LINHA ADICIONADA ---
+            doc.text(`Novo Saldo (Que cai na conta do cliente): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
             doc.text(`Saldo Devedor Total a Quitar (Aprox.): ${formatarMoeda(moedaParaFloat(document.getElementById("saldodevedor").value))}`, 15, y);
             y += 10; doc.setFontSize(14); doc.setFont('helvetica', 'bold');
             doc.text(`Valor Líquido para o Cliente: ${formatarMoeda(valorOfertaPDF)}`, 15, y);
@@ -526,7 +551,6 @@
             y += 8; doc.setFontSize(10);
             doc.text(`Valor da Parcela: ${formatarMoeda(calculoDetalhado.p)}`, 15, y);
             y += 6;
-             // --- LINHA ADICIONADA ---
             doc.text(`Novo Saldo (Valor que cai na conta do cliente): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
             doc.text(`Saldo Devedor Aprox. a Quitar: ${formatarMoeda(calculoDetalhado.s)}`, 15, y);
             y += 6;
