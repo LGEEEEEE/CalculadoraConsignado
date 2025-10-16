@@ -272,7 +272,7 @@
                         </div>
                         <h5>Detalhamento:</h5>
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item d-flex justify-content-between"><span>Novo Saldo (creditado):</span> <strong>${formatarMoeda(novoS)}</strong></li>
+                            <li class="list-group-item d-flex justify-content-between"><span>Novo Saldo (creditado na conta do cliente):</span> <strong>${formatarMoeda(novoS)}</strong></li>
                             <li class="list-group-item d-flex justify-content-between"><span>(-) Saldo Devedor a Quitar:</span> <span class="text-danger">- ${formatarMoeda(s)}</span></li>
                             <li class="list-group-item d-flex justify-content-between"><span>(-) Produto:</span> <span class="text-danger">- ${formatarMoeda(d)}</span></li>
                             <li class="list-group-item d-flex justify-content-between"><span>(=) Valor Bruto Liberado:</span> <strong>${formatarMoeda(sub)}</strong></li>
@@ -345,8 +345,7 @@
             }
             y += 10; doc.setFontSize(12); doc.text("Resumo da Operação", 15, y); y += 8; doc.setFontSize(10);
             doc.text(`Total Parcelas Unificadas: ${formatarMoeda(calculoDetalhado.p)}`, 15, y); y += 6;
-            doc.text(`Novo Saldo (Valor creditado): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
-            doc.text(`Saldo Devedor Total a Quitar (Aprox.): ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 10;
+                        doc.text(`Saldo Devedor Total a Quitar (Aprox.): ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 10;
             doc.setFontSize(14); doc.setFont('helvetica', 'bold');
             doc.text(`Valor Líquido para o Cliente: ${formatarMoeda(calculoDetalhado.valorOfertaFinal)}`, 15, y);
             doc.save(gerarNomeArquivo('cliente'));
@@ -362,7 +361,7 @@
             }
             y += 10; doc.setFontSize(12); doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
             doc.text(`Valor da Parcela: ${formatarMoeda(calculoDetalhado.p)}`, 15, y); y += 6;
-            doc.text(`Novo Saldo (creditado): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
+            doc.text(`Novo Saldo (creditado na conta do cliente): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
             doc.text(`Saldo Devedor a Quitar: ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 6;
             doc.text(`Produto: ${formatarMoeda(calculoDetalhado.d)}`, 15, y); y += 6;
             doc.text("--------------------------------------------------", 15, y); y += 6;
