@@ -35,7 +35,7 @@
     </div>
 
     <div class="container">
-        <h1 class="text-center h3 mb-4">Calculadora de Portabilidade (Exercito)</h1>
+        <h1 class="text-center h3 mb-4">Calculadora de Portabilidade (Exército)</h1>
        
         <div id="infoNegativado" class="alert alert-warning" style="display:none;"></div>
 
@@ -146,10 +146,7 @@
             if (!file) return;
             clienteNomePDF = ''; clienteCpfPDF = '';
             document.getElementById("loading").classList.remove('d-none'); document.getElementById("loading").classList.add('d-flex'); document.getElementById('upload-text').style.display = 'none';
-            const listaEmprestimosEl = document.getElementById("listaEmprestimos");
-            const unificarContainerEl = document.getElementById("unificar-container-pdf");
-            if (listaEmprestimosEl) listaEmprestimosEl.style.display = "none";
-            if (unificarContainerEl) unificarContainerEl.style.display = "none";
+            
             const fileReader = new FileReader();
             fileReader.onload = async function () {
                 try {
@@ -168,12 +165,8 @@
                     const nomeMatch = text.match(nomeRegex);
                     if (nomeMatch) { clienteNomePDF = `${nomeMatch[1].trim()} ${nomeMatch[2].trim()}`; }
                     
-                    let htmlCliente = '';
-                    if (clienteNomePDF || clienteCpfPDF) {
-                        htmlCliente = `<div id="infoCliente" class="mb-3 p-2 border rounded"><p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF}</p><p class="mb-0"><strong>CPF:</strong> ${clienteCpfPDF}</p></div>`;
-                    }
                     const listaDiv = document.getElementById("listaEmprestimos");
-                    listaDiv.innerHTML = `${htmlCliente}<div class="form-check mb-2 border-bottom pb-2"><input class="form-check-input" type="checkbox" id="selectAllCheckbox"><label class="form-check-label fw-bold" for="selectAllCheckbox">Selecionar Todos</label></div>`;
+                    listaDiv.innerHTML = `<div id="infoCliente" class="mb-3 p-2 border rounded"><p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF}</p><p class="mb-0"><strong>CPF:</strong> ${clienteCpfPDF}</p></div><div class="form-check mb-2 border-bottom pb-2"><input class="form-check-input" type="checkbox" id="selectAllCheckbox"><label class="form-check-label fw-bold" for="selectAllCheckbox">Selecionar Todos</label></div>`;
                     
                     const blocos = cleanText.split(/\n(?=\d{3}\s*-\s*)/);
                     let loansFound = 0;
@@ -203,24 +196,28 @@
                     });
                     
                     if (loansFound === 0) {
-                        showToast("AVISO: Nenhum contrato 'Em Andamento' encontrado no formato esperado.", 'warning');
-                        if (htmlCliente && clienteNomePDF) listaDiv.style.display = "block";
+                        showToast("AVISO: Nenhum contrato 'Em Andamento' foi encontrado no formato esperado.", 'warning');
+                        if (clienteNomePDF || clienteCpfPDF) {
+                            listaDiv.style.display = "block";
+                        }
                         return;
                     }
                     
                     document.getElementById('selectAllCheckbox').addEventListener('change', (e) => document.querySelectorAll('.loan-checkbox').forEach(cb => cb.checked = e.target.checked));
                     
-                    if (unificarContainerEl) {
-                        listaDiv.style.display = "block";
-                        unificarContainerEl.style.display = "block";
-                    }
+                    // CORREÇÃO APLICADA AQUI
+                    listaDiv.style.display = "block";
+                    document.getElementById("unificarBtnPdf").style.display = "block";
+                    
                     showToast("Extrato lido com sucesso!", "success");
 
                 } catch (error) {
                     console.error("Erro ao processar o PDF:", error);
                     showToast("Ocorreu um erro ao ler o arquivo PDF.", "danger");
                 } finally {
-                    document.getElementById("loading").classList.add('d-none'); document.getElementById("loading").classList.remove('d-flex'); document.getElementById('upload-text').style.display = 'block';
+                    document.getElementById("loading").classList.add('d-none');
+                    document.getElementById("loading").classList.remove('d-flex');
+                    document.getElementById('upload-text').style.display = 'block';
                 }
             };
             fileReader.readAsArrayBuffer(file);
@@ -292,7 +289,7 @@
             e.preventDefault();
             calculoDetalhado = {};
             const p = moedaParaFloat(document.getElementById("parcela").value), s = moedaParaFloat(document.getElementById("saldodevedor").value), d = moedaParaFloat(document.getElementById("desconto").value);
-            const coef = parseFloat(document.getElementById("coeficiente").value.replace(",", ".")) || 0.02; // Coeficiente de portabilidade do exército
+            const coef = parseFloat(document.getElementById("coeficiente").value.replace(",", ".")) || 0.02;
             const comissaoG = parseFloat(document.getElementById("comissaoGerente").value.replace(",", ".")) || 0;
             const comissaoEsc = moedaParaFloat(document.getElementById("comissaoesc").value);
 
