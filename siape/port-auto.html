@@ -419,7 +419,6 @@
             }
             y += 10; doc.setFontSize(12); doc.text("Resumo da Operação", 15, y); y += 8; doc.setFontSize(10);
             doc.text(`Total Parcelas Portadas: ${formatarMoeda(calculoDetalhado.p)}`, 15, y); y += 6;
-            doc.text(`Novo Saldo (Valor que cai na conta do cliente): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
             doc.text(`Saldo Devedor Total a Quitar (Aprox.): ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 10;
             doc.setFontSize(14); doc.setFont('helvetica', 'bold');
             doc.text(`Valor Líquido para o Cliente (Troco): ${formatarMoeda(valorOfertaPDF)}`, 15, y);
