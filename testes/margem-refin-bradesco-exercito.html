@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
-    <title>Calculadora de Portabilidade - SIAPE</title>
+    <title>Calculadora de Margem + Refin Bradesco - Exercito</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="../icone.ico" type="image/x-icon">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -21,22 +22,21 @@
         .logos { display: none; }
     </style>
 </head>
+
 <body>
     <a href="/testes/testes.html" class="btn btn-secondary btn-voltar">← Voltar</a>
     <div class="toast-container" id="toast-container"></div>
 
     <div class="logos">
-        <img src="../images/logoheader.png" id="logo-alianca">
-        <img src="../images/polo-promotora.png" id="logo-polo">
-        <img src="../images/estilo-promotora.png" id="logo-estilo">
-        <img src="../images/siape.png" id="convenio-logo">
+        <img src="../images/logoheader.png" id="logo-alianca" class="mx-auto">
+        <img src="../images/polo-promotora.png" id="logo-polo" class="mx-auto">
+        <img src="../images/estilo-promotora.png" id="logo-estilo" class="mx-auto">
+        <img src="../images/exercito.png" id="convenio-logo" class="mx-auto"> 
     </div>
 
     <div class="container">
-        <div class="text-center mb-4">
-            <h1 class="h3">Calculadora de Portabilidade (SIAPE)</h1>
-        </div>
-        
+        <h1 class="text-center h3 mb-4">Calculadora de Margem + Refin Bradesco (Exército)</h1>
+       
         <div id="infoNegativado" class="alert alert-warning" style="display:none;"></div>
 
         <form id="calcForm">
@@ -52,7 +52,7 @@
                         </select>
                     </div>
                     <ul class="nav nav-tabs" id="entryTab" role="tablist">
-                        <li class="nav-item" role="presentation"><button class="nav-link active" id="pdf-tab" data-bs-toggle="tab" data-bs-target="#pdf-tab-pane" type="button" role="tab">Carregar Extrato PDF</button></li>
+                        <li class="nav-item" role="presentation"><button class="nav-link active" id="pdf-tab" data-bs-toggle="tab" data-bs-target="#pdf-tab-pane" type="button" role="tab">Carregar Extrato (eConsig)</button></li>
                         <li class="nav-item" role="presentation"><button class="nav-link" id="manual-tab" data-bs-toggle="tab" data-bs-target="#manual-tab-pane" type="button" role="tab">Inserir Manualmente</button></li>
                     </ul>
                     <div class="tab-content" id="entryTabContent">
@@ -79,7 +79,7 @@
                         <div class="col-md-12 mb-3"><label class="form-label">Houve quitação de algum valor?</label><div><div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="quitacao" id="quitacaoNao" value="nao" checked><label class="form-check-label" for="quitacaoNao">Não</label></div><div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="quitacao" id="quitacaoSim" value="sim"><label class="form-check-label" for="quitacaoSim">Sim</label></div></div></div>
                         <div id="quitadoContainer" style="display:none;" class="col-md-12 mb-3"><label for="valorQuitado" class="form-label">Valor a ser quitado</label><input type="text" id="valorQuitado" class="form-control" placeholder="Ex: 5.000,00"></div>
                         <hr class="my-3">
-                        <div class="col-md-4 mb-3"><label for="coeficiente" class="form-label">Coeficiente</label><input type="text" id="coeficiente" class="form-control" value="0.0190"></div>
+                        <div class="col-md-4 mb-3"><label for="coeficiente" class="form-label">Coeficiente</label><input type="text" id="coeficiente" class="form-control" value="0.02"></div>
                         <div class="col-md-4 mb-3"><label for="comissaoGerente" class="form-label">Comissão Gerente (%)</label><input type="text" id="comissaoGerente" class="form-control" value="15"></div>
                         <div class="col-md-4 mb-3"><label for="comissaoesc" class="form-label">Comissão Escritório</label><input type="text" id="comissaoesc" class="form-control" required placeholder="Ex: 500,00" value="100"></div>
                     </div>
@@ -142,7 +142,9 @@
         document.querySelectorAll('input[name="quitacao"]').forEach(r => r.addEventListener('change', function() { document.getElementById('quitadoContainer').style.display = this.value === 'sim' ? 'block' : 'none'; if(this.value === 'nao') document.getElementById('valorQuitado').value = ''; }));
 
         document.getElementById("pdf-upload").addEventListener("change", async function (event) {
-            const file = event.target.files[0]; if (!file) return;
+            const file = event.target.files[0];
+            if (!file) return;
+            clienteNomePDF = ''; clienteCpfPDF = '';
             document.getElementById("loading").classList.remove('d-none'); document.getElementById("loading").classList.add('d-flex'); document.getElementById('upload-text').style.display = 'none';
             
             const fileReader = new FileReader();
@@ -151,35 +153,72 @@
                     const typedarray = new Uint8Array(this.result);
                     const pdf = await pdfjsLib.getDocument(typedarray).promise;
                     let text = '';
-                    for (let i = 1; i <= pdf.numPages; i++) { text += (await (await pdf.getPage(i)).getTextContent()).items.map(item => item.str).join('\n'); }
-                    
-                    const headerRegex = /Órgão\nCPF\nMatrícula\nNome\n[^\n]+\n([^\n]+)\n[^\n]+\n([^\n]+)/;
-                    const headerMatch = text.match(headerRegex);
-                    if (headerMatch) { clienteCpfPDF = headerMatch[1].trim(); clienteNomePDF = headerMatch[2].trim(); }
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const textContent = await page.getTextContent();
+                        text += textContent.items.map(item => item.str).join('\n') + '\n\n';
+                    }
+                    let cleanText = text.replace(/--- FIM DA PÁGINA \d+ ---/g, '').replace(/Consignatária\n\s*▴\s*▾[\s\S]+?Situação\n\s*▴\s*▾/g, '');
+                    const cpfRegex = /(\d{3}\.\d{3}\.\d{3}-\d{2})/;
+                    const nomeRegex = /\d{9}\s*-\s*\d{3}\.\d{3}\.\d{3}-\d{2}\s*-\s*([A-ZÀ-Ú ]+)\n([A-ZÀ-Ú ]+)/;
+                    clienteCpfPDF = (text.match(cpfRegex) || [])[0] || '';
+                    const nomeMatch = text.match(nomeRegex);
+                    if (nomeMatch) { clienteNomePDF = `${nomeMatch[1].trim()} ${nomeMatch[2].trim()}`; }
                     
                     const listaDiv = document.getElementById("listaEmprestimos");
                     listaDiv.innerHTML = `<div id="infoCliente" class="mb-3 p-2 border rounded"><p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF}</p><p class="mb-0"><strong>CPF:</strong> ${clienteCpfPDF}</p></div><div class="form-check mb-2 border-bottom pb-2"><input class="form-check-input" type="checkbox" id="selectAllCheckbox"><label class="form-check-label fw-bold" for="selectAllCheckbox">Selecionar Todos</label></div>`;
                     
-                    const rgxEmprestimos = /(EMPREST[^\n]+)\n(?:.|\n)*?(R\$\s*[\d\.,]+)\n(\d{2,3}\/\d{2,3})/g;
-                    let matches = [...text.matchAll(rgxEmprestimos)];
-                    matches.forEach((match, index) => {
-                        const [_, nomeBanco, valor, parcelasStr] = match;
-                        const cleanNomeBanco = nomeBanco.replace(/^\d{5}\s*-\s*/, '').trim();
-                        const [pagas, total] = parcelasStr.split('/');
-                        const valorParcelaNum = moedaParaFloat(valor);
-                        const saldoAproximado = valorParcelaNum * (parseInt(total, 10) - parseInt(pagas, 10)) * 0.70;
-                        const itemDiv = document.createElement('div');
-                        itemDiv.className = 'form-check border-bottom py-2';
-                        itemDiv.innerHTML = `<input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${saldoAproximado}" data-parcela="${valorParcelaNum}" data-banco="${cleanNomeBanco}" data-status="${pagas} de ${total}" id="loan-${index}"><label class="form-check-label" for="loan-${index}"><strong>${cleanNomeBanco}</strong><br><small>Saldo Aprox.: ${formatarMoeda(saldoAproximado)} | Parcela: ${formatarMoeda(valorParcelaNum)} | Status: ${pagas} de ${total}</small></label>`;
-                        listaDiv.appendChild(itemDiv);
+                    const blocos = cleanText.split(/\n(?=\d{3}\s*-\s*)/);
+                    let loansFound = 0;
+                    blocos.forEach((bloco, index) => {
+                        if (bloco.includes('EMPRÉSTIMO') && bloco.includes('Em\nAndamento')) {
+                            const bancoMatch = bloco.match(/^(\d{3}\s*-\s*[\s\S]+?)(?=\n\d{7}\n)/);
+                            const valorMatch = bloco.match(/R\$\s*[\d.,]+/);
+                            const parcelasMatch = /(\d+)\s*\n\s*(\d+)\s*\n\s*Em\nAndamento/;
+                            const parcelasResult = bloco.match(parcelasMatch);
+                            if (bancoMatch && valorMatch && parcelasResult) {
+                                const nomeBanco = bancoMatch[1].replace(/\n/g, ' ').trim();
+                                const valor = valorMatch[0];
+                                const total = parcelasResult[1];
+                                const pagas = parcelasResult[2];
+                                if (total === 'Indet.') return;
+                                loansFound++;
+                                const valorParcelaNum = moedaParaFloat(valor);
+                                const parcelasRestantes = parseInt(total, 10) - parseInt(pagas, 10);
+                                if (parcelasRestantes < 0) return;
+                                const saldoAproximado = valorParcelaNum * parcelasRestantes * 0.70;
+                                const itemDiv = document.createElement('div');
+                                itemDiv.className = 'form-check border-bottom py-2';
+                                itemDiv.innerHTML = `<input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${saldoAproximado}" data-parcela="${valorParcelaNum}" data-banco="${nomeBanco}" data-status="${pagas} de ${total}" id="loan-${index}"><label class="form-check-label" for="loan-${index}"><strong>${nomeBanco}</strong><br><small>Saldo Aprox.: ${formatarMoeda(saldoAproximado)} | Parcela: ${formatarMoeda(valorParcelaNum)} | Status: ${pagas} de ${total}</small></label>`;
+                                listaDiv.appendChild(itemDiv);
+                            }
+                        }
                     });
                     
+                    if (loansFound === 0) {
+                        showToast("AVISO: Nenhum contrato 'Em Andamento' foi encontrado no formato esperado.", 'warning');
+                        if (clienteNomePDF || clienteCpfPDF) {
+                            listaDiv.style.display = "block";
+                        }
+                        return;
+                    }
+                    
                     document.getElementById('selectAllCheckbox').addEventListener('change', (e) => document.querySelectorAll('.loan-checkbox').forEach(cb => cb.checked = e.target.checked));
+                    
+                    // CORREÇÃO APLICADA AQUI
                     listaDiv.style.display = "block";
                     document.getElementById("unificarBtnPdf").style.display = "block";
+                    
                     showToast("Extrato lido com sucesso!", "success");
-                } catch (error) { console.error("Erro PDF:", error); showToast("Erro ao ler o PDF.", "danger"); }
-                finally { document.getElementById("loading").classList.add('d-none'); document.getElementById("loading").classList.remove('d-flex'); document.getElementById('upload-text').style.display = 'block'; }
+
+                } catch (error) {
+                    console.error("Erro ao processar o PDF:", error);
+                    showToast("Ocorreu um erro ao ler o arquivo PDF.", "danger");
+                } finally {
+                    document.getElementById("loading").classList.add('d-none');
+                    document.getElementById("loading").classList.remove('d-flex');
+                    document.getElementById('upload-text').style.display = 'block';
+                }
             };
             fileReader.readAsArrayBuffer(file);
         });
@@ -250,7 +289,7 @@
             e.preventDefault();
             calculoDetalhado = {};
             const p = moedaParaFloat(document.getElementById("parcela").value), s = moedaParaFloat(document.getElementById("saldodevedor").value), d = moedaParaFloat(document.getElementById("desconto").value);
-            const coef = parseFloat(document.getElementById("coeficiente").value.replace(",", ".")) || 0.0190;
+            const coef = parseFloat(document.getElementById("coeficiente").value.replace(",", ".")) || 0.02;
             const comissaoG = parseFloat(document.getElementById("comissaoGerente").value.replace(",", ".")) || 0;
             const comissaoEsc = moedaParaFloat(document.getElementById("comissaoesc").value);
 
@@ -321,7 +360,7 @@
             if (logoPrincipalBase64) doc.addImage(logoPrincipalBase64, 'PNG', 15, y + (maxHeight - logoPrincipalHeight) / 2, logoPrincipalWidth, logoPrincipalHeight);
             if (convenioBase64) doc.addImage(convenioBase64, 'PNG', pageWidth - logoConvenioWidth - 15, y + (maxHeight - logoConvenioHeight) / 2, logoConvenioWidth, logoConvenioHeight);
             y += maxHeight > 0 ? maxHeight + 10 : 25;
-            doc.setFontSize(18); doc.text(`Simulação de Portabilidade (${tipo})`, 105, y, { align: 'center' }); y += 20;
+            doc.setFontSize(18); doc.text(`Simulação de Margem + Refin Bradesco - Exército (${tipo})`, 105, y, { align: 'center' }); y += 20;
             const nomeFinal = document.getElementById('clienteNome').value.trim() || clienteNomePDF || 'Não informado';
             const cpfFinal = document.getElementById('clienteCpf').value.trim() || clienteCpfPDF || 'Não informado';
             const isManualTabActive = document.getElementById('manual-tab').classList.contains('active');
@@ -342,7 +381,7 @@
             const dataFormatada = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
             const nomeManual = document.getElementById('clienteNome').value.trim();
             let nomeCliente = (nomeManual || clienteNomePDF || 'cliente').trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-            return `portabilidade_${nomeCliente}_${tipoPdf}_${dataFormatada}.pdf`;
+            return `margem_refin_bradesco_exercito_${nomeCliente}_${tipoPdf}_${dataFormatada}.pdf`;
         }
         function gerarPDFCliente() {
             const { jsPDF } = window.jspdf; const doc = new jsPDF();
@@ -354,7 +393,7 @@
                 doc.text(`Nova Parcela: ${formatarMoeda(dadosNegativado.novaParcela)}`, 15, y);
             }
             y += 10; doc.setFontSize(12); doc.text("Resumo da Operação", 15, y); y += 8; doc.setFontSize(10);
-            doc.text(`Total Parcelas Portadas: ${formatarMoeda(calculoDetalhado.p)}`, 15, y); y += 6;
+            doc.text(`Total Parcelas Selecionadas: ${formatarMoeda(calculoDetalhado.p)}`, 15, y); y += 6;
             doc.text(`Saldo Devedor Total a Quitar (Aprox.): ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 10;
             doc.setFontSize(14); doc.setFont('helvetica', 'bold');
             doc.text(`Valor Líquido para o Cliente (Troco): ${formatarMoeda(calculoDetalhado.valorOfertaFinal)}`, 15, y);
@@ -371,7 +410,7 @@
             }
             y += 10; doc.setFontSize(12); doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
             doc.text(`Valor da Parcela: ${formatarMoeda(calculoDetalhado.p)}`, 15, y); y += 6;
-            doc.text(`Novo Saldo (Valor creditado na conta do cliente): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
+            doc.text(`Novo Saldo (Valor creditado): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
             doc.text(`Saldo Devedor a Quitar: ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 6;
             doc.text(`Produto: ${formatarMoeda(calculoDetalhado.d)}`, 15, y); y += 6;
             doc.text("--------------------------------------------------", 15, y); y += 6;
@@ -391,4 +430,5 @@
         }
     </script>
 </body>
+
 </html>
