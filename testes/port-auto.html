@@ -283,11 +283,11 @@
                         </div>
                         <h5>Detalhamento:</h5>
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item d-flex justify-content-between"><span>Novo Saldo (creditado na conta do cliente):</span> <strong>${formatarMoeda(novoS)}</strong></li>
+                            <li class="list-group-item d-flex justify-content-between"><span>Saldo Bruto Total (creditado na conta do cliente):</span> <strong>${formatarMoeda(novoS)}</strong></li>
+                            <li class="list-group-item d-flex justify-content-between"><span>(=) Valor Bruto Liberado:</span> <strong>${formatarMoeda(valorBrutoLiberado)}</strong></li>
                             <li class="list-group-item d-flex justify-content-between"><span>(-) Saldo Devedor a Quitar:</span> <span class="text-danger">- ${formatarMoeda(s)}</span></li>
                             <li class="list-group-item d-flex justify-content-between"><span>(-) Produto:</span> <span class="text-danger">- ${formatarMoeda(d)}</span></li>
                             ${valorQuitado > 0 ? `<li class="list-group-item d-flex justify-content-between"><span>(-) Valor Quitado:</span> <span class="text-danger">- ${formatarMoeda(valorQuitado)}</span></li><li class="list-group-item d-flex justify-content-between"><span>(-) Comissão Quitação(10%):</span> <span class="text-danger">- ${formatarMoeda(comissaoQuitado)}</span></li>` : ''}
-                            <li class="list-group-item d-flex justify-content-between"><span>(=) Valor Bruto Liberado:</span> <strong>${formatarMoeda(valorBrutoLiberado)}</strong></li>
                             <li class="list-group-item d-flex justify-content-between"><span>(-) Comissão Gerente (${comissaoG}%):</span> <span class="text-danger">- ${formatarMoeda(gerente)}</span></li>
                             <li class="list-group-item d-flex justify-content-between"><span>(=) Valor Geral Líquido:</span> <strong>${formatarMoeda(valorGeral)}</strong></li>
                             <li class="list-group-item d-flex justify-content-between"><span>(-) Comissão Escritório:</span> <span class="text-danger">- ${formatarMoeda(comissaoEsc)}</span></li>
