@@ -19,7 +19,6 @@
         .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1090; }
         .toast { width: 350px; max-width: 100%; }
         .resultado-final-valor { font-size: 1.75rem; font-weight: bold; }
-        /* Oculta os logos para carregar no jspdf sem mostrar na tela */
         .logos { display: none; } 
     </style>
 </head>
@@ -84,7 +83,7 @@
                         </div>
                         <div class="tab-pane fade p-3" id="manual-tab-pane" role="tabpanel">
                              <div class="row mb-3"><div class="col-md-6 mb-2"><label for="clienteNome" class="form-label">Nome do Cliente</label><input type="text" id="clienteNome" class="form-control"></div><div class="col-md-6 mb-2"><label for="clienteCpf" class="form-label">CPF do Cliente</label><input type="text" id="clienteCpf" class="form-control" placeholder="000.000.000-00"></div></div>
-                             <div class="p-3 mb-3 border rounded"><h3 class="fs-5 text-center mb-3">Adicionar Contratos</h3><div class="row g-2"><div class="col-md-7 mb-2"><label for="manualBanco" class="form-label">Banco</label><input type="text" id="manualBanco" class="form-control"></div><div class="col-md-5 mb-2"><label for="manualParcela" class="form-label">Valor Parcela</label><input type="text" id="manualParcela" class="form-control"></div><div class="col-6 col-md-4 mb-2"><label for="manualTotalParcelas" class="form-label">Total</label><input type="number" id="manualTotalParcelas" class="form-control" value="96"></div><div class="col-6 col-md-4 mb-2"><label for="manualParcelasPagas" class="form-label">Pagas</label><input type="number" id="manualParcelasPagas" class="form-control"></div><div class="col-12 col-md-4 d-flex align-items-end mb-2"><button type="button" id="addManualLoanBtn" class="btn btn-secondary w-100">Adicionar</button></div></div><div id="manual-loans-list" class="mt-3"></div></div>
+                             <div class="p-3 mb-3 border rounded"><h3 class="fs-5 text-center mb-3">Adicionar Contratos</h3><div class="row g-2"><div class="col-md-7 mb-2"><label for="manualBanco" class="form-label">Banco</label><input type="text" id="manualBanco" class="form-control"></div><div class="col-md-5 mb-2"><label for="manualParcela" class="form-label">Valor Parcela</label><input type="text" id="manualParcela" class="form-control"></div><div class="col-6 col-md-4 mb-2"><label for="manualTotalParcelas" class="form-label">Total</label><input type="number" id="manualTotalParcelas" class="form-control" value="96"></div><div class="col-6 col-md-4 mb-2"><label for="manualParcelasPagas" class="form-label">Pagas</label><input type="number" id="manualParcelasPagas" class="form-control"></div><div class="col-12 col-md-4 d-flex align-items-end mb-2"><button type="button" id="addManualBtn" class="btn btn-secondary w-100">Adicionar</button></div></div><div id="manual-loans-list" class="mt-3"></div></div>
                         </div>
                     </div>
                 </div>
@@ -101,7 +100,7 @@
                             </div>
                             <div class="mb-3">
                                 <label for="negativo" class="form-label">Valor Negativo do Cliente</label>
-                                <input type="text" id="negativo" class="form-control" placeholder="Ex: 1000,00">
+                                <input type="text" id="negativo" class="form-control" placeholder="Ex: 1000,00" required>
                             </div>
                         </div>
 
@@ -109,6 +108,23 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3"><label for="parcela" class="form-label">Valor Total da Parcela</label><input type="text" id="parcela" class="form-control" required placeholder="Unificado do passo anterior"></div>
                                 <div class="col-md-6 mb-3"><label for="saldodevedor" class="form-label">Saldo Devedor Aprox. Total</label><input type="text" id="saldodevedor" class="form-control" required placeholder="Unificado do passo anterior"></div>
+                            </div>
+                            
+                            <div class="p-3 mb-3 border rounded">
+                                <h5 class="fs-6 text-primary mb-3">Dados do Novo Contrato</h5>
+                                <div class="row">
+                                    <div class="col-md-8 mb-2">
+                                        <label for="novoBanco" class="form-label">Banco Destino</label>
+                                        <input type="text" id="novoBanco" class="form-control" value="Bradesco">
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <label for="novoPrazo" class="form-label">Prazo (meses)</label>
+                                        <input type="number" id="novoPrazo" class="form-control" value="96">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
                                 <div class="col-md-12 mb-3"><label for="desconto" class="form-label">Produto (Opcional)</label><input type="text" id="desconto" class="form-control" placeholder="Ex: 1.000,00"></div>
                             </div>
                             
@@ -123,8 +139,8 @@
                             
                             <hr class="my-3">
                             <div class="row">
-                                <div class="col-md-4 mb-3"><label for="coeficiente" class="form-label">Coeficiente</label><input type="text" id="coeficiente" class="form-control" value="0.02"></div>
-                                <div class="col-md-4 mb-3"><label for="comissaoGerente" class="form-label">Comissão Gerente (%)</label><input type="text" id="comissaoGerente" class="form-control" value="15"></div>
+                                <div class="col-md-4 mb-3"><label for="coeficiente" class="form-label">Coeficiente</label><input type="text" id="coeficiente" class="form-control" value="0.02" required></div>
+                                <div class="col-md-4 mb-3"><label for="comissaoGerente" class="form-label">Comissão Gerente (%)</label><input type="text" id="comissaoGerente" class="form-control" value="15" required></div>
                                 <div class="col-md-4 mb-3"><label for="comissaoesc" class="form-label">Comissão Escritório</label><input type="text" id="comissaoesc" class="form-control" required value="100"></div>
                             </div>
                         </div>
@@ -161,13 +177,12 @@
         let clienteNomePDF = '', clienteCpfPDF = '', parcelasSelecionadasPDF = [], calculoDetalhado = {};
         let parcelasManuais = [], dadosNegativado = null;
 
-        // --- MAPA DE OPERAÇÕES ---
         const operacoes = {
             exercito: [
                 { value: 'portabilidade_exercito', text: 'Portabilidade', coef: '0.019' },
                 { value: 'compra_exercito', text: 'Compra de Dívida', coef: '0.02' },
                 { value: 'margem_refin_exercito', text: 'Margem + Refin Bradesco', coef: '0.02' },
-                { value: 'negativado_exercito', text: 'Análise de Negativado', coef: '' } // <-- NOVO
+                { value: 'negativado_exercito', text: 'Análise de Negativado', coef: '' } 
             ],
             siape: [
                 { value: 'portabilidade_siape', text: 'Portabilidade', coef: '0.0190' },
@@ -176,7 +191,6 @@
             ]
         };
 
-        // --- FUNÇÕES UTILITÁRIAS (UNIFICADAS) ---
         const moedaParaFloat = (v) => parseFloat(String(v || '').replace('R$', '').trim().replace(/\./g, "").replace(",", ".")) || 0;
         const formatarMoeda = (v) => (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
         const formatarInputMoeda = (v) => (v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\s/g, '');
@@ -193,8 +207,6 @@
             toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
         };
 
-        // --- FUNÇÕES DE LÓGICA DA UI ---
-
         function atualizarOperacoes() {
             const convenio = document.getElementById('convenioSelect').value;
             const operacaoSelect = document.getElementById('operacaoSelect');
@@ -202,7 +214,6 @@
             operacoes[convenio].forEach(op => {
                 operacaoSelect.add(new Option(op.text, op.value));
             });
-            // Atualiza a UI com base na nova operação padrão
             atualizarVisibilidadeUI();
         }
 
@@ -211,11 +222,9 @@
             const operacaoValue = document.getElementById('operacaoSelect').value;
             const operacao = (operacoes[convenio] || []).find(op => op.value === operacaoValue) || {};
             
-            // Oculta todos os resultados
             document.getElementById('resultadoFinal').style.display = 'none';
             document.getElementById('resultadoNegativadoContainer').style.display = 'none';
 
-            // Elementos dos formulários
             const clienteCard = document.getElementById('clienteCard');
             const simulacaoCard = document.getElementById('simulacaoCard');
             const negativadoFields = document.getElementById('negativado-fields');
@@ -224,9 +233,16 @@
             const compraFields = document.getElementById('compra-fields');
             const submitBtn = document.getElementById('submitBtn');
             
+            // Referências aos inputs
+            const negativoInput = document.getElementById('negativo');
+            const parcelaInput = document.getElementById('parcela');
+            const saldoInput = document.getElementById('saldodevedor');
+            const coefInput = document.getElementById('coeficiente');
+            const comGerenteInput = document.getElementById('comissaoGerente');
+            const comEscInput = document.getElementById('comissaoesc');
+            
             document.getElementById('pageTitle').textContent = operacao.text ? `Calculadora ${operacao.text} (${convenio.toUpperCase()})` : 'Calculadora Consignado';
 
-            // ATUALIZADO: Checa se o value inclui 'negativado'
             if (operacaoValue.includes('negativado')) {
                 clienteCard.style.display = 'block';
                 simulacaoCard.style.display = 'block';
@@ -234,6 +250,15 @@
                 simulacaoFields.style.display = 'none';
                 document.getElementById('simulacaoTitle').textContent = "2. Cálculo";
                 submitBtn.textContent = 'Calcular Nova Parcela';
+                
+                // Gerencia o 'required'
+                negativoInput.required = true;
+                parcelaInput.required = false;
+                saldoInput.required = false;
+                coefInput.required = false;
+                comGerenteInput.required = false;
+                comEscInput.required = false;
+                
             } else {
                 clienteCard.style.display = 'block';
                 simulacaoCard.style.display = 'block';
@@ -242,10 +267,8 @@
                 document.getElementById('simulacaoTitle').textContent = "2. Dados da Simulação";
                 submitBtn.textContent = 'Calcular Simulação Completa';
 
-                // Coeficiente padrão
                 if(operacao.coef) document.getElementById('coeficiente').value = operacao.coef;
 
-                // Campos condicionais de simulação
                 if (operacaoValue.includes('compra')) {
                     portRefinFields.style.display = 'none';
                     compraFields.style.display = 'block';
@@ -256,6 +279,14 @@
                     portRefinFields.style.display = 'none';
                     compraFields.style.display = 'none';
                 }
+                
+                // Gerencia o 'required'
+                negativoInput.required = false;
+                parcelaInput.required = true;
+                saldoInput.required = true;
+                coefInput.required = true;
+                comGerenteInput.required = true;
+                comEscInput.required = true;
             }
         }
 
@@ -284,8 +315,6 @@
             }
         }
         
-        // --- FUNÇÕES DE LEITURA DE PDF ---
-
         async function processarPdfExercicio(text) {
             let cleanText = text.replace(/--- FIM DA PÁGINA \d+ ---/g, '').replace(/Consignatária\n\s*▴\s*▾[\s\S]+?Situação\n\s*▴\s*▾/g, '');
             const cpfRegex = /(\d{3}\.\d{3}\.\d{3}-\d{2})/;
@@ -397,8 +426,6 @@
             fileReader.readAsArrayBuffer(file);
         }
 
-        // --- FUNÇÕES DE ENTRADA MANUAL (UNIFICADAS) ---
-
         function unificarContratos(isManual) {
             let totalSaldo = 0, totalParcela = 0;
             parcelasSelecionadasPDF = [];
@@ -421,7 +448,7 @@
             }
             
             const operacao = document.getElementById('operacaoSelect').value;
-            if (operacao.includes('negativado')) { // ATUALIZADO
+            if (operacao.includes('negativado')) { 
                  document.getElementById("totalParcelasDisplay").textContent = formatarMoeda(totalParcela);
             } else {
                 document.getElementById("parcela").value = formatarInputMoeda(totalParcela);
@@ -466,8 +493,6 @@
             showToast("Contrato adicionado.");
         }
 
-        // --- FUNÇÕES DE CÁLCULO ---
-
         function calcularNegativado() {
             let totalParcelas = 0, saldoFinal = 0;
             const isManualTabActive = document.getElementById('manual-tab').classList.contains('active');
@@ -492,13 +517,13 @@
             if (totalParcelas === 0) return showToast("Adicione pelo menos um contrato para calcular.", 'danger');
             
             const negativo = moedaParaFloat(document.getElementById("negativo").value);
-            if(negativo <= 0) return showToast("Insira um valor negativo válido.", 'danger');
+            // A validação 'required' do HTML pega antes, mas mantemos por segurança.
+            if(negativo <= 0) return showToast("Insira um valor negativo válido.", 'danger'); 
 
             const novaParcela = totalParcelas - negativo;
             const nomeFinal = document.getElementById('clienteNome').value.trim() || clienteNomePDF;
             const cpfFinal = document.getElementById('clienteCpf').value.trim() || clienteCpfPDF;
 
-            // ATUALIZADO: Salva a operação completa (ex: 'negativado_exercito')
             const operacao = document.getElementById('operacaoSelect').value;
             calculoDetalhado = { tipo: operacao, totalParcelas, negativo, novaParcela, saldoDevedor: saldoFinal, nome: nomeFinal, cpf: cpfFinal };
 
@@ -523,15 +548,18 @@
             const comissaoG = parseFloat(document.getElementById("comissaoGerente").value.replace(",", ".")) || 0;
             const comissaoEsc = moedaParaFloat(document.getElementById("comissaoesc").value);
 
+            const novoBanco = document.getElementById("novoBanco").value || 'Bradesco';
+            const novoPrazo = document.getElementById("novoPrazo").value || '96';
+
+            // A validação 'required' do HTML pega antes, mas mantemos por segurança.
             if(!p || !s || !comissaoEsc) return showToast('Preencha Parcela, Saldo e Comissão do Escritório.', 'danger');
 
             const novoS = p / coef;
-            calculoDetalhado = { ...calculoDetalhado, p, s, d, novoS, comissaoG, comissaoEsc, coef };
+            calculoDetalhado = { ...calculoDetalhado, p, s, d, novoS, comissaoG, comissaoEsc, coef, novoBanco, novoPrazo, novaParcelaValor: p };
 
             let resultadoHtml = '', valorOfertaFinal = 0;
 
             if (operacao.includes('compra')) {
-                // Lógica de Compra de Dívida
                 const investidorR = (document.getElementById("tipoCompra").value === 'bradesco') ? 0.10 : 0.08;
                 const sub = novoS - s - d, investidor = s * investidorR, gerente = sub * (comissaoG / 100);
                 const valorGeral = sub - investidor - gerente;
@@ -554,7 +582,6 @@
                     <li class="list-group-item d-flex justify-content-between"><span>(-) Comissão Escritório:</span> <span class="text-danger">- ${formatarMoeda(comissaoEsc)}</span></li>`;
 
             } else {
-                // Lógica de Portabilidade / Refin
                 const valorBrutoLiberado = novoS - s - d;
                 let sub = valorBrutoLiberado, valorQuitado = 0, comissaoQuitado = 0;
                 
@@ -604,8 +631,6 @@
             document.getElementById("baixarPdfEscritorioBtn").addEventListener("click", gerarPDFEscritorio);
         }
 
-        // --- FUNÇÕES DE GERAÇÃO DE PDF (UNIFICADAS) ---
-
         function gerarPDFBase(doc, tipo) {
             const getBase64Image = (img) => { if (!img) return null; const c = document.createElement("canvas"); c.width = img.width; c.height = img.height; c.getContext("2d").drawImage(img, 0, 0); return c.toDataURL("image/png"); };
             
@@ -648,9 +673,17 @@
             doc.setFontSize(10); doc.text(`Nome: ${nomeFinal}`, 15, y); y += 6; doc.text(`CPF: ${cpfFinal}`, 15, y);
             
             if (listaDeParcelas.length > 0) {
-                y += 16; doc.setFontSize(12); doc.text("Parcelas para Unificação", 15, y); y += 8; doc.setFontSize(9);
+                y += 16; doc.setFontSize(12); doc.text("Parcelas para Unificação (Contratos Antigos)", 15, y); y += 8; doc.setFontSize(9);
                 listaDeParcelas.forEach(p => { doc.text(`- Banco: ${p.banco} | Parcela: ${p.parcela} | Saldo Aprox.: ${p.saldo} | Status: ${p.status}`, 15, y); y += 6; });
             }
+
+            y += 10; 
+            doc.setFontSize(12); doc.text("Dados do Novo Contrato", 15, y); y += 8;
+            doc.setFontSize(10);
+            doc.text(`Banco: ${calculoDetalhado.novoBanco || 'Não inf.'}`, 15, y); y += 6;
+            doc.text(`Prazo: ${calculoDetalhado.novoPrazo || 'Não inf.'}x`, 15, y); y += 6;
+            doc.text(`Valor da Parcela: ${formatarMoeda(calculoDetalhado.novaParcelaValor)}`, 15, y); y += 6;
+
             return y;
         }
 
@@ -674,7 +707,6 @@
             }
 
             y += 10; doc.setFontSize(12); doc.text("Resumo da Operação", 15, y); y += 8; doc.setFontSize(10);
-            doc.text(`Total Parcelas Unificadas: ${formatarMoeda(calculoDetalhado.p)}`, 15, y); y += 6;
             doc.text(`Saldo Devedor Total a Quitar (Aprox.): ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 10;
             doc.setFontSize(14); doc.setFont('helvetica', 'bold');
             doc.text(`Valor Líquido para o Cliente: ${formatarMoeda(calculoDetalhado.valorOfertaFinal)}`, 15, y);
@@ -694,7 +726,6 @@
             }
             
             y += 10; doc.setFontSize(12); doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
-            doc.text(`Valor da Parcela: ${formatarMoeda(calculoDetalhado.p)}`, 15, y); y += 6;
             doc.text(`Novo Saldo (creditado na conta do cliente): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
             doc.text(`Saldo Devedor a Quitar: ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 6;
             doc.text(`Produto: ${formatarMoeda(calculoDetalhado.d)}`, 15, y); y += 6;
@@ -723,43 +754,41 @@
             doc.save(gerarNomeArquivo('escritorio'));
         }
 
-        // --- INICIALIZAÇÃO E EVENT LISTENERS ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Configura drag-and-drop
             const uploadArea = document.getElementById('upload-label');
             uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('hover'); });
             uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('hover'));
             uploadArea.addEventListener('drop', (e) => { e.preventDefault(); uploadArea.classList.remove('hover'); if (e.dataTransfer.files.length > 0) { document.getElementById('pdf-upload').files = e.dataTransfer.files; document.getElementById('pdf-upload').dispatchEvent(new Event('change')); }});
 
-            // Listener do upload de PDF
             document.getElementById("pdf-upload").addEventListener("change", parsearPdf);
-
-            // Listeners de entrada manual
             document.getElementById("unificarBtnPdf").addEventListener("click", () => unificarContratos(false));
-            document.getElementById('addManualLoanBtn').addEventListener('click', adicionarContratoManual);
-
-            // Listeners dos seletores mestres
+            document.getElementById('addManualBtn').addEventListener('click', adicionarContratoManual); // Corrigido de addManualLoanBtn para addManualBtn para corresponder ao HTML
             document.getElementById('convenioSelect').addEventListener('change', atualizarOperacoes);
             document.getElementById('operacaoSelect').addEventListener('change', atualizarVisibilidadeUI);
             
-            // Listener do formulário principal
             document.getElementById("calcForm").addEventListener("submit", function (e) {
-                e.preventDefault();
+                e.preventDefault(); // Previne o envio real do formulário
+                
+                // Validação HTML nativa (required) será acionada primeiro.
+                // Se o formulário for válido, o JS abaixo é executado.
+                
                 const operacao = document.getElementById('operacaoSelect').value;
-                if (operacao.includes('negativado')) { // ATUALIZADO
+                if (operacao.includes('negativado')) { 
                     calcularNegativado();
                 } else {
                     calcularSimulacaoCompleta();
                 }
             });
             
-            // Listeners dos botões de avançar (Negativado) - ATUALIZADOS
             document.getElementById('goToPortabilidadeBtn').addEventListener('click', () => {
                 sessionStorage.setItem('calculoNegativadoData', JSON.stringify(calculoDetalhado));
                 const convenio = document.getElementById('convenioSelect').value;
                 const opValue = (convenio === 'exercito') ? 'portabilidade_exercito' : 'portabilidade_siape';
+                document.getElementById('convenioSelect').value = convenio;
                 document.getElementById('operacaoSelect').value = opValue;
                 
+                atualizarOperacoes(); // Atualiza o select
+                document.getElementById('operacaoSelect').value = opValue; // Garante a seleção
                 verificarDadosNegativado();
                 atualizarVisibilidadeUI();
                 document.getElementById('page-container').scrollIntoView({ behavior: 'smooth' });
@@ -769,19 +798,19 @@
                 sessionStorage.setItem('calculoNegativadoData', JSON.stringify(calculoDetalhado));
                 const convenio = document.getElementById('convenioSelect').value;
                 const opValue = (convenio === 'exercito') ? 'compra_exercito' : 'compra_siape';
-                document.getElementById('operacaoSelect').value = opValue;
-
+                document.getElementById('convenioSelect').value = convenio;
+                
+                atualizarOperacoes(); // Atualiza o select
+                document.getElementById('operacaoSelect').value = opValue; // Garante a seleção
                 verificarDadosNegativado();
                 atualizarVisibilidadeUI();
                 document.getElementById('page-container').scrollIntoView({ behavior: 'smooth' });
             });
             
-            // Listener da Quitação (para mostrar/ocultar campo)
             document.querySelectorAll('input[name="quitacao"]').forEach(r => r.addEventListener('change', function() { document.getElementById('quitadoContainer').style.display = this.value === 'sim' ? 'block' : 'none'; if(this.value === 'nao') document.getElementById('valorQuitado').value = ''; }));
 
-            // Inicializa a página
             verificarDadosNegativado();
-            atualizarOperacoes(); // Isso também chama atualizarVisibilidadeUI()
+            atualizarOperacoes(); 
         });
 
     </script>
