@@ -534,7 +534,7 @@
             let y = gerarPDFBase(doc, "Cliente");
             y += 10; doc.setFontSize(12); doc.text("Resumo da Operação", 15, y);
             y += 8; doc.setFontSize(10);
-            doc.text(`Total Parcelas Unificadas: ${formatarMoeda(moedaParaFloat(document.getElementById("parcela").value))}`, 15, y);
+            doc.text(`Total Parcelas Unificadas em 96x: ${formatarMoeda(moedaParaFloat(document.getElementById("parcela").value))}`, 15, y);
             y += 10; doc.setFontSize(14); doc.setFont('helvetica', 'bold');
             doc.text(`Valor Líquido para o Cliente: ${formatarMoeda(valorOfertaPDF)}`, 15, y);
             doc.save(gerarNomeArquivo('cliente'));
