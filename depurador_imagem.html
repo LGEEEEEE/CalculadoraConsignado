@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Depurador de Imagem e PDF (Tesseract.js)</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; text-align: center; background-color: #f0f2f5; margin: 0;}
+        #upload-file { display: none; }
+        label { background-color: #007bff; color: white; padding: 15px 25px; border-radius: 5px; cursor: pointer; font-size: 1.2em; transition: background-color 0.2s;}
+        label:hover { background-color: #0056b3; }
+        #status { margin-top: 20px; font-size: 1.1em; color: #333; height: 30px;}
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+</head>
+<body>
+
+    <input type="file" id="upload-file" accept="image/*,application/pdf">
+    <label for="upload-file">Carregar IMAGEM ou PDF para depurar</label>
+    <p id="status"></p>
+
+    <script>
+        // Configuração do worker do PDF.js (obrigatório)
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js`;
+
+        const fileUpload = document.getElementById("upload-file");
+        const statusEl = document.getElementById("status");
+
+        // Função helper para criar o worker do Tesseract com logger
+        async function createOcrWorker() {
+            statusEl.textContent = "Carregando módulo de análise (Tesseract)...";
+            const worker = await Tesseract.createWorker('por', 1, {
+                logger: m => {
+                    console.log(m); // Log completo do Tesseract
+                    if (m.status === 'recognizing text') {
+                        const progress = (m.progress * 100).toFixed(2);
+                        // Atualiza o status para mostrar a página atual e o progresso
+                        statusEl.textContent = statusEl.textContent.split("...")[0] + `... ${progress}%`;
+                    }
+                },
+            });
+            return worker;
+        }
+
+        // Função helper para exibir o resultado
+        function logResult(text, tipo) {
+            console.log(`--- INÍCIO DO TEXTO EXTRAÍDO (${tipo}) ---`);
+            console.log(text);
+            console.log(`--- FIM DO TEXTO EXTRAÍDO (${tipo}) ---`);
+            
+            statusEl.textContent = `Análise de ${tipo} concluída!`;
+            alert(`Texto extraído do ${tipo}! Verifique o console (F12).`);
+        }
+
+        fileUpload.addEventListener("change", async function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            statusEl.textContent = "Iniciando análise...";
+
+            try {
+                // --- LÓGICA DE RAMIFICAÇÃO (SE...SENÃO) ---
+
+                if (file.type.startsWith("image/")) {
+                    // --- CASO 1: É UMA IMAGEM (LÓGICA ANTIGA) ---
+                    const worker = await createOcrWorker();
+                    statusEl.textContent = "Analisando imagem...";
+                    
+                    const { data: { text } } = await worker.recognize(file);
+                    
+                    logResult(text, "Imagem");
+                    await worker.terminate();
+
+                } else if (file.type === "application/pdf") {
+                    // --- CASO 2: É UM PDF (LÓGICA NOVA) ---
+                    statusEl.textContent = "Carregando arquivo PDF...";
+                    const fileReader = new FileReader();
+
+                    fileReader.onload = async function() {
+                        const worker = await createOcrWorker();
+                        statusEl.textContent = "Lendo estrutura do PDF...";
+                        
+                        const typedarray = new Uint8Array(this.result);
+                        const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                        let fullText = '';
+
+                        // Loop por cada página do PDF
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            statusEl.textContent = `Convertendo página ${i}/${pdf.numPages}...`;
+                            
+                            const page = await pdf.getPage(i);
+                            // Usamos escala 2.0 para uma imagem de melhor qualidade (melhora o OCR)
+                            const viewport = page.getViewport({ scale: 2.0 }); 
+                            
+                            // Cria um canvas (quadro) para desenhar o PDF
+                            const canvas = document.createElement('canvas');
+                            const context = canvas.getContext('2d');
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
+
+                            // Desenha a página do PDF no canvas
+                            await page.render({ canvasContext: context, viewport: viewport }).promise;
+                            
+                            // Agora, o Tesseract vai "ler" o canvas como se fosse uma imagem
+                            statusEl.textContent = `Analisando texto da página ${i}...`;
+                            const { data: { text } } = await worker.recognize(canvas);
+                            
+                            fullText += text + `\n\n--- FIM DA PÁGINA ${i} ---\n\n`;
+                        }
+                        
+                        await worker.terminate();
+                        logResult(fullText, "PDF");
+                    };
+                    
+                    // Lê o arquivo para o PDF.js
+                    fileReader.readAsArrayBuffer(file);
+
+                } else {
+                    statusEl.textContent = "";
+                    alert("Tipo de arquivo não suportado. Carregue uma Imagem ou PDF.");
+                }
+
+            } catch (error) {
+                console.error("Erro ao processar o arquivo:", error);
+                statusEl.textContent = "Ocorreu um erro ao ler o arquivo.";
+                alert("Ocorreu um erro. Verifique o console para mais detalhes.");
+            }
+        });
+    </script>
+</body>
+</html>
