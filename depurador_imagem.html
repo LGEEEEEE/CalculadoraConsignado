@@ -4,11 +4,49 @@
     <meta charset="UTF-8">
     <title>Depurador de Imagem e PDF (Tesseract.js)</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; text-align: center; background-color: #f0f2f5; margin: 0;}
+        body { 
+            font-family: sans-serif; 
+            display: flex; 
+            align-items: center; 
+            min-height: 100vh; 
+            flex-direction: column; 
+            text-align: center; 
+            background-color: #f0f2f5; 
+            margin: 0;
+            padding: 20px 0;
+            box-sizing: border-box;
+        }
         #upload-file { display: none; }
-        label { background-color: #007bff; color: white; padding: 15px 25px; border-radius: 5px; cursor: pointer; font-size: 1.2em; transition: background-color 0.2s;}
+        label { 
+            background-color: #007bff; 
+            color: white; 
+            padding: 15px 25px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 1.2em; 
+            transition: background-color 0.2s;
+        }
         label:hover { background-color: #0056b3; }
         #status { margin-top: 20px; font-size: 1.1em; color: #333; height: 30px;}
+
+        /* --- NOVO CSS --- */
+        #transcricao-container {
+            width: 80%;
+            max-width: 800px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        #transcricao {
+            border: 1px solid #ccc;
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 5px;
+            height: 500px; /* Altura fixa */
+            overflow-y: auto; /* Barra de rolagem vertical */
+            white-space: pre-wrap; /* Preserva quebras de linha e espaços */
+            font-family: monospace;
+            line-height: 1.5;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
     <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
@@ -19,21 +57,28 @@
     <label for="upload-file">Carregar IMAGEM ou PDF para depurar</label>
     <p id="status"></p>
 
+    <div id="transcricao-container">
+        <h3 style="text-align: center;">Transcrição (OCR)</h3>
+        <div id="transcricao"></div>
+    </div>
+
     <script>
         // Configuração do worker do PDF.js (obrigatório)
         pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js`;
 
+        // --- JAVASCRIPT MODIFICADO ---
         const fileUpload = document.getElementById("upload-file");
         const statusEl = document.getElementById("status");
+        const outputEl = document.getElementById("transcricao"); // Pega a nova div
 
         // Função helper para criar o worker do Tesseract com logger
         async function createOcrWorker() {
             statusEl.textContent = "Carregando módulo de análise (Tesseract)...";
             const worker = await Tesseract.createWorker('por', 1, {
                 logger: m => {
-                    console.log(m); // Log completo do Tesseract
+                    console.log(m); // Mantém o log do console para depuração
                     if (m.status === 'recognizing text') {
-                        const progress = (m.progress * 100).toFixed(2);
+                        const progress = (m.progress * 100).toFixed(0);
                         // Atualiza o status para mostrar a página atual e o progresso
                         statusEl.textContent = statusEl.textContent.split("...")[0] + `... ${progress}%`;
                     }
@@ -42,14 +87,19 @@
             return worker;
         }
 
-        // Função helper para exibir o resultado
+        // Função helper para exibir o resultado (MODIFICADA)
         function logResult(text, tipo) {
-            console.log(`--- INÍCIO DO TEXTO EXTRAÍDO (${tipo}) ---`);
-            console.log(text);
-            console.log(`--- FIM DO TEXTO EXTRAÍDO (${tipo}) ---`);
+            // Remove o console.log
+            // console.log(`--- INÍCIO DO TEXTO EXTRAÍDO (${tipo}) ---`);
+            // console.log(text);
+            // console.log(`--- FIM DO TEXTO EXTRAÍDO (${tipo}) ---`);
+            
+            // Coloca o texto na DIV
+            outputEl.textContent = text; 
             
             statusEl.textContent = `Análise de ${tipo} concluída!`;
-            alert(`Texto extraído do ${tipo}! Verifique o console (F12).`);
+            // Remove o alert
+            // alert(`Texto extraído do ${tipo}! Verifique o console (F12).`);
         }
 
         fileUpload.addEventListener("change", async function(event) {
@@ -57,12 +107,13 @@
             if (!file) return;
 
             statusEl.textContent = "Iniciando análise...";
+            outputEl.textContent = ""; // Limpa resultados anteriores
 
             try {
                 // --- LÓGICA DE RAMIFICAÇÃO (SE...SENÃO) ---
 
                 if (file.type.startsWith("image/")) {
-                    // --- CASO 1: É UMA IMAGEM (LÓGICA ANTIGA) ---
+                    // --- CASO 1: É UMA IMAGEM ---
                     const worker = await createOcrWorker();
                     statusEl.textContent = "Analisando imagem...";
                     
@@ -72,7 +123,7 @@
                     await worker.terminate();
 
                 } else if (file.type === "application/pdf") {
-                    // --- CASO 2: É UM PDF (LÓGICA NOVA) ---
+                    // --- CASO 2: É UM PDF ---
                     statusEl.textContent = "Carregando arquivo PDF...";
                     const fileReader = new FileReader();
 
@@ -92,27 +143,26 @@
                             // Usamos escala 2.0 para uma imagem de melhor qualidade (melhora o OCR)
                             const viewport = page.getViewport({ scale: 2.0 }); 
                             
-                            // Cria um canvas (quadro) para desenhar o PDF
                             const canvas = document.createElement('canvas');
                             const context = canvas.getContext('2d');
                             canvas.height = viewport.height;
                             canvas.width = viewport.width;
 
-                            // Desenha a página do PDF no canvas
                             await page.render({ canvasContext: context, viewport: viewport }).promise;
                             
-                            // Agora, o Tesseract vai "ler" o canvas como se fosse uma imagem
                             statusEl.textContent = `Analisando texto da página ${i}...`;
                             const { data: { text } } = await worker.recognize(canvas);
                             
                             fullText += text + `\n\n--- FIM DA PÁGINA ${i} ---\n\n`;
+                            
+                            // Atualiza a div em tempo real a cada página
+                            outputEl.textContent = fullText;
                         }
                         
                         await worker.terminate();
-                        logResult(fullText, "PDF");
+                        logResult(fullText, "PDF"); // Chama a função para dar o status final
                     };
                     
-                    // Lê o arquivo para o PDF.js
                     fileReader.readAsArrayBuffer(file);
 
                 } else {
@@ -123,7 +173,7 @@
             } catch (error) {
                 console.error("Erro ao processar o arquivo:", error);
                 statusEl.textContent = "Ocorreu um erro ao ler o arquivo.";
-                alert("Ocorreu um erro. Verifique o console para mais detalhes.");
+                outputEl.textContent = "Ocorreu um erro. Verifique o console (F12) para mais detalhes."
             }
         });
     </script>
