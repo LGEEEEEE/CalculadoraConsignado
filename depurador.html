@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Depurador de Imagem e PDF (Tesseract.js)</title>
+    <title>Depurador de Extração de PDF</title>
     <style>
         body { 
             font-family: sans-serif; 
@@ -10,24 +10,19 @@
             align-items: center; 
             min-height: 100vh; 
             flex-direction: column; 
-            text-align: center; 
-            background-color: #f0f2f5; 
-            margin: 0;
             padding: 20px 0;
             box-sizing: border-box;
         }
-        #upload-file { display: none; }
+        #pdf-upload { display: none; }
         label { 
             background-color: #007bff; 
             color: white; 
             padding: 15px 25px; 
             border-radius: 5px; 
             cursor: pointer; 
-            font-size: 1.2em; 
-            transition: background-color 0.2s;
+            font-size: 1.2em;
         }
-        label:hover { background-color: #0056b3; }
-        #status { margin-top: 20px; font-size: 1.1em; color: #333; height: 30px;}
+        #loading { margin-top: 20px; font-size: 1.1em; }
 
         /* --- NOVO CSS --- */
         #transcricao-container {
@@ -38,7 +33,7 @@
         }
         #transcricao {
             border: 1px solid #ccc;
-            background-color: #ffffff;
+            background-color: #f9f9f9;
             padding: 15px;
             border-radius: 5px;
             height: 500px; /* Altura fixa */
@@ -48,133 +43,69 @@
             line-height: 1.5;
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
-    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
 </head>
 <body>
 
-    <input type="file" id="upload-file" accept="image/*,application/pdf">
-    <label for="upload-file">Carregar IMAGEM ou PDF para depurar</label>
-    <p id="status"></p>
+    <input type="file" id="pdf-upload" accept=".pdf">
+    <label for="pdf-upload">Clique aqui para carregar o PDF e depurar</label>
+    <p id="loading" style="display:none;">Analisando o texto do PDF...</p>
 
     <div id="transcricao-container">
-        <h3 style="text-align: center;">Transcrição (OCR)</h3>
+        <h3 style="text-align: center;">Transcrição</h3>
         <div id="transcricao"></div>
     </div>
 
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
     <script>
-        // Configuração do worker do PDF.js (obrigatório)
+        // Configuração do worker para a biblioteca
         pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js`;
 
         // --- JAVASCRIPT MODIFICADO ---
-        const fileUpload = document.getElementById("upload-file");
-        const statusEl = document.getElementById("status");
+        const loadingEl = document.getElementById("loading");
         const outputEl = document.getElementById("transcricao"); // Pega a nova div
 
-        // Função helper para criar o worker do Tesseract com logger
-        async function createOcrWorker() {
-            statusEl.textContent = "Carregando módulo de análise (Tesseract)...";
-            const worker = await Tesseract.createWorker('por', 1, {
-                logger: m => {
-                    console.log(m); // Mantém o log do console para depuração
-                    if (m.status === 'recognizing text') {
-                        const progress = (m.progress * 100).toFixed(0);
-                        // Atualiza o status para mostrar a página atual e o progresso
-                        statusEl.textContent = statusEl.textContent.split("...")[0] + `... ${progress}%`;
-                    }
-                },
-            });
-            return worker;
-        }
-
-        // Função helper para exibir o resultado (MODIFICADA)
-        function logResult(text, tipo) {
-            // Remove o console.log
-            // console.log(`--- INÍCIO DO TEXTO EXTRAÍDO (${tipo}) ---`);
-            // console.log(text);
-            // console.log(`--- FIM DO TEXTO EXTRAÍDO (${tipo}) ---`);
-            
-            // Coloca o texto na DIV
-            outputEl.textContent = text; 
-            
-            statusEl.textContent = `Análise de ${tipo} concluída!`;
-            // Remove o alert
-            // alert(`Texto extraído do ${tipo}! Verifique o console (F12).`);
-        }
-
-        fileUpload.addEventListener("change", async function(event) {
+        document.getElementById("pdf-upload").addEventListener("change", async function(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            statusEl.textContent = "Iniciando análise...";
+            loadingEl.style.display = "block";
             outputEl.textContent = ""; // Limpa resultados anteriores
 
-            try {
-                // --- LÓGICA DE RAMIFICAÇÃO (SE...SENÃO) ---
-
-                if (file.type.startsWith("image/")) {
-                    // --- CASO 1: É UMA IMAGEM ---
-                    const worker = await createOcrWorker();
-                    statusEl.textContent = "Analisando imagem...";
+            const fileReader = new FileReader();
+            fileReader.onload = async function() {
+                try {
+                    const typedarray = new Uint8Array(this.result);
+                    const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                    let fullText = '';
                     
-                    const { data: { text } } = await worker.recognize(file);
-                    
-                    logResult(text, "Imagem");
-                    await worker.terminate();
-
-                } else if (file.type === "application/pdf") {
-                    // --- CASO 2: É UM PDF ---
-                    statusEl.textContent = "Carregando arquivo PDF...";
-                    const fileReader = new FileReader();
-
-                    fileReader.onload = async function() {
-                        const worker = await createOcrWorker();
-                        statusEl.textContent = "Lendo estrutura do PDF...";
+                    // Itera por todas as páginas do PDF
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        loadingEl.textContent = `Analisando página ${i}/${pdf.numPages}...`;
+                        const page = await pdf.getPage(i);
+                        const textContent = await page.getTextContent();
                         
-                        const typedarray = new Uint8Array(this.result);
-                        const pdf = await pdfjsLib.getDocument(typedarray).promise;
-                        let fullText = '';
+                        // Junta os itens de texto com quebra de linha para preservar a estrutura
+                        const pageText = textContent.items.map(item => item.str).join('\n');
+                        fullText += pageText + '\n\n--- FIM DA PÁGINA ' + i + ' ---\n\n';
+                    }
 
-                        // Loop por cada página do PDF
-                        for (let i = 1; i <= pdf.numPages; i++) {
-                            statusEl.textContent = `Convertendo página ${i}/${pdf.numPages}...`;
-                            
-                            const page = await pdf.getPage(i);
-                            // Usamos escala 2.0 para uma imagem de melhor qualidade (melhora o OCR)
-                            const viewport = page.getViewport({ scale: 2.0 }); 
-                            
-                            const canvas = document.createElement('canvas');
-                            const context = canvas.getContext('2d');
-                            canvas.height = viewport.height;
-                            canvas.width = viewport.width;
-
-                            await page.render({ canvasContext: context, viewport: viewport }).promise;
-                            
-                            statusEl.textContent = `Analisando texto da página ${i}...`;
-                            const { data: { text } } = await worker.recognize(canvas);
-                            
-                            fullText += text + `\n\n--- FIM DA PÁGINA ${i} ---\n\n`;
-                            
-                            // Atualiza a div em tempo real a cada página
-                            outputEl.textContent = fullText;
-                        }
-                        
-                        await worker.terminate();
-                        logResult(fullText, "PDF"); // Chama a função para dar o status final
-                    };
+                    // Exibe o resultado na DIV
+                    outputEl.textContent = fullText;
                     
-                    fileReader.readAsArrayBuffer(file);
+                    // Remove o console.log e o alert
+                    console.log("Texto extraído com sucesso e exibido na página.");
 
-                } else {
-                    statusEl.textContent = "";
-                    alert("Tipo de arquivo não suportado. Carregue uma Imagem ou PDF.");
+
+                } catch (error) {
+                    console.error("Erro ao processar o PDF:", error);
+                    outputEl.textContent = "Ocorreu um erro ao ler o arquivo PDF. Verifique o console (F12).";
+                } finally {
+                    loadingEl.style.display = "none";
+                    loadingEl.textContent = "Analisando o texto do PDF..."; // Reseta o texto
                 }
-
-            } catch (error) {
-                console.error("Erro ao processar o arquivo:", error);
-                statusEl.textContent = "Ocorreu um erro ao ler o arquivo.";
-                outputEl.textContent = "Ocorreu um erro. Verifique o console (F12) para mais detalhes."
-            }
+            };
+            fileReader.readAsArrayBuffer(file);
         });
     </script>
 </body>
