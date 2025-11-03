@@ -144,7 +144,41 @@
                                 <div class="col-md-4 mb-3"><label for="comissaoesc" class="form-label">Comissão Escritório</label><input type="text" id="comissaoesc" class="form-control" required value="100"></div>
                             </div>
                         </div>
-                    </div>
+
+                        <div id="margem-nova-fields" style="display:none;">
+                             <div class="row mb-3">
+                                <div class="col-md-6 mb-2">
+                                    <label for="mn-clienteNome" class="form-label">Nome do Cliente</label>
+                                    <input type="text" id="mn-clienteNome" class="form-control" required>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="mn-clienteCpf" class="form-label">CPF do Cliente</label>
+                                    <input type="text" id="mn-clienteCpf" class="form-control" placeholder="000.000.000-00" required>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="mn-banco" class="form-label">Banco Destino</label>
+                                    <input type="text" id="mn-banco" class="form-control" value="Bradesco" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="mn-parcela" class="form-label">Valor da Parcela (Margem)</label>
+                                    <input type="text" id="mn-parcela" class="form-control" required placeholder="Ex: 350,00">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="mn-coeficiente" class="form-label">Coeficiente</label>
+                                    <input type="text" id="mn-coeficiente" class="form-control" required value="0.023">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="mn-prazo" class="form-label">Prazo (meses)</label>
+                                    <input type="number" id="mn-prazo" class="form-control" required value="96">
+                                </div>
+                            </div>
+                        </div>
+                        </div>
                 </div>
                 <div class="card-footer"><button class="btn btn-primary w-100" type="submit" id="submitBtn">Calcular</button></div>
             </div>
@@ -185,11 +219,13 @@
                 { value: 'portabilidade_exercito', text: 'Portabilidade', coef: '0.01930' },
                 { value: 'compra_exercito', text: 'Compra de Dívida', coef: '0.02' },
                 { value: 'margem_refin_exercito', text: 'Margem + Refin Bradesco', coef: '0.02' },
+                { value: 'margem_nova_exercito', text: 'Margem Nova', coef: '0.023' },
                 { value: 'negativado_exercito', text: 'Análise de Negativado', coef: '' }
             ],
             siape: [
                 { value: 'portabilidade_siape', text: 'Portabilidade', coef: '0.01930' },
                 { value: 'compra_siape', text: 'Compra de Dívida', coef: '0.02' },
+                { value: 'margem_nova_siape', text: 'Margem Nova', coef: '0.023' },
                 { value: 'negativado_siape', text: 'Análise de Negativado', coef: '' }
             ]
         };
@@ -232,41 +268,69 @@
             const simulacaoCard = document.getElementById('simulacaoCard');
             const negativadoFields = document.getElementById('negativado-fields');
             const simulacaoFields = document.getElementById('simulacao-fields');
+            const margemNovaFields = document.getElementById('margem-nova-fields'); // Pega o novo DIV
             const portRefinFields = document.getElementById('port-refin-fields');
             const compraFields = document.getElementById('compra-fields');
             const submitBtn = document.getElementById('submitBtn');
 
-            // Referências aos inputs
+            // Inputs 'negativado'
             const negativoInput = document.getElementById('negativo');
+            // Inputs 'simulacao'
             const parcelaInput = document.getElementById('parcela');
             const saldoInput = document.getElementById('saldodevedor');
             const coefInput = document.getElementById('coeficiente');
             const comGerenteInput = document.getElementById('comissaoGerente');
             const comEscInput = document.getElementById('comissaoesc');
+            // Inputs 'margem nova'
+            const mnNome = document.getElementById('mn-clienteNome');
+            const mnCpf = document.getElementById('mn-clienteCpf');
+            const mnBanco = document.getElementById('mn-banco'); // NOVO CAMPO
+            const mnParcela = document.getElementById('mn-parcela');
+            const mnCoef = document.getElementById('mn-coeficiente');
+            const mnPrazo = document.getElementById('mn-prazo');
+
 
             document.getElementById('pageTitle').textContent = operacao.text ? `Calculadora ${operacao.text} (${convenio.toUpperCase()})` : 'Calculadora Consignado';
 
-            if (operacaoValue.includes('negativado')) {
+            // Reseta todos os 'required' para false antes de aplicar as regras
+            [negativoInput, parcelaInput, saldoInput, coefInput, comGerenteInput, comEscInput, mnNome, mnCpf, mnBanco, mnParcela, mnCoef, mnPrazo].forEach(el => el.required = false);
+            
+            if (operacaoValue.includes('margem_nova')) {
+                clienteCard.style.display = 'none'; // Esconde o card de upload/manual
+                simulacaoCard.style.display = 'block';
+                negativadoFields.style.display = 'none';
+                simulacaoFields.style.display = 'none';
+                margemNovaFields.style.display = 'block'; // Mostra os campos de margem nova
+                
+                document.getElementById('simulacaoTitle').textContent = "2. Dados da Margem Nova";
+                submitBtn.textContent = 'Calcular Margem Nova';
+                if (operacao.coef) document.getElementById('mn-coeficiente').value = operacao.coef;
+
+                // Seta 'required' para os campos de margem nova
+                mnNome.required = true;
+                mnCpf.required = true;
+                mnBanco.required = true; // NOVO CAMPO
+                mnParcela.required = true;
+                mnCoef.required = true;
+                mnPrazo.required = true;
+
+            } else if (operacaoValue.includes('negativado')) {
                 clienteCard.style.display = 'block';
                 simulacaoCard.style.display = 'block';
                 negativadoFields.style.display = 'block';
                 simulacaoFields.style.display = 'none';
+                margemNovaFields.style.display = 'none';
                 document.getElementById('simulacaoTitle').textContent = "2. Cálculo";
                 submitBtn.textContent = 'Calcular Nova Parcela';
-
-                // Gerencia o 'required'
+                
                 negativoInput.required = true;
-                parcelaInput.required = false;
-                saldoInput.required = false;
-                coefInput.required = false;
-                comGerenteInput.required = false;
-                comEscInput.required = false;
 
-            } else {
+            } else { // Portabilidade, Compra, Refin
                 clienteCard.style.display = 'block';
                 simulacaoCard.style.display = 'block';
                 negativadoFields.style.display = 'none';
                 simulacaoFields.style.display = 'block';
+                margemNovaFields.style.display = 'none';
                 document.getElementById('simulacaoTitle').textContent = "2. Dados da Simulação";
                 submitBtn.textContent = 'Calcular Simulação Completa';
 
@@ -283,8 +347,7 @@
                     compraFields.style.display = 'none';
                 }
 
-                // Gerencia o 'required'
-                negativoInput.required = false;
+                // Seta 'required' para os campos de simulação padrão
                 parcelaInput.required = true;
                 saldoInput.required = true;
                 coefInput.required = true;
@@ -821,6 +884,75 @@
         }
 
 
+        // ##### NOVA FUNÇÃO PARA CALCULAR MARGEM NOVA #####
+        function calcularMargemNova() {
+            const operacao = document.getElementById('operacaoSelect').value;
+            
+            const nome = document.getElementById('mn-clienteNome').value;
+            const cpf = document.getElementById('mn-clienteCpf').value;
+            const banco = document.getElementById('mn-banco').value; // NOVO CAMPO
+            const parcela = moedaParaFloat(document.getElementById('mn-parcela').value);
+            const coeficiente = parseFloat(document.getElementById('mn-coeficiente').value.replace(",", ".")) || 0;
+            const prazo = parseInt(document.getElementById('mn-prazo').value, 10) || 0;
+
+            // Validações
+            if (!nome || !cpf) return showToast('Preencha o Nome e CPF do cliente.', 'danger');
+            if (!banco) return showToast('Preencha o Banco Destino.', 'danger'); // NOVO CAMPO
+            if (!parcela || parcela <= 0) return showToast('Preencha um Valor de Parcela válido.', 'danger');
+            if (!coeficiente || coeficiente <= 0) return showToast('Preencha um Coeficiente válido.', 'danger');
+            if (!prazo || prazo <= 0) return showToast('Preencha um Prazo válido.', 'danger');
+
+            const valorLiberado = parcela / coeficiente;
+            const valorTotalContrato = parcela * prazo;
+
+            // Salva no objeto global para os PDFs
+            calculoDetalhado = { 
+                tipo: operacao,
+                nome: nome,
+                cpf: cpf,
+                novoBanco: banco, // NOVO CAMPO
+                novaParcelaValor: parcela, 
+                coef: coeficiente, 
+                novoPrazo: prazo,
+                valorLiberado: valorLiberado,
+                valorTotalContrato: valorTotalContrato
+            };
+
+            // Exibe o resultado na tela
+            const resultadoDiv = document.getElementById("resultadoFinal");
+            resultadoDiv.innerHTML = `
+                <div class="card">
+                    <div class="card-header bg-primary text-white"><h3 class="h5 mb-0">Resultado da Simulação de Margem Nova</h3></div>
+                    <div class="card-body">
+                        <div class="text-center mb-4 border-bottom pb-3">
+                            <h4 class="text-muted">Valor Liberado (Estimado)</h4>
+                            <p class="resultado-final-valor text-success">${formatarMoeda(valorLiberado)}</p>
+                        </div>
+                        <h5>Detalhamento:</h5>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between"><span>Valor da Parcela:</span> <strong>${formatarMoeda(parcela)}</strong></li>
+                            <li class="list-group-item d-flex justify-content-between"><span>Prazo:</span> <strong>${prazo} meses</strong></li>
+                            <li class="list-group-item d-flex justify-content-between"><span>Coeficiente Usado:</span> <strong>${coeficiente.toFixed(8)}</strong></li>
+                            <li class="list-group-item d-flex justify-content-between bg-light-subtle">
+                                <strong>Valor Total do Contrato (Parcela x Prazo):</strong> 
+                                <strong class="text-primary">${formatarMoeda(valorTotalContrato)}</strong>
+                             </li>
+                        </ul>
+                    </div>
+                    <div class="card-footer d-grid gap-2 d-sm-flex justify-content-sm-center">
+                        <button id="baixarPdfClienteBtn" class="btn btn-success" type="button">Baixar PDF (Cliente)</button>
+                        <button id="baixarPdfEscritorioBtn" class="btn btn-secondary" type="button">Baixar PDF (Escritório)</button>
+                    </div>
+                </div>`;
+            
+            resultadoDiv.style.display = 'block';
+            resultadoDiv.scrollIntoView({ behavior: 'smooth' });
+            // Adiciona os listeners aos novos botões
+            document.getElementById("baixarPdfClienteBtn").addEventListener("click", gerarPDFCliente);
+            document.getElementById("baixarPdfEscritorioBtn").addEventListener("click", gerarPDFEscritorio);
+        }
+
+
         function calcularSimulacaoCompleta() {
             const operacao = document.getElementById('operacaoSelect').value;
             calculoDetalhado = { tipo: operacao };
@@ -845,7 +977,11 @@
 
 
             const novoS = p / coef;
-            calculoDetalhado = { ...calculoDetalhado, p, s, d, novoS, comissaoG, comissaoEsc, coef, novoBanco, novoPrazo, novaParcelaValor: p };
+            // Pega nome/cpf dos campos de entrada manual se estiverem preenchidos, senão usa os do PDF
+            const nomeFinal = document.getElementById('clienteNome').value.trim() || clienteNomePDF;
+            const cpfFinal = document.getElementById('clienteCpf').value.trim() || clienteCpfPDF;
+
+            calculoDetalhado = { ...calculoDetalhado, nome: nomeFinal, cpf: cpfFinal, p, s, d, novoS, comissaoG, comissaoEsc, coef, novoBanco, novoPrazo, novaParcelaValor: p };
 
             let resultadoHtml = '', valorOfertaFinal = 0;
 
@@ -917,6 +1053,22 @@
                     <li class="list-group-item d-flex justify-content-between"><span>(=) Valor Geral Líquido (antes Escritório):</span> <strong>${formatarMoeda(valorGeral)}</strong></li>
                     <li class="list-group-item d-flex justify-content-between"><span>(-) Comissão Escritório:</span> <span class="text-danger">- ${formatarMoeda(comissaoEsc)}</span></li>`;
             }
+            
+            // ########## INÍCIO DA LÓGICA DO COEFICIENTE REAL ##########
+            let coeficienteReal = 0;
+            // Evita divisão por zero. O saldo (s) pode ser 0 (ex: refin de margem)
+            if ((valorOfertaFinal + s) > 0) { 
+                coeficienteReal = p / (valorOfertaFinal + s);
+            }
+            calculoDetalhado.coeficienteReal = coeficienteReal; // Salva no objeto de detalhes
+
+            // Adiciona o Coeficiente Real ao HTML
+            resultadoHtml += `<li class="list-group-item d-flex justify-content-between bg-light-subtle">
+                                <strong>Coeficiente Real (Calculado):</strong> 
+                                <strong class="text-primary">${coeficienteReal.toFixed(8)}</strong>
+                             </li>`;
+            // ########## FIM DA LÓGICA DO COEFICIENTE REAL ##########
+
 
             const resultadoDiv = document.getElementById("resultadoFinal");
             resultadoDiv.innerHTML = `
@@ -974,42 +1126,52 @@
 
             doc.setFontSize(18); doc.text(`Simulação de ${operacaoText} (${tipo})`, pageWidth / 2, y, { align: 'center' }); y += 20; // Centralizado
 
-            const nomeFinal = document.getElementById('clienteNome').value.trim() || clienteNomePDF || 'Não informado';
-            const cpfFinal = document.getElementById('clienteCpf').value.trim() || clienteCpfPDF || 'Não informado';
-            const isManualTabActive = document.getElementById('manual-tab').classList.contains('active');
-
-            // Determina a lista de parcelas a ser exibida
-            const listaDeParcelas = isManualTabActive ? parcelasManuais.map(p => {
-                const parcelasRestantes = (p.totalParcelas || 0) - (p.parcelasPagas || 0);
-                const saldoManual = (parcelasRestantes > 0) ? p.parcela * parcelasRestantes * 0.70 : 0;
-                return { banco: p.banco, parcela: formatarMoeda(p.parcela), saldo: formatarMoeda(saldoManual), status: `${p.parcelasPagas || 0} de ${p.totalParcelas || 0}`};
-            }) : parcelasSelecionadasPDF; // Usa as parcelas extraídas do PDF
-
+            // ##### LÓGICA DE DADOS DO CLIENTE ATUALIZADA #####
+            // Pega o nome/cpf do objeto de cálculo, que foi preenchido pela função de cálculo correta
+            const nomeFinal = calculoDetalhado?.nome || 'Não informado';
+            const cpfFinal = calculoDetalhado?.cpf || 'Não informado';
+            
             doc.setFontSize(12); doc.text("Dados do Cliente", 15, y); y += 8;
             doc.setFontSize(10); doc.text(`Nome: ${nomeFinal}`, 15, y); y += 6; doc.text(`CPF: ${cpfFinal}`, 15, y);
 
-            // Exibe a lista de contratos unificados apenas se houver algum
-            if (listaDeParcelas && listaDeParcelas.length > 0) {
-                 y += 16;
-                 doc.setFontSize(12); doc.text("Contratos Unificados (Originais)", 15, y); y += 8;
-                 doc.setFontSize(9);
-                 listaDeParcelas.forEach(p => {
-                     // Quebra a linha se for muito longa (ajuste a largura conforme necessário)
-                     const linhaContrato = `- Banco: ${p.banco} | Parcela: ${p.parcela} | Saldo Aprox.: ${p.saldo} | Status: ${p.status}`;
-                     const linhas = doc.splitTextToSize(linhaContrato, pageWidth - 30); // 15 de margem de cada lado
-                     doc.text(linhas, 15, y);
-                     y += (linhas.length * 4); // Ajusta o espaçamento baseado no número de linhas geradas
-                 });
-             } else {
-                  y += 10; // Adiciona um espaço mesmo se não houver contratos listados
-             }
+
+            // ##### LÓGICA DE CONTRATOS ATUALIZADA #####
+            // Só mostra a lista de contratos se NÃO for Margem Nova
+            if (calculoDetalhado && !calculoDetalhado.tipo.includes('margem_nova')) {
+                const isManualTabActive = document.getElementById('manual-tab').classList.contains('active');
+                const listaDeParcelas = isManualTabActive ? parcelasManuais.map(p => {
+                    const parcelasRestantes = (p.totalParcelas || 0) - (p.parcelasPagas || 0);
+                    const saldoManual = (parcelasRestantes > 0) ? p.parcela * parcelasRestantes * 0.70 : 0;
+                    return { banco: p.banco, parcela: formatarMoeda(p.parcela), saldo: formatarMoeda(saldoManual), status: `${p.parcelasPagas || 0} de ${p.totalParcelas || 0}`};
+                }) : parcelasSelecionadasPDF; 
+
+                if (listaDeParcelas && listaDeParcelas.length > 0) {
+                     y += 16;
+                     doc.setFontSize(12); doc.text("Contratos Unificados (Originais)", 15, y); y += 8;
+                     doc.setFontSize(9);
+                     listaDeParcelas.forEach(p => {
+                         const linhaContrato = `- Banco: ${p.banco} | Parcela: ${p.parcela} | Saldo Aprox.: ${p.saldo} | Status: ${p.status}`;
+                         const linhas = doc.splitTextToSize(linhaContrato, pageWidth - 30); 
+                         doc.text(linhas, 15, y);
+                         y += (linhas.length * 4); 
+                     });
+                 } else {
+                      y += 10; 
+                 }
+            } else {
+                 y += 10; // Adiciona um espaço se for Margem Nova
+            }
 
 
             y += 10;
             doc.setFontSize(12); doc.text("Dados do Novo Contrato", 15, y); y += 8;
             doc.setFontSize(10);
-             // Verifica se calculoDetalhado existe antes de acessar suas propriedades
-            doc.text(`Banco: ${calculoDetalhado?.novoBanco || 'Não inf.'}`, 15, y); y += 6;
+            
+            // ##### LÓGICA DO BANCO ATUALIZADA #####
+            // Agora todas as operações (incluindo margem nova) preenchem 'novoBanco'
+            let bancoNovoTexto = `Banco: ${calculoDetalhado?.novoBanco || '(Não especificado)'}`;
+            doc.text(bancoNovoTexto, 15, y); y += 6;
+            
             doc.text(`Prazo: ${calculoDetalhado?.novoPrazo || 'Não inf.'}x`, 15, y); y += 6;
             doc.text(`Valor da Parcela: ${formatarMoeda(calculoDetalhado?.novaParcelaValor)}`, 15, y); y += 6;
 
@@ -1019,16 +1181,15 @@
 
         function gerarNomeArquivo(tipoPdf) {
             const dataFormatada = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
-            const nomeManual = document.getElementById('clienteNome').value.trim();
-            let nomeCliente = (nomeManual || clienteNomePDF || 'cliente').trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-             // Garante que o nome do arquivo não fique vazio
+            // Pega o nome do cliente direto do objeto de cálculo
+            let nomeCliente = (calculoDetalhado?.nome || 'cliente').trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+             
              if (!nomeCliente) nomeCliente = 'cliente_desconhecido';
-            const operacao = document.getElementById('operacaoSelect').value || 'calculo'; // Fallback para operação
+            const operacao = document.getElementById('operacaoSelect').value || 'calculo'; 
             return `${operacao}_${nomeCliente}_${tipoPdf}_${dataFormatada}.pdf`;
         }
 
         function gerarPDFCliente() {
-             // Verifica se há dados calculados antes de gerar o PDF
              if (!calculoDetalhado || Object.keys(calculoDetalhado).length === 0) {
                  showToast("Nenhum cálculo foi realizado ainda.", "warning");
                  return;
@@ -1036,18 +1197,35 @@
             const { jsPDF } = window.jspdf; const doc = new jsPDF();
             let y = gerarPDFBase(doc, "Cliente");
 
-            if (dadosNegativado) { // Se veio do fluxo de negativado, mostra o resumo
+            if (dadosNegativado) { 
                 y += 10; doc.setFontSize(12); doc.text("Resumo do Cálculo Negativado", 15, y); y += 8; doc.setFontSize(10);
                 doc.text(`Parcelas Originais: ${formatarMoeda(dadosNegativado.totalParcelas)}`, 15, y); y += 6;
                 doc.text(`Valor Negativo Informado: ${formatarMoeda(dadosNegativado.negativo)}`, 15, y); y += 6;
                 doc.text(`Nova Parcela Calculada: ${formatarMoeda(dadosNegativado.novaParcela)}`, 15, y);
-                y += 6; // Espaço extra após o resumo do negativado
+                y += 6; 
             }
 
-            y += 10; doc.setFontSize(12); doc.text("Resumo da Operação Simulada", 15, y); y += 8; doc.setFontSize(10);
-            doc.text(`Saldo Devedor Total a Quitar (Aprox.): ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 10;
-            doc.setFontSize(14); doc.setFont('helvetica', 'bold');
-            doc.text(`Valor Líquido Estimado para o Cliente: ${formatarMoeda(calculoDetalhado.valorOfertaFinal)}`, 15, y);
+            y += 10;
+            doc.setFontSize(12); 
+            
+            // ##### LÓGICA DE RESULTADO ATUALIZADA #####
+            if(calculoDetalhado.tipo.includes('margem_nova')) {
+                doc.text("Resumo da Simulação de Margem Nova", 15, y); y += 8;
+                doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+                doc.text(`Valor Liberado (Estimado): ${formatarMoeda(calculoDetalhado.valorLiberado)}`, 15, y); y += 10;
+                doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+                doc.text(`Valor Total do Contrato: ${formatarMoeda(calculoDetalhado.valorTotalContrato)}`, 15, y);
+            
+            } else { // Lógica antiga para Port/Refin/Compra
+                doc.text("Resumo da Operação Simulada", 15, y); y += 8; doc.setFontSize(10);
+                doc.text(`Saldo Devedor Total a Quitar (Aprox.): ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 10;
+                doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+                doc.text(`Valor Líquido Estimado para o Cliente: ${formatarMoeda(calculoDetalhado.valorOfertaFinal)}`, 15, y);
+                y += 10; 
+                doc.setFontSize(10); doc.setFont('helvetica', 'normal'); 
+                doc.text(`Coeficiente Real (para conferência): ${calculoDetalhado.coeficienteReal ? calculoDetalhado.coeficienteReal.toFixed(8) : 'N/A'}`, 15, y);
+            }
+            
             y += 15;
             doc.setFontSize(8); doc.setFont('helvetica', 'italic');
             doc.text("Valores aproximados. A proposta final pode variar.", 15, y);
@@ -1072,34 +1250,53 @@
                  y += 6;
             }
 
-            y += 10; doc.setFontSize(12); doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
-            doc.text(`Novo Saldo (Gerado pela Parcela): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
-            doc.text(`Saldo Devedor a Quitar: ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 6;
-            doc.text(`Produto (Opcional): ${formatarMoeda(calculoDetalhado.d)}`, 15, y); y += 6;
-            doc.text("--------------------------------------------------", 15, y); y += 6;
+            y += 10; 
+            doc.setFontSize(12); 
+            
+            // ##### LÓGICA DE RESULTADO ATUALIZADA #####
+            if(calculoDetalhado.tipo.includes('margem_nova')) {
+                doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
+                doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+                doc.text(`Valor Liberado (Estimado): ${formatarMoeda(calculoDetalhado.valorLiberado)}`, 15, y); y += 10;
+                doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+                doc.text(`Valor Total do Contrato: ${formatarMoeda(calculoDetalhado.valorTotalContrato)}`, 15, y); y += 6;
+                doc.text(`Coeficiente Informado: ${calculoDetalhado.coef ? calculoDetalhado.coef.toFixed(8) : 'N/A'}`, 15, y);
 
-            if (calculoDetalhado.tipo.includes('compra')) {
-                doc.text(`Valor Bruto Disponível: ${formatarMoeda(calculoDetalhado.sub)}`, 15, y); y += 6;
-                doc.text(`Comissão Investidor (${(calculoDetalhado.investidorR * 100).toFixed(0)}% sobre Saldo): - ${formatarMoeda(calculoDetalhado.investidor)}`, 15, y); y += 6;
-                doc.text(`Comissão Gerente (${calculoDetalhado.comissaoG}% sobre Bruto): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += 6;
-            } else { // Portabilidade ou Refin
-                doc.text(`Valor Bruto Liberado (Troco Inicial): ${formatarMoeda(calculoDetalhado.valorBrutoLiberado)}`, 15, y); y += 6;
-                if (calculoDetalhado.valorQuitado > 0) {
-                    doc.text(`Valor Quitado Adicional: - ${formatarMoeda(calculoDetalhado.valorQuitado)}`, 15, y); y += 6;
-                    doc.text(`Comissão Quitação Adicional (10%): - ${formatarMoeda(calculoDetalhado.comissaoQuitado)}`, 15, y); y += 6;
+            } else { // Lógica antiga para Port/Refin/Compra
+                doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
+                doc.text(`Novo Saldo (Gerado pela Parcela): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
+                doc.text(`Saldo Devedor a Quitar: ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 6;
+                doc.text(`Produto (Opcional): ${formatarMoeda(calculoDetalhado.d)}`, 15, y); y += 6;
+                doc.text("--------------------------------------------------", 15, y); y += 6;
+
+                if (calculoDetalhado.tipo.includes('compra')) {
+                    doc.text(`Valor Bruto Disponível: ${formatarMoeda(calculoDetalhado.sub)}`, 15, y); y += 6;
+                    doc.text(`Comissão Investidor (${(calculoDetalhado.investidorR * 100).toFixed(0)}% sobre Saldo): - ${formatarMoeda(calculoDetalhado.investidor)}`, 15, y); y += 6;
+                    doc.text(`Comissão Gerente (${calculoDetalhado.comissaoG}% sobre Bruto): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += 6;
+                } else { 
+                    doc.text(`Valor Bruto Liberado (Troco Inicial): ${formatarMoeda(calculoDetalhado.valorBrutoLiberado)}`, 15, y); y += 6;
+                    if (calculoDetalhado.valorQuitado > 0) {
+                        doc.text(`Valor Quitado Adicional: - ${formatarMoeda(calculoDetalhado.valorQuitado)}`, 15, y); y += 6;
+                        doc.text(`Comissão Quitação Adicional (10%): - ${formatarMoeda(calculoDetalhado.comissaoQuitado)}`, 15, y); y += 6;
+                    }
+                    doc.text(`Comissão Gerente (${calculoDetalhado.comissaoG}% sobre Líquido): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += 6;
                 }
-                doc.text(`Comissão Gerente (${calculoDetalhado.comissaoG}% sobre Líquido): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += 6;
-            }
 
-            doc.setFont('helvetica', 'bold');
-            doc.text(`Valor Geral Líquido (antes Escritório): ${formatarMoeda(calculoDetalhado.valorGeral)}`, 15, y); y += 6;
-            doc.setFont('helvetica', 'normal');
-            doc.text(`Comissão Escritório: - ${formatarMoeda(calculoDetalhado.comissaoEsc)}`, 15, y); y += 8;
-            doc.setFontSize(14); doc.setFont('helvetica', 'bold');
-            doc.text(`Valor Líquido Cliente (Estimado): ${formatarMoeda(calculoDetalhado.valorOfertaFinal)}`, 15, y);
-             y += 15;
-             doc.setFontSize(8); doc.setFont('helvetica', 'italic');
-             doc.text("Valores aproximados para análise interna.", 15, y);
+                doc.setFont('helvetica', 'bold');
+                doc.text(`Valor Geral Líquido (antes Escritório): ${formatarMoeda(calculoDetalhado.valorGeral)}`, 15, y); y += 6;
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Comissão Escritório: - ${formatarMoeda(calculoDetalhado.comissaoEsc)}`, 15, y); y += 8;
+                doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+                doc.text(`Valor Líquido Cliente (Estimado): ${formatarMoeda(calculoDetalhado.valorOfertaFinal)}`, 15, y);
+                y += 10; 
+                doc.setFontSize(10); doc.setFont('helvetica', 'normal'); 
+                doc.text(`Coeficiente Input (Simulação): ${calculoDetalhado.coef ? calculoDetalhado.coef.toFixed(8) : 'N/A'}`, 15, y); y += 6;
+                doc.text(`Coeficiente Real (Calculado): ${calculoDetalhado.coeficienteReal ? calculoDetalhado.coeficienteReal.toFixed(8) : 'N/A'}`, 15, y);
+            }
+            
+            y += 15; 
+            doc.setFontSize(8); doc.setFont('helvetica', 'italic');
+            doc.text("Valores aproximados para análise interna.", 15, y);
 
 
             doc.save(gerarNomeArquivo('escritorio'));
@@ -1113,7 +1310,6 @@
             uploadArea.addEventListener('drop', (e) => {
                  e.preventDefault();
                  uploadArea.classList.remove('hover');
-                 // Garante que apenas um arquivo PDF seja processado
                  if (e.dataTransfer.files.length > 0 && e.dataTransfer.files[0].type === "application/pdf") {
                      document.getElementById('pdf-upload').files = e.dataTransfer.files;
                      document.getElementById('pdf-upload').dispatchEvent(new Event('change'));
@@ -1129,23 +1325,24 @@
             document.getElementById('operacaoSelect').addEventListener('change', atualizarVisibilidadeUI);
 
             document.getElementById("calcForm").addEventListener("submit", function (e) {
-                e.preventDefault(); // Previne o envio padrão do formulário
+                e.preventDefault(); 
 
-                 // Validações básicas de campos obrigatórios antes de calcular
                  const operacao = document.getElementById('operacaoSelect').value;
                  if (!operacao) {
                      showToast("Selecione um Tipo de Operação.", "warning");
                      return;
                  }
+                 
+                 // ##### ROTEAMENTO DA LÓGICA DE CÁLCULO #####
+                 if (operacao.includes('margem_nova')) {
+                    calcularMargemNova();
 
-                 // Validações específicas para cada tipo de cálculo
-                 if (operacao.includes('negativado')) {
+                 } else if (operacao.includes('negativado')) {
                      if (!document.getElementById("negativo").value) {
                          showToast("Preencha o Valor Negativo do Cliente.", "warning");
-                         document.getElementById("negativo").focus(); // Foca no campo
+                         document.getElementById("negativo").focus(); 
                          return;
                      }
-                     // Verifica se há contratos selecionados/adicionados
                      const isManual = document.getElementById('manual-tab').classList.contains('active');
                      const hasContracts = isManual ? parcelasManuais.length > 0 : document.querySelectorAll('.loan-checkbox:checked').length > 0;
                      if (!hasContracts) {
@@ -1153,11 +1350,10 @@
                           return;
                      }
                      calcularNegativado();
-                 } else {
-                     // Verifica campos obrigatórios da simulação completa
+
+                 } else { // Port/Refin/Compra
                      if (!document.getElementById("parcela").value || !document.getElementById("saldodevedor").value || !document.getElementById("coeficiente").value || !document.getElementById("comissaoGerente").value || !document.getElementById("comissaoesc").value) {
                           showToast("Preencha todos os campos obrigatórios da simulação (Parcela, Saldo, Coeficiente, Comissões).", "warning");
-                          // Poderia focar no primeiro campo vazio aqui, se desejado
                           return;
                      }
                      calcularSimulacaoCompleta();
@@ -1170,18 +1366,16 @@
                       return;
                  }
                  sessionStorage.setItem('calculoNegativadoData', JSON.stringify(calculoDetalhado));
-                 const convenio = document.getElementById('convenioSelect').value; // Mantém o convênio atual
+                 const convenio = document.getElementById('convenioSelect').value; 
                  const opValue = (convenio === 'exercito') ? 'portabilidade_exercito' : 'portabilidade_siape';
 
-                 // Define os valores antes de atualizar, para garantir a seleção correta
                  document.getElementById('convenioSelect').value = convenio;
-                 // As operações serão atualizadas, então definimos depois
                  atualizarOperacoes();
                  document.getElementById('operacaoSelect').value = opValue;
 
-                 verificarDadosNegativado(); // Preenche os campos com dados do negativado
-                 atualizarVisibilidadeUI(); // Garante que a UI correta seja mostrada
-                 document.getElementById('simulacaoCard').scrollIntoView({ behavior: 'smooth', block: 'start' }); // Rola para o card de simulação
+                 verificarDadosNegativado(); 
+                 atualizarVisibilidadeUI(); 
+                 document.getElementById('simulacaoCard').scrollIntoView({ behavior: 'smooth', block: 'start' }); 
              });
 
 
@@ -1191,12 +1385,12 @@
                      return;
                  }
                  sessionStorage.setItem('calculoNegativadoData', JSON.stringify(calculoDetalhado));
-                 const convenio = document.getElementById('convenioSelect').value; // Mantém o convênio atual
+                 const convenio = document.getElementById('convenioSelect').value; 
                  const opValue = (convenio === 'exercito') ? 'compra_exercito' : 'compra_siape';
 
                  document.getElementById('convenioSelect').value = convenio;
                  atualizarOperacoes();
-                 document.getElementById('operacaoSelect').value = opValue; // Garante seleção
+                 document.getElementById('operacaoSelect').value = opValue; 
 
                  verificarDadosNegativado();
                  atualizarVisibilidadeUI();
@@ -1207,15 +1401,34 @@
             document.querySelectorAll('input[name="quitacao"]').forEach(r => r.addEventListener('change', function() {
                  const quitadoContainer = document.getElementById('quitadoContainer');
                  quitadoContainer.style.display = this.value === 'sim' ? 'block' : 'none';
-                 // Limpa o valor se "Não" for selecionado
                  if (this.value === 'nao') {
                      document.getElementById('valorQuitado').value = '';
                  }
              }));
 
-            // Inicializa a UI com base nas seleções padrão
-            verificarDadosNegativado(); // Verifica se há dados de negativado na sessionStorage
-            atualizarOperacoes(); // Carrega as operações iniciais para o convênio padrão
+            // Aplica máscara de moeda aos campos relevantes
+             ['#manualParcela', '#negativo', '#parcela', '#saldodevedor', '#desconto', '#valorQuitado', '#comissaoesc', '#mn-parcela'].forEach(selector => {
+                const el = document.querySelector(selector);
+                if (el) {
+                    el.addEventListener('blur', function() {
+                        if (this.value.trim() !== "") {
+                            const valorNum = moedaParaFloat(this.value);
+                            this.value = formatarInputMoeda(valorNum);
+                        }
+                    });
+                     el.addEventListener('focus', function() {
+                         if (this.value.trim() !== "") {
+                            const valorNum = moedaParaFloat(this.value);
+                            this.value = (valorNum === 0) ? '' : valorNum.toString().replace('.', ',');
+                         }
+                     });
+                }
+             });
+
+
+            // Inicializa a UI
+            verificarDadosNegativado(); 
+            atualizarOperacoes(); 
         });
 
     </script>
