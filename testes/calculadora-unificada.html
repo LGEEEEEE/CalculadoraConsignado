@@ -57,20 +57,24 @@
             </div>
         </div>
 
+        <div class="card mb-4">
+            <div class="card-header"><h2 class="h5 mb-0">Empresa Responsável</h2></div>
+            <div class="card-body">
+                <div class="mb-0"> <label for="empresaSelect" class="form-label">Empresa Responsável pela Simulação</label>
+                    <select id="empresaSelect" class="form-select">
+                        <option value="alianca" selected>Aliança Consig</option>
+                        <option value="polo">Polo Promotora</option>
+                        <option value="estilo">Estilo Promotora</option>
+                    </select>
+                </div>
+            </div>
+        </div>
         <div id="infoNegativado" class="alert alert-warning" style="display:none;"></div>
 
         <form id="calcForm">
             <div class="card mb-4" id="clienteCard">
                 <div class="card-header"><h2 class="h5 mb-0">1. Dados do Cliente e Contratos</h2></div>
                 <div class="card-body">
-                    <div class="mb-3">
-                        <label for="empresaSelect" class="form-label">Empresa Responsável</label>
-                        <select id="empresaSelect" class="form-select">
-                            <option value="alianca" selected>Aliança Consig</option>
-                            <option value="polo">Polo Promotora</option>
-                            <option value="estilo">Estilo Promotora</option>
-                        </select>
-                    </div>
                     <ul class="nav nav-tabs" id="entryTab" role="tablist">
                         <li class="nav-item" role="presentation"><button class="nav-link active" id="pdf-tab" data-bs-toggle="tab" data-bs-target="#pdf-tab-pane" type="button" role="tab">Carregar Extrato</button></li>
                         <li class="nav-item" role="presentation"><button class="nav-link" id="manual-tab" data-bs-toggle="tab" data-bs-target="#manual-tab-pane" type="button" role="tab">Inserir Manualmente</button></li>
