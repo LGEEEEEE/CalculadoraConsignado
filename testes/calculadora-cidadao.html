@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Calculadora Cidadão com Extrator PDF</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f6f9; }
+        .container { max-width: 900px; margin-top: 30px; margin-bottom: 50px; }
+        
+        /* Estilo dos Cards */
+        .card { border: none; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .card-header { background-color: #fff; border-bottom: 1px solid #eee; font-weight: 700; color: #2c3e50; padding: 15px 20px; border-radius: 10px 10px 0 0 !important; }
+        
+        /* Área de Upload */
+        .upload-area { border: 2px dashed #cbd5e0; border-radius: 8px; padding: 40px; text-align: center; cursor: pointer; background-color: #fff; transition: all 0.3s ease; }
+        .upload-area:hover, .upload-area.hover { border-color: #3498db; background-color: #f0f8ff; }
+        #pdf-upload { display: none; }
+        
+        /* Lista de Empréstimos Encontrados */
+        .loan-item { cursor: pointer; transition: transform 0.2s, background-color 0.2s; border: 1px solid #eee; border-radius: 8px; margin-bottom: 10px; padding: 15px; background: white; }
+        .loan-item:hover { background-color: #f8f9fa; transform: translateY(-2px); border-color: #3498db; }
+        .loan-bank { font-weight: bold; color: #2c3e50; font-size: 1.1em; }
+        .loan-values { color: #27ae60; font-weight: 600; }
+        .loan-badge { font-size: 0.8em; background-color: #eef2f7; color: #555; padding: 4px 8px; border-radius: 4px; }
+
+        /* Calculadora */
+        .calc-input-group label { font-weight: 600; font-size: 0.9em; color: #555; margin-bottom: 5px; }
+        .form-control { padding: 12px; border-radius: 6px; border: 1px solid #ced4da; }
+        .form-control:focus { border-color: #3498db; box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25); }
+        
+        /* Campo Calculado (Resultado) */
+        .calculated-field { background-color: #d4edda; border-color: #c3e6cb; color: #155724; font-weight: bold; }
+        
+        .btn-calcular { background-color: #27ae60; border: none; padding: 12px 30px; font-weight: 600; }
+        .btn-calcular:hover { background-color: #219150; }
+
+        /* Resultado Texto (Estilo do Print) */
+        #resultadoTexto { font-size: 1.1em; color: #333; background-color: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 5px solid #27ae60; margin-top: 20px; display: none; }
+
+        /* Estilo das Abas */
+        .nav-tabs .nav-link { color: #495057; }
+        .nav-tabs .nav-link.active { font-weight: bold; color: #0d6efd; }
+    </style>
+</head>
+
+<body>
+
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div id="liveToast" class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastBody"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2 class="text-center mb-4" style="color: #2c3e50;">Calculadora do Cidadão Integrad</h2>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>1. Importar Dados</span>
+                <span class="badge bg-secondary" id="convenio-badge">Aguardando Arquivo</span>
+            </div>
+            <div class="card-body">
+                
+                <ul class="nav nav-tabs mb-3" id="importTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="pdf-tab" data-bs-toggle="tab" data-bs-target="#pdf-tab-pane" type="button" role="tab">Carregar Extrato PDF</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="sobre-tab" data-bs-toggle="tab" data-bs-target="#sobre-tab-pane" type="button" role="tab">Sobre a Ferramenta</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="importTabContent">
+                    
+                    <div class="tab-pane fade show active" id="pdf-tab-pane" role="tabpanel">
+                        <input type="file" id="pdf-upload" accept=".pdf">
+                        <label for="pdf-upload" class="upload-area w-100" id="upload-label">
+                            <div id="upload-text">
+                                <h5 class="mb-2">Clique ou arraste o PDF aqui</h5>
+                                <p class="text-muted small mb-0">Suporta Extratos do Exército e SIAPE (Texto ou OCR)</p>
+                            </div>
+                            <div id="loading" class="d-none align-items-center justify-content-center">
+                                <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem;"></div>
+                                <strong class="ms-3 fs-5" id="loading-text">Processando...</strong>
+                            </div>
+                        </label>
+
+                        <div id="listaEmprestimos" class="mt-4"></div>
+                    </div>
+
+                    <div class="tab-pane fade p-3" id="sobre-tab-pane" role="tabpanel">
+                        <h5 class="text-primary">Como funciona?</h5>
+                        <p>Esta ferramenta combina duas tecnologias poderosas:</p>
+                        <ol>
+                            <li><strong>Leitura Inteligente de PDF:</strong> Utiliza algoritmos avançados (Regex e OCR Tesseract) para ler extratos do <strong>SIAPE</strong> e <strong>Exército (eConsig)</strong>, identificando automaticamente bancos, parcelas e saldos aproximados.</li>
+                            <li><strong>Matemática Financeira Oficial:</strong> Aplica a mesma lógica da <em>Calculadora do Cidadão</em> do Banco Central (Sistema Price) para calcular taxas de juros reais, prazos remanescentes ou valores financiados.</li>
+                        </ol>
+                        <div class="alert alert-light border">
+                            <strong>Dica:</strong> Clique em qualquer contrato identificado na lista para preencher automaticamente a calculadora abaixo e conferir se a taxa de juros cobrada está correta.
+                        </div>
+                        <small class="text-muted">Os dados são processados localmente no seu navegador. Nenhum arquivo é enviado para servidores externos.</small>
+                    </div>
+
+                </div>
+
+                <select id="convenioSelect" style="display:none;">
+                    <option value="exercito">Exército</option>
+                    <option value="siape">SIAPE</option>
+                </select>
+                <select id="operacaoSelect" style="display:none;"><option value="padrao">Padrão</option></select>
+            </div>
+        </div>
+
+        <form id="calcForm">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    2. Calculadora do Cidadão (Prestações Fixas)
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info py-2 mb-4">
+                        <small><i class="bi bi-info-circle"></i> Preencha 3 campos e deixe <strong>1 vazio</strong> para descobrir o valor dele. Se você clicou em um empréstimo acima, o prazo e a prestação já foram preenchidos.</small>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6 calc-input-group">
+                            <label for="meses">Nº de meses (n)</label>
+                            <input type="number" class="form-control" id="meses" placeholder="Ex: 96">
+                        </div>
+                        <div class="col-md-6 calc-input-group">
+                            <label for="taxa">Taxa de juros mensal % (i)</label>
+                            <input type="text" class="form-control" id="taxa" placeholder="Ex: 1,50">
+                        </div>
+                        <div class="col-md-6 calc-input-group">
+                            <label for="prestacao">Valor da prestação (PMT)</label>
+                            <input type="text" class="form-control" id="prestacao" placeholder="R$ 0,00">
+                        </div>
+                        <div class="col-md-6 calc-input-group">
+                            <label for="valorFinanciado">Valor financiado / Saldo Devedor (PV)</label>
+                            <input type="text" class="form-control" id="valorFinanciado" placeholder="R$ 0,00">
+                        </div>
+                    </div>
+                    
+                    <div id="resultadoTexto" class="text-center fw-bold"></div>
+                </div>
+                <div class="card-footer d-flex justify-content-between bg-white">
+                    <button type="button" class="btn btn-outline-secondary" onclick="limparCalculadora()">Limpar</button>
+                    <button type="submit" class="btn btn-success btn-calcular">Calcular</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js'></script>
+
+    <script>
+        // Configuração do Worker (Versão compatível com a Lib Principal)
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        // --- UTILITÁRIOS GERAIS ---
+        const moedaParaFloat = (v) => parseFloat(String(v || '').replace('R$', '').trim().replace(/\./g, "").replace(",", ".")) || 0;
+        const formatarMoeda = (v) => (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+        const formatarDecimal = (v) => (v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+
+        function showToast(msg, type = 'primary') {
+            const toastEl = document.getElementById('liveToast');
+            const toastBody = document.getElementById('toastBody');
+            toastEl.className = `toast align-items-center text-white bg-${type === 'danger' ? 'danger' : (type === 'warning' ? 'warning' : 'success')} border-0`;
+            toastBody.textContent = msg;
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+
+        // ============================================================
+        // PARTE 1: LÓGICA DE EXTRAÇÃO (PDF)
+        // ============================================================
+        
+        let clienteNomePDF = '', clienteCpfPDF = ''; 
+
+        async function parsearPdf(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            clienteNomePDF = ''; clienteCpfPDF = '';
+
+            const loadingDiv = document.getElementById("loading");
+            const loadingText = document.getElementById("loading-text");
+            
+            loadingText.textContent = 'Analisando...';
+            loadingDiv.classList.remove('d-none');
+            loadingDiv.classList.add('d-flex');
+            document.getElementById('upload-text').style.display = 'none';
+            document.getElementById('listaEmprestimos').innerHTML = '';
+
+            const fileReader = new FileReader();
+            fileReader.onload = async function () {
+                let extractedText = '';
+                try {
+                    const typedarray = new Uint8Array(this.result);
+                    const loadingTask = pdfjsLib.getDocument(typedarray);
+                    const pdf = await loadingTask.promise;
+                    let textFound = false;
+
+                    // PLANO A: Leitura Rápida
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const textContent = await page.getTextContent();
+                        if (textContent.items.length > 0) textFound = true;
+                        extractedText += textContent.items.map(item => item.str).join('\n') + '\n\n';
+                    }
+
+                    const hasRealData = extractedText.toUpperCase().includes('CONSIGNATÁRIA') || 
+                                      extractedText.toUpperCase().includes('EMPRÉSTIMO') || 
+                                      extractedText.toUpperCase().includes('CPF') || 
+                                      extractedText.toUpperCase().includes('RUBRICA');
+
+                    if (extractedText.trim().length < 50 || !hasRealData) {
+                        textFound = false;
+                    }
+
+                    // PLANO B: OCR
+                    if (!textFound) {
+                        loadingText.textContent = 'Lendo imagem (OCR)...';
+                        extractedText = '';
+                        if (typeof Tesseract === 'undefined') throw new Error("Tesseract não carregado.");
+                        
+                        const worker = await Tesseract.createWorker('por');
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const page = await pdf.getPage(i);
+                            const viewport = page.getViewport({ scale: 2.0 });
+                            const canvas = document.createElement('canvas');
+                            const context = canvas.getContext('2d');
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
+                            await page.render({ canvasContext: context, viewport: viewport }).promise;
+                            const { data: { text: ocrText } } = await worker.recognize(canvas);
+                            extractedText += ocrText + '\n\n';
+                        }
+                        await worker.terminate();
+                    }
+
+                    let convenioDetectado = 'exercito';
+                    const convenioSelect = document.getElementById('convenioSelect');
+                    const badge = document.getElementById('convenio-badge');
+
+                    if (extractedText.includes("Extrato de Consignações Vigentes") || extractedText.includes("Rubrica\nSequência")) {
+                        convenioDetectado = 'siape';
+                        badge.textContent = "Convênio: SIAPE";
+                        badge.className = "badge bg-info";
+                    } else {
+                        badge.textContent = "Convênio: EXÉRCITO";
+                        badge.className = "badge bg-success";
+                    }
+                    convenioSelect.value = convenioDetectado;
+
+                    if (convenioDetectado === 'exercito') {
+                        await processarPdfExercicio(extractedText);
+                    } else {
+                        await processarPdfSiape(extractedText);
+                    }
+                    
+                    showToast("Leitura concluída com sucesso!", "success");
+
+                } catch (error) {
+                    console.error("Erro:", error);
+                    showToast(`Erro ao ler PDF: ${error.message}`, "danger");
+                } finally {
+                    loadingDiv.classList.add('d-none');
+                    loadingDiv.classList.remove('d-flex');
+                    document.getElementById('upload-text').style.display = 'block';
+                }
+            };
+            fileReader.readAsArrayBuffer(file);
+        }
+
+        // --- Lógica Exército ---
+        async function processarPdfExercicio(text) {
+            let cleanText = text.replace(/--- FIM DA PÁGINA \d+ ---/g, '')
+                                .replace(/Consignatária\n\s*▴\s*▾[\s\S]+?Situação\n\s*▴\s*▾/g, '')
+                                .replace(/Consignatária Nº Serviço Inclusão Vir.prest. Virfolha Nº Pagas Situação/g, '');
+
+            const listaDiv = document.getElementById("listaEmprestimos");
+            let loansFound = 0;
+            let htmlContent = '';
+
+            const isOcrText = cleanText.includes('O74-SABEMI-') || cleanText.includes('R$834/12') || cleanText.includes('R$74046');
+
+            if (isOcrText) {
+                const blocos = cleanText.split(/Andamento/gi);
+                blocos.forEach((bloco, index) => {
+                    if (!bloco.toUpperCase().includes('EMPRÉSTIMO') && !bloco.toUpperCase().includes('DEDUT')) return;
+                    
+                    let nomeBanco = 'Banco Identificado (OCR)';
+                    if (bloco.includes('SABEMI')) nomeBanco = 'SABEMI - PRIVADA';
+
+                    const valorMatches = bloco.match(/R\$\s*([\d.,\/]+)/g);
+                    if (!valorMatches) return;
+                    let valorStr = valorMatches[valorMatches.length - 1].replace('/', ',').replace(/[\[|]/g, '');
+                    
+                    if (!valorStr.includes(',')) {
+                         let digits = valorStr.replace(/R\$\s*/, '').trim();
+                         if (digits.length > 2) valorStr = "R$ " + digits.slice(0, -2) + ',' + digits.slice(-2);
+                    }
+
+                    const valorParcelaNum = moedaParaFloat(valorStr);
+                    if (valorParcelaNum === 0) return;
+
+                    const parcelasMatch = bloco.match(/\s*([\w\.|]+)\s+([\w\d]+)\s+Em/s);
+                    if (!parcelasMatch) return;
+
+                    let total = parcelasMatch[1].replace(/[\[|TP]/g, '').trim();
+                    let pagas = parcelasMatch[2].replace(/[x|xi|nm]/g, '0');
+                    
+                    if(total.toUpperCase() === 'INDET.') return;
+
+                    let totalInt = parseInt(total, 10);
+                    let pagasInt = parseInt(pagas, 10);
+                    if (isNaN(pagasInt) || isNaN(totalInt)) return;
+
+                    const restantes = totalInt - pagasInt;
+                    if (restantes < 0) return;
+
+                    loansFound++;
+                    htmlContent += criarCardEmprestimo(nomeBanco, valorParcelaNum, restantes, totalInt, index);
+                });
+
+            } else {
+                const blocos = cleanText.split(/\n(?=\d{3}\s*-\s*)/);
+                blocos.forEach((bloco, index) => {
+                    if (bloco.toUpperCase().includes('EMPRÉSTIMO') && /Em\s+Andamento/.test(bloco)) {
+                        const bancoMatch = bloco.match(/^([\s\S]+?)\n(\d{7})\n/);
+                        const valorMatch = bloco.match(/R\$\s*[\d.,]+/);
+                        const parcelasMatch = /([\w\.]+)\s*\n\s*(\d+)\s+Em\s+Andamento/;
+                        const parcelasResult = bloco.match(parcelasMatch);
+
+                        if (bancoMatch && valorMatch && parcelasResult) {
+                            const nomeBanco = bancoMatch[1].replace(/\n/g, ' ').trim();
+                            const valorParcelaNum = moedaParaFloat(valorMatch[0]);
+                            const total = parseInt(parcelasResult[1], 10);
+                            const pagas = parseInt(parcelasResult[2], 10);
+                            const restantes = total - pagas;
+
+                            if (restantes >= 0) {
+                                loansFound++;
+                                htmlContent += criarCardEmprestimo(nomeBanco, valorParcelaNum, restantes, total, index);
+                            }
+                        }
+                    }
+                });
+            }
+            
+            if(loansFound === 0) htmlContent = '<div class="alert alert-warning">Nenhum contrato legível encontrado.</div>';
+            listaDiv.innerHTML = `<h6 class="mb-3 border-bottom pb-2">Clique em um contrato para calcular:</h6>` + htmlContent;
+        }
+
+        // --- Lógica SIAPE ---
+        async function processarPdfSiape(text) {
+            const listaDiv = document.getElementById("listaEmprestimos");
+            let htmlContent = '';
+            let loansFound = 0;
+
+            const rgxEmprestimos = /(EMPREST[^\n]+)\n(?:.|\n)*?(R\$\s*[\d\.,]+)\n(\d{2,3}\/\d{2,3})/g;
+            let matches = [...text.matchAll(rgxEmprestimos)];
+
+            matches.forEach((match, index) => {
+                const [_, nomeBanco, valor, parcelasStr] = match;
+                let cleanNomeBanco = nomeBanco.replace(/^\d+\s*-\s*/, '').replace('EMPREST BCO PRIVADOS - ','').replace('EMPREST BCO OFICIAL - ','').trim();
+                const [pagas, total] = parcelasStr.split('/');
+                
+                const valorParcelaNum = moedaParaFloat(valor);
+                const totalInt = parseInt(total, 10);
+                const pagasInt = parseInt(pagas, 10);
+                
+                if (totalInt > 900) return; 
+
+                const restantes = totalInt - pagasInt;
+                if (restantes >= 0) {
+                    loansFound++;
+                    htmlContent += criarCardEmprestimo(cleanNomeBanco, valorParcelaNum, restantes, totalInt, index);
+                }
+            });
+
+            if(loansFound === 0) htmlContent = '<div class="alert alert-warning">Nenhum contrato SIAPE legível encontrado.</div>';
+            listaDiv.innerHTML = `<h6 class="mb-3 border-bottom pb-2">Clique em um contrato para calcular:</h6>` + htmlContent;
+        }
+
+        function criarCardEmprestimo(banco, valor, restantes, total, id) {
+            return `
+            <div class="loan-item d-flex justify-content-between align-items-center" 
+                 onclick="preencherCalculadora(${restantes}, ${valor})">
+                <div>
+                    <div class="loan-bank">${banco}</div>
+                    <div class="loan-values">Parcela: ${formatarMoeda(valor)}</div>
+                </div>
+                <div class="text-end">
+                    <span class="loan-badge mb-1 d-inline-block">Restam: ${restantes}x</span><br>
+                    <small class="text-muted">Total: ${total}x</small>
+                </div>
+            </div>`;
+        }
+
+        // ============================================================
+        // PARTE 2: LÓGICA DA CALCULADORA DO CIDADÃO + RESUMO
+        // ============================================================
+
+        function preencherCalculadora(meses, prestacao) {
+            document.getElementById('meses').value = meses;
+            document.getElementById('prestacao').value = formatarMoeda(prestacao);
+            
+            document.getElementById('taxa').value = '';
+            document.getElementById('valorFinanciado').value = '';
+            document.getElementById('resultadoTexto').style.display = 'none';
+            
+            document.getElementById('calcForm').scrollIntoView({ behavior: 'smooth' });
+            document.querySelectorAll('.form-control').forEach(el => el.classList.remove('calculated-field'));
+            
+            showToast(`Dados carregados: ${meses}x de ${formatarMoeda(prestacao)}`, 'success');
+        }
+
+        function limparCalculadora() {
+            ['meses', 'taxa', 'prestacao', 'valorFinanciado'].forEach(id => {
+                const el = document.getElementById(id);
+                el.value = '';
+                el.classList.remove('calculated-field');
+            });
+            document.getElementById('resultadoTexto').style.display = 'none';
+            document.getElementById('resultadoTexto').innerText = '';
+        }
+
+        // Máscaras de digitação
+        ['prestacao', 'valorFinanciado', 'taxa'].forEach(id => {
+            const el = document.getElementById(id);
+            el.addEventListener('keyup', function() {
+                let v = this.value;
+            });
+        });
+
+        document.getElementById('calcForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            document.querySelectorAll('.form-control').forEach(el => el.classList.remove('calculated-field'));
+
+            const n = parseInt(document.getElementById('meses').value);
+            let taxaStr = document.getElementById('taxa').value.replace(',', '.');
+            const i_percent = parseFloat(taxaStr);
+            
+            const pmt = moedaParaFloat(document.getElementById('prestacao').value);
+            const pv = moedaParaFloat(document.getElementById('valorFinanciado').value);
+
+            const isN_Empty = isNaN(n);
+            const isI_Empty = isNaN(i_percent);
+            const isPmt_Empty = !pmt; 
+            const isPv_Empty = !pv;   
+
+            const emptyCount = [isN_Empty, isI_Empty, isPmt_Empty, isPv_Empty].filter(Boolean).length;
+
+            if (emptyCount !== 1) {
+                showToast("Por favor, preencha exatamente 3 campos e deixe 1 vazio para calcular.", "warning");
+                return;
+            }
+
+            try {
+                let resultado = 0;
+                let campoAlvo = '';
+
+                if (isPv_Empty) {
+                    const i = i_percent / 100;
+                    if (i === 0) resultado = pmt * n;
+                    else resultado = pmt * ((1 - Math.pow(1 + i, -n)) / i);
+                    campoAlvo = 'valorFinanciado';
+                } 
+                else if (isPmt_Empty) {
+                    const i = i_percent / 100;
+                    if (i === 0) resultado = pv / n;
+                    else resultado = pv * (i / (1 - Math.pow(1 + i, -n)));
+                    campoAlvo = 'prestacao';
+                } 
+                else if (isN_Empty) {
+                    const i = i_percent / 100;
+                    if (i === 0) resultado = pv / pmt;
+                    else {
+                        const argumento = 1 - (pv * i / pmt);
+                        if (argumento <= 0) throw new Error("Parcela muito baixa. Dívida infinita.");
+                        resultado = -Math.log(argumento) / Math.log(1 + i);
+                    }
+                    resultado = Math.ceil(resultado); 
+                    campoAlvo = 'meses';
+                } 
+                else if (isI_Empty) {
+                    let chute = 0.01; 
+                    let iteracoes = 0;
+                    let erro = 1;
+                    while (erro > 0.0000001 && iteracoes < 1000) {
+                        const fator = Math.pow(1 + chute, -n);
+                        const fx = (pmt / chute) * (1 - fator) - pv;
+                        const dfx = (pmt / chute) * (n * Math.pow(1+chute, -n-1) - (1-fator)/chute);
+                        const novoChute = chute - (fx / dfx);
+                        erro = Math.abs(novoChute - chute);
+                        chute = novoChute;
+                        iteracoes++;
+                    }
+                    if (!isFinite(chute) || chute < 0) throw new Error("Erro ao calcular taxa.");
+                    resultado = chute * 100;
+                    campoAlvo = 'taxa';
+                }
+
+                // Exibe o resultado no input
+                const el = document.getElementById(campoAlvo);
+                if (campoAlvo === 'meses') el.value = resultado;
+                else if (campoAlvo === 'taxa') el.value = formatarDecimal(resultado);
+                else el.value = formatarMoeda(resultado);
+                el.classList.add('calculated-field');
+
+                // ===========================================
+                // NOVA LÓGICA: RESUMO DO RESULTADO (TIPO CIDADÃO)
+                // ===========================================
+                
+                // Recaptura os valores finais (incluindo o que acabou de ser calculado)
+                const finalN = parseInt(document.getElementById('meses').value);
+                const finalPmt = moedaParaFloat(document.getElementById('prestacao').value);
+                const finalPv = moedaParaFloat(document.getElementById('valorFinanciado').value);
+
+                const totalPago = finalN * finalPmt;
+                const totalJuros = totalPago - finalPv;
+
+                const textoResumo = `O total desse financiamento de ${finalN} parcelas de ${formatarMoeda(finalPmt)} reais é ${formatarMoeda(totalPago)} reais, sendo ${formatarMoeda(totalJuros)} de juros.`;
+
+                const divResumo = document.getElementById('resultadoTexto');
+                divResumo.innerText = textoResumo;
+                divResumo.style.display = 'block';
+
+                showToast("Cálculo realizado com sucesso!", "success");
+
+            } catch (err) {
+                console.error(err);
+                showToast("Erro no cálculo: " + err.message, "danger");
+            }
+        });
+
+        // Eventos de Drag & Drop
+        const uploadArea = document.getElementById('upload-label');
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+        function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+        
+        uploadArea.addEventListener('dragover', () => uploadArea.classList.add('hover'));
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('hover'));
+        uploadArea.addEventListener('drop', (e) => {
+            uploadArea.classList.remove('hover');
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            document.getElementById('pdf-upload').files = files;
+            document.getElementById('pdf-upload').dispatchEvent(new Event('change'));
+        });
+        
+        document.getElementById("pdf-upload").addEventListener("change", parsearPdf);
+
+    </script>
+</body>
+</html>
