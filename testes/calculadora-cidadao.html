@@ -43,6 +43,10 @@
         /* Estilo das Abas */
         .nav-tabs .nav-link { color: #495057; }
         .nav-tabs .nav-link.active { font-weight: bold; color: #0d6efd; }
+
+        li{
+            list-style-type: none;
+                   }
     </style>
 </head>
 
@@ -58,7 +62,7 @@
     </div>
 
     <div class="container">
-        <h2 class="text-center mb-4" style="color: #2c3e50;">Calculadora do Cidadão Integrad</h2>
+        <h2 class="text-center mb-4" style="color: #2c3e50;">Calculadora do Cidadão Integrada</h2>
 
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
@@ -83,7 +87,8 @@
                         <label for="pdf-upload" class="upload-area w-100" id="upload-label">
                             <div id="upload-text">
                                 <h5 class="mb-2">Clique ou arraste o PDF aqui</h5>
-                                <p class="text-muted small mb-0">Suporta Extratos do Exército e SIAPE (Texto ou OCR)</p>
+                                <p class="text-muted small mb-0">Suporta Extratos do: <li>Exercito</li>
+                                    <li>SIAPE</li>  (Texto ou OCR)</p>
                             </div>
                             <div id="loading" class="d-none align-items-center justify-content-center">
                                 <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem;"></div>
