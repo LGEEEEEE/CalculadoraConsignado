@@ -387,9 +387,25 @@
             const convenio = document.getElementById('convenioSelect').value;
             const operacaoSelect = document.getElementById('operacaoSelect');
             operacaoSelect.innerHTML = '';
-            operacoes[convenio].forEach(op => {
-                operacaoSelect.add(new Option(op.text, op.value));
+
+            let opcaoPadrao = null;
+
+            operacoes[convenio].forEach((op, index) => {
+                const option = new Option(op.text, op.value);
+                operacaoSelect.add(option);
+
+                // Lógica para definir 'Compra de Dívida' como padrão
+                if (op.value.includes('compra')) {
+                    opcaoPadrao = op.value;
+                }
             });
+
+            // Se encontrou uma opção de compra, seleciona ela. 
+            // Senão, mantém a primeira (padrão do HTML)
+            if (opcaoPadrao) {
+                operacaoSelect.value = opcaoPadrao;
+            }
+
             atualizarVisibilidadeUI();
         }
 
@@ -673,7 +689,7 @@
         // FUNÇÃO SIAPE ATUALIZADA - COM CÁLCULO DE NEGATIVO (DEPURADO)
         // ######################################################################
         async function processarPdfSiape(text) {
-            console.log("Iniciando processamento SIAPE (Layout Depurado)...");
+            console.log("Iniciando processamento SIAPE (UX Aprimorada)...");
 
             // 1. Extração de Nome e CPF
             const infoRegexNovo = /CPF\nMatrícula\nNome\n([^\n]+)\n(?:[^\n]*\n)?([^\n]+)/;
@@ -683,7 +699,6 @@
             let headerMatchAntigo = text.match(headerRegexAntigo);
             let cpfExtraido = 'Não lido', nomeExtraido = 'Não lido';
 
-            // Tenta extrair CPF/Nome com validação básica
             if (infoMatchNovo && (/\d{3}\.\d{3}\.\d{3}-\d{2}/.test(infoMatchNovo[1].trim()) || /\d{11}/.test(infoMatchNovo[1].replace(/[.-]/g, '')))) {
                 cpfExtraido = infoMatchNovo[1].trim();
                 nomeExtraido = infoMatchNovo[2].trim();
@@ -699,44 +714,30 @@
             clienteNomePDF = nomeExtraido;
 
             // ------------------------------------------------------------------
-            // 2. CÁLCULO DE NEGATIVO (BRUTA FACULTATIVA - TOTAL FACULTATIVAS)
+            // 2. CÁLCULO DE NEGATIVO & AUTO-SWITCH DE OPERAÇÃO
             // ------------------------------------------------------------------
-
-            // Estratégia: Isolar o bloco de valores que vem LOGO DEPOIS do cabeçalho "Total Cartão"
-            // e ANTES de começar a lista de empréstimos ("Extrato de Consignações" ou "Demonstrativo").
-            // Na transcrição, os valores vêm na ordem fixa: 
-            // [0]B.Comp, [1]L.Comp, [2]B.Facult, [3]L.Facult, [4]B.Cartao, [5]L.Cartao, [6]Total.Facult, [7]Total.Cartao
-
             const blocoValoresRegex = /Total\s+Cartão([\s\S]+?)(?:Extrato\s+de\s+Consignações|Demonstrativo\s+de\s+uso)/i;
             const matchBloco = text.match(blocoValoresRegex);
 
             let valBrutaFacultativa = 0;
             let valTotalFacultativas = 0;
-            let calculoRealizado = false;
             let margemDisponivel = 0;
+            let calculoRealizado = false;
 
-            if (matchBloco) {
-                // Pega todos os valores monetários dentro desse bloco isolado
-                const valoresEncontrados = matchBloco[1].match(/R\$\s*([\d.,]+)/g);
-
-                if (valoresEncontrados && valoresEncontrados.length >= 7) {
-                    // Posição 2 (índice 2) = Bruta Facultativa (3º valor)
-                    valBrutaFacultativa = moedaParaFloat(valoresEncontrados[2]);
-
-                    // Posição 6 (índice 6) = Total Facultativas (7º valor)
-                    valTotalFacultativas = moedaParaFloat(valoresEncontrados[6]);
-
-                    // Cálculo: Bruta (Limite) - Total (Usado)
-                    margemDisponivel = valBrutaFacultativa - valTotalFacultativas;
-                    calculoRealizado = true;
-
-                    console.log(`SIAPE Debug: Bruta=${valBrutaFacultativa}, Total=${valTotalFacultativas}, Disponível=${margemDisponivel}`);
-                }
-            }
-
-            // Atualiza a Interface com o Resultado da Análise
+            // Elementos de UI
             const infoDiv = document.getElementById("infoNegativado");
             const negativoInput = document.getElementById("negativo");
+            const operacaoSelect = document.getElementById("operacaoSelect"); // Para o auto-switch
+
+            if (matchBloco) {
+                const valoresEncontrados = matchBloco[1].match(/R\$\s*([\d.,]+)/g);
+                if (valoresEncontrados && valoresEncontrados.length >= 7) {
+                    valBrutaFacultativa = moedaParaFloat(valoresEncontrados[2]);
+                    valTotalFacultativas = moedaParaFloat(valoresEncontrados[6]);
+                    margemDisponivel = valBrutaFacultativa - valTotalFacultativas;
+                    calculoRealizado = true;
+                }
+            }
 
             if (calculoRealizado) {
                 let htmlAnalise = `<h5 class="alert-heading">Análise de Margem (SIAPE)</h5>
@@ -754,9 +755,16 @@
                                 Valor Excedente: <strong>${formatarMoeda(valorNegativo)}</strong>
                             </div>`;
 
-                    // Preenche o input automaticamente
+                    // PREENCHIMENTO AUTOMÁTICO
                     negativoInput.value = formatarInputMoeda(valorNegativo);
-                    showToast(`Negativo de ${formatarMoeda(valorNegativo)} detectado e preenchido!`, "warning");
+
+                    // *** MUDANÇA DE OPERAÇÃO AUTOMÁTICA (UX) ***
+                    // Muda o select para 'Análise de Negativado' se já não estiver nele
+                    if (operacaoSelect.value !== 'negativado_siape') {
+                        operacaoSelect.value = 'negativado_siape';
+                        atualizarVisibilidadeUI(); // Atualiza a tela para mostrar os campos corretos
+                        showToast(`Modo 'Análise de Negativado' ativado automaticamente!`, "warning");
+                    }
 
                 } else {
                     // --- MARGEM POSITIVA ---
@@ -764,25 +772,29 @@
                                 <strong>✅ MARGEM DISPONÍVEL</strong><br>
                                 Livre: <strong>${formatarMoeda(margemDisponivel)}</strong>
                             </div>`;
-                    negativoInput.value = ''; // Limpa se não for negativo
+                    negativoInput.value = '';
+                    // Opcional: Se quiser voltar para Compra/Portabilidade quando positivo, poderia fazer aqui, 
+                    // mas geralmente é melhor não mudar se o usuário já escolheu algo.
                 }
 
                 infoDiv.innerHTML = htmlAnalise;
                 infoDiv.style.display = 'block';
             } else {
-                console.warn("Não foi possível isolar o bloco de margens do SIAPE.");
                 infoDiv.style.display = 'none';
             }
 
+
             // ------------------------------------------------------------------
-            // 3. LISTAGEM DE CONTRATOS (Mantido igual)
+            // 3. LISTAGEM DE CONTRATOS (COM ORDENAÇÃO MAIOR -> MENOR)
             // ------------------------------------------------------------------
             const listaDiv = document.getElementById("listaEmprestimos");
             listaDiv.innerHTML = `<div id="infoCliente" class="mb-3 p-2 border rounded"><p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF}</p><p class="mb-0"><strong>CPF:</strong> ${clienteCpfPDF}</p></div><div class="form-check mb-2 border-bottom pb-2"><input class="form-check-input" type="checkbox" id="selectAllCheckbox"><label class="form-check-label fw-bold" for="selectAllCheckbox">Selecionar Todos</label></div>`;
 
             const rgxEmprestimos = /(EMPREST[^\n]+)\n(?:.|\n)*?(R\$\s*[\d\.,]+)\n(\d{2,3}\/\d{2,3})/g;
             let matches = [...text.matchAll(rgxEmprestimos)];
-            let loansFound = 0;
+
+            // Array para armazenar os contratos antes de exibir
+            let contratosEncontrados = [];
 
             matches.forEach((match, index) => {
                 const [_, nomeBanco, valor, parcelasStr] = match;
@@ -796,16 +808,35 @@
                 if (parseInt(total, 10) > 900) return;
 
                 const parcelasRestantes = parseInt(total, 10) - parseInt(pagas, 10);
-                loansFound++;
                 const saldoAproximado = (parcelasRestantes >= 0) ? valorParcelaNum * parcelasRestantes * 0.70 : 0;
 
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'form-check border-bottom py-2';
-                itemDiv.innerHTML = `<input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${saldoAproximado}" data-parcela="${valorParcelaNum}" data-banco="${cleanNomeBanco}" data-status="${pagas} de ${total}" id="loan-${index}"><label class="form-check-label" for="loan-${index}"><strong>${cleanNomeBanco}</strong><br><small>Saldo Aprox.: ${formatarMoeda(saldoAproximado)} | Parcela: ${formatarMoeda(valorParcelaNum)} | Status: ${pagas} de ${total}</small></label>`;
-                listaDiv.appendChild(itemDiv);
+                // Adiciona ao array em vez de criar o HTML direto
+                contratosEncontrados.push({
+                    id: index,
+                    banco: cleanNomeBanco,
+                    valorParcela: valorParcelaNum,
+                    saldo: saldoAproximado,
+                    pagas: pagas,
+                    total: total
+                });
             });
 
-            if (loansFound === 0) showToast("AVISO: Nenhum contrato de empréstimo válido foi encontrado.", 'warning');
+            // *** ORDENAÇÃO (SORT) ***
+            // Ordena do Maior Valor de Parcela para o Menor
+            contratosEncontrados.sort((a, b) => b.valorParcela - a.valorParcela);
+
+            if (contratosEncontrados.length === 0) {
+                showToast("AVISO: Nenhum contrato de empréstimo válido foi encontrado.", 'warning');
+            } else {
+                // Renderiza os contratos já ordenados
+                contratosEncontrados.forEach((c, i) => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'form-check border-bottom py-2';
+                    // Note que usamos 'i' para o ID único no HTML agora, pois a ordem mudou
+                    itemDiv.innerHTML = `<input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${c.saldo}" data-parcela="${c.valorParcela}" data-banco="${c.banco}" data-status="${c.pagas} de ${c.total}" id="loan-sorted-${i}"><label class="form-check-label" for="loan-sorted-${i}"><strong>${c.banco}</strong><br><small>Saldo Aprox.: ${formatarMoeda(c.saldo)} | Parcela: ${formatarMoeda(c.valorParcela)} | Status: ${c.pagas} de ${c.total}</small></label>`;
+                    listaDiv.appendChild(itemDiv);
+                });
+            }
 
             document.getElementById('selectAllCheckbox').addEventListener('change', (e) => document.querySelectorAll('.loan-checkbox').forEach(cb => cb.checked = e.target.checked));
             listaDiv.style.display = "block";
