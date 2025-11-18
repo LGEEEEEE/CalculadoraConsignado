@@ -753,7 +753,10 @@
                     htmlAnalise += `<div class="alert alert-danger mb-0 text-center">
                                 <strong>⚠️ CLIENTE NEGATIVO</strong><br>
                                 Valor Excedente: <strong>${formatarMoeda(valorNegativo)}</strong>
-                            </div>`;
+                                <p>Para ter certeza sobre esse valor, olhe no <a href="https://sistema.gconsig.com/auth/login">Sistema Gestor/Pollo</a></p>
+                                <p>Ou fale com seu supervisor e, caso seja supervisor da sala, consulte no <a href="https://c6.c6consig.com.br/WebAutorizador/Login">Banco C6</a></p>
+
+                                </div>`;
 
                     // PREENCHIMENTO AUTOMÁTICO
                     negativoInput.value = formatarInputMoeda(valorNegativo);
@@ -771,6 +774,9 @@
                     htmlAnalise += `<div class="alert alert-success mb-0 text-center">
                                 <strong>✅ MARGEM DISPONÍVEL</strong><br>
                                 Livre: <strong>${formatarMoeda(margemDisponivel)}</strong>
+                                
+                                <p>Para ter certeza sobre esse valor, olhe no <a href="https://sistema.gconsig.com/auth/login">Sistema Gestor/Pollo</a></p>
+                                <p>Ou fale com seu supervisor e, caso seja supervisor da sala, consulte no <a href="https://c6.c6consig.com.br/WebAutorizador/Login">Banco C6</a></p>
                             </div>`;
                     negativoInput.value = '';
                     // Opcional: Se quiser voltar para Compra/Portabilidade quando positivo, poderia fazer aqui, 
