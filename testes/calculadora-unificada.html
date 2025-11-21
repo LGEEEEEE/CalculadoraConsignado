@@ -740,12 +740,31 @@
             }
 
             if (calculoRealizado) {
+                // 1. LIMPEZA DO CPF (Remove pontos e traços para a busca)
+                const cpfLimpo = (clienteCpfPDF || '').replace(/\D/g, '');
+                
+                // 2. LINK BASE (Vai para a home, onde tem a barra de busca)
+                const urlPollo = `https://sistema.gconsig.com/`;
+
                 let htmlAnalise = `<h5 class="alert-heading">Análise de Margem (SIAPE)</h5>
                            <div class="row">
                                <div class="col-6"><strong>Bruta Facultativa:</strong><br>${formatarMoeda(valBrutaFacultativa)}</div>
                                <div class="col-6"><strong>Total Utilizado:</strong><br>${formatarMoeda(valTotalFacultativas)}</div>
                            </div>
                            <hr class="my-2">`;
+                
+                // Funçãozinha para criar o botão que Copia e Abre
+                // O 'navigator.clipboard.writeText' é o comando mágico que copia o CPF
+                const botaoLinkPollo = (classeCor) => `
+                    <div class="mt-3">
+                        <a href="${urlPollo}" target="_blank" class="btn btn-sm ${classeCor} w-100" 
+                           onclick="navigator.clipboard.writeText('${cpfLimpo}'); showToast('CPF copiado! Cole na busca.', 'info');">
+                            <strong>Abrir Pollo + Copiar CPF</strong>
+                        </a>
+                        <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">
+                            (Ao clicar, o CPF é copiado. Chegando lá, dê Ctrl+V na busca)
+                        </small>
+                    </div>`;
 
                 if (margemDisponivel < -0.01) {
                     // --- CLIENTE NEGATIVO ---
@@ -753,19 +772,17 @@
                     htmlAnalise += `<div class="alert alert-danger mb-0 text-center">
                                 <strong>⚠️ CLIENTE NEGATIVO</strong><br>
                                 Valor Excedente: <strong>${formatarMoeda(valorNegativo)}</strong>
-                                <p>Para ter certeza sobre esse valor, olhe no <a href="https://sistema.gconsig.com/auth/login">Sistema Gestor/Pollo</a></p>
-                                <p>Ou fale com seu supervisor e, caso seja supervisor da sala, consulte no <a href="https://c6.c6consig.com.br/WebAutorizador/Login">Banco C6</a></p>
+                                
+                                ${botaoLinkPollo('btn-outline-dark')}
 
+                                <p class="mt-2 mb-0"><small>Ou consulte no <a href="https://c6.c6consig.com.br/WebAutorizador/Login" target="_blank">Banco C6</a></small></p>
                                 </div>`;
 
-                    // PREENCHIMENTO AUTOMÁTICO
                     negativoInput.value = formatarInputMoeda(valorNegativo);
 
-                    // *** MUDANÇA DE OPERAÇÃO AUTOMÁTICA (UX) ***
-                    // Muda o select para 'Análise de Negativado' se já não estiver nele
                     if (operacaoSelect.value !== 'negativado_siape') {
                         operacaoSelect.value = 'negativado_siape';
-                        atualizarVisibilidadeUI(); // Atualiza a tela para mostrar os campos corretos
+                        atualizarVisibilidadeUI();
                         showToast(`Modo 'Análise de Negativado' ativado automaticamente!`, "warning");
                     }
 
@@ -775,12 +792,11 @@
                                 <strong>✅ MARGEM DISPONÍVEL</strong><br>
                                 Livre: <strong>${formatarMoeda(margemDisponivel)}</strong>
                                 
-                                <p>Para ter certeza sobre esse valor, olhe no <a href="https://sistema.gconsig.com/auth/login">Sistema Gestor/Pollo</a></p>
-                                <p>Ou fale com seu supervisor e, caso seja supervisor da sala, consulte no <a href="https://c6.c6consig.com.br/WebAutorizador/Login">Banco C6</a></p>
+                                ${botaoLinkPollo('btn-outline-success')}
+
+                                <p class="mt-2 mb-0"><small>Ou consulte no <a href="https://c6.c6consig.com.br/WebAutorizador/Login" target="_blank">Banco C6</a></small></p>
                             </div>`;
                     negativoInput.value = '';
-                    // Opcional: Se quiser voltar para Compra/Portabilidade quando positivo, poderia fazer aqui, 
-                    // mas geralmente é melhor não mudar se o usuário já escolheu algo.
                 }
 
                 infoDiv.innerHTML = htmlAnalise;
