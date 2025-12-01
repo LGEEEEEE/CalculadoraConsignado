@@ -117,8 +117,8 @@
                 <h2 class="h5 mb-0">Empresa Responsável</h2>
             </div>
             <div class="card-body">
-                <div class="mb-0"> <label for="empresaSelect" class="form-label">Empresa Responsável pela
-                        Simulação</label>
+                <div class="mb-0">
+                    <label for="empresaSelect" class="form-label">Empresa Responsável pela Simulação</label>
                     <select id="empresaSelect" class="form-select">
                         <option value="alianca" selected>Aliança Consig</option>
                         <option value="polo">Polo Promotora</option>
@@ -141,12 +141,13 @@
                                 Extrato</button></li>
                         <li class="nav-item" role="presentation"><button class="nav-link" id="manual-tab"
                                 data-bs-toggle="tab" data-bs-target="#manual-tab-pane" type="button" role="tab">Inserir
-                                Manualmente</button></li>
+                                Manualmente / Integração</button></li>
                     </ul>
                     <div class="tab-content" id="entryTabContent">
                         <div class="tab-pane fade show active p-3" id="pdf-tab-pane" role="tabpanel">
-                            <input type="file" id="pdf-upload" accept=".pdf"><label for="pdf-upload" class="upload-area"
-                                id="upload-label"><span id="upload-text">Clique ou arraste o extrato PDF</span>
+                            <input type="file" id="pdf-upload" accept=".pdf">
+                            <label for="pdf-upload" class="upload-area" id="upload-label">
+                                <span id="upload-text">Clique ou arraste o extrato PDF</span>
                                 <div id="loading" class="d-none align-items-center justify-content-center mt-2">
                                     <div class="spinner-border text-primary" id="loading-spinner" role="status"></div>
                                     <strong class="ms-2" id="loading-text">Analisando...</strong>
@@ -156,13 +157,32 @@
                             <button type="button" id="unificarBtnPdf" class="btn btn-info w-100 mt-3"
                                 style="display:none;">Usar Contratos Selecionados</button>
                         </div>
+
                         <div class="tab-pane fade p-3" id="manual-tab-pane" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                                <h4 class="h6 mb-0 text-primary">Entrada de Dados</h4>
+                                <button type="button" class="btn btn-sm btn-info text-white"
+                                    onclick="abrirModalInstrucoes()">
+                                    ⚙️ Configurar Integração
+                                </button>
+                            </div>
                             <div class="row mb-3">
-                                <div class="col-md-6 mb-2"><label for="clienteNome" class="form-label">Nome do
-                                        Cliente</label><input type="text" id="clienteNome" class="form-control"></div>
-                                <div class="col-md-6 mb-2"><label for="clienteCpf" class="form-label">CPF do
-                                        Cliente</label><input type="text" id="clienteCpf" class="form-control"
-                                        placeholder="000.000.000-00"></div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="clienteNome" class="form-label">Nome do Cliente</label>
+                                    <input type="text" id="clienteNome" class="form-control">
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="clienteCpf" class="form-label">CPF do Cliente</label>
+                                    <div class="input-group">
+                                        <input type="text" id="clienteCpf" class="form-control"
+                                            placeholder="000.000.000-00">
+                                        <button class="btn btn-warning" type="button" onclick="buscarClienteCorban()">
+                                            🔍 Buscar Corban
+                                        </button>
+                                    </div>
+                                    <small class="text-muted" style="font-size: 0.75rem;">Digite o CPF e clique para
+                                        importar dados automaticamente.</small>
+                                </div>
                             </div>
                             <div class="p-3 mb-3 border rounded">
                                 <h3 class="fs-5 text-center mb-3">Adicionar Contratos</h3>
@@ -196,15 +216,12 @@
                 <div class="card-body">
                     <div class="row">
                         <div id="negativado-fields" style="display:none;">
-                            <div class="mb-3">
-                                <label class="form-label">Soma das parcelas:</label>
+                            <div class="mb-3"><label class="form-label">Soma das parcelas:</label>
                                 <h4 id="totalParcelasDisplay" class="fw-bold text-primary">R$ 0,00</h4>
                             </div>
-                            <div class="mb-3">
-                                <label for="negativo" class="form-label">Valor Negativo do Cliente</label>
-                                <input type="text" id="negativo" class="form-control" placeholder="Ex: 1000,00"
-                                    required>
-                            </div>
+                            <div class="mb-3"><label for="negativo" class="form-label">Valor Negativo do
+                                    Cliente</label><input type="text" id="negativo" class="form-control"
+                                    placeholder="Ex: 1000,00" required></div>
                         </div>
 
                         <div id="simulacao-fields" style="display:none;">
@@ -216,27 +233,22 @@
                                         Aprox. Total</label><input type="text" id="saldodevedor" class="form-control"
                                         required placeholder="Unificado do passo anterior"></div>
                             </div>
-
                             <div class="p-3 mb-3 border rounded">
                                 <h5 class="fs-6 text-primary mb-3">Dados do Novo Contrato</h5>
                                 <div class="row">
-                                    <div class="col-md-8 mb-2">
-                                        <label for="novoBanco" class="form-label">Banco Destino</label>
-                                        <input type="text" id="novoBanco" class="form-control" value="Bradesco">
-                                    </div>
-                                    <div class="col-md-4 mb-2">
-                                        <label for="novoPrazo" class="form-label">Prazo (meses)</label>
-                                        <input type="number" id="novoPrazo" class="form-control" value="96">
-                                    </div>
+                                    <div class="col-md-8 mb-2"><label for="novoBanco" class="form-label">Banco
+                                            Destino</label><input type="text" id="novoBanco" class="form-control"
+                                            value="Bradesco"></div>
+                                    <div class="col-md-4 mb-2"><label for="novoPrazo" class="form-label">Prazo
+                                            (meses)</label><input type="number" id="novoPrazo" class="form-control"
+                                            value="96"></div>
                                 </div>
                             </div>
-
                             <div class="row">
                                 <div class="col-md-12 mb-3"><label for="desconto" class="form-label">Produto
                                         (Opcional)</label><input type="text" id="desconto" class="form-control"
                                         placeholder="Ex: 1.000,00"></div>
                             </div>
-
                             <div id="port-refin-fields" style="display:none;">
                                 <div class="col-md-12 mb-3"><label class="form-label">Houve quitação de algum
                                         valor?</label>
@@ -254,7 +266,6 @@
                                         type="text" id="valorQuitado" class="form-control" placeholder="Ex: 5.000,00">
                                 </div>
                             </div>
-
                             <div id="compra-fields" style="display:none;">
                                 <div class="col-md-12 mb-3"><label for="tipoCompra" class="form-label">Tipo de
                                         Compra</label><select id="tipoCompra" class="form-select">
@@ -262,7 +273,6 @@
                                         <option value="cef">Caixa (CEF) (Inv. 8%)</option>
                                     </select></div>
                             </div>
-
                             <hr class="my-3">
                             <div class="row">
                                 <div class="col-md-4 mb-3"><label for="coeficiente"
@@ -279,37 +289,29 @@
 
                         <div id="margem-nova-fields" style="display:none;">
                             <div class="row mb-3">
-                                <div class="col-md-6 mb-2">
-                                    <label for="mn-clienteNome" class="form-label">Nome do Cliente</label>
-                                    <input type="text" id="mn-clienteNome" class="form-control" required>
-                                </div>
-                                <div class="col-md-6 mb-2">
-                                    <label for="mn-clienteCpf" class="form-label">CPF do Cliente</label>
-                                    <input type="text" id="mn-clienteCpf" class="form-control"
-                                        placeholder="000.000.000-00" required>
-                                </div>
+                                <div class="col-md-6 mb-2"><label for="mn-clienteNome" class="form-label">Nome do
+                                        Cliente</label><input type="text" id="mn-clienteNome" class="form-control"
+                                        required></div>
+                                <div class="col-md-6 mb-2"><label for="mn-clienteCpf" class="form-label">CPF do
+                                        Cliente</label><input type="text" id="mn-clienteCpf" class="form-control"
+                                        placeholder="000.000.000-00" required></div>
                             </div>
                             <hr>
                             <div class="row">
-                                <div class="col-md-12 mb-3">
-                                    <label for="mn-banco" class="form-label">Banco Destino</label>
-                                    <input type="text" id="mn-banco" class="form-control" value="Bradesco" required>
-                                </div>
+                                <div class="col-md-12 mb-3"><label for="mn-banco" class="form-label">Banco
+                                        Destino</label><input type="text" id="mn-banco" class="form-control"
+                                        value="Bradesco" required></div>
                             </div>
                             <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label for="mn-parcela" class="form-label">Valor da Parcela (Margem)</label>
-                                    <input type="text" id="mn-parcela" class="form-control" required
-                                        placeholder="Ex: 350,00">
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="mn-coeficiente" class="form-label">Coeficiente</label>
-                                    <input type="text" id="mn-coeficiente" class="form-control" required value="0.023">
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="mn-prazo" class="form-label">Prazo (meses)</label>
-                                    <input type="number" id="mn-prazo" class="form-control" required value="96">
-                                </div>
+                                <div class="col-md-4 mb-3"><label for="mn-parcela" class="form-label">Valor da Parcela
+                                        (Margem)</label><input type="text" id="mn-parcela" class="form-control" required
+                                        placeholder="Ex: 350,00"></div>
+                                <div class="col-md-4 mb-3"><label for="mn-coeficiente"
+                                        class="form-label">Coeficiente</label><input type="text" id="mn-coeficiente"
+                                        class="form-control" required value="0.023"></div>
+                                <div class="col-md-4 mb-3"><label for="mn-prazo" class="form-label">Prazo
+                                        (meses)</label><input type="number" id="mn-prazo" class="form-control" required
+                                        value="96"></div>
                             </div>
                         </div>
                     </div>
@@ -320,7 +322,6 @@
         </form>
 
         <div id="resultadoFinal" class="mt-4" style="display:none;"></div>
-
         <div id="resultadoNegativadoContainer" class="mt-4" style="display:none;">
             <div class="card bg-light">
                 <div class="card-header">
@@ -336,13 +337,44 @@
                 </div>
             </div>
         </div>
+    </div>
 
+    <div class="modal fade" id="modalInstrucoes" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Configuração da Integração (Apenas 1 vez)</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Para o sistema puxar os dados, crie um botão de atalho:</p>
+                    <div class="alert alert-secondary">
+                        <strong>1.</strong> Aperte <strong>Ctrl + Shift + B</strong> para mostrar a barra de
+                        favoritos.<br>
+                        <strong>2.</strong> Copie o código abaixo:
+                        <textarea class="form-control mt-2 mb-2" rows="3" readonly
+                            id="codeCopy">javascript:(function(){const inputs=document.querySelectorAll('input[name*="[anterior_parcela]"]');if(!inputs||inputs.length===0){alert('❌ Nenhum contrato encontrado na tela! Aguarde o carregamento e clique de novo.');return;}let nome=document.getElementById('cliNome')?.value||document.querySelector('#cliNome2')?.innerText||"Cliente";let cpf=document.getElementById('cliCpf')?.value||document.querySelector('#cliCpf2')?.innerText||"";cpf=cpf.replace(/\D/g,'');let contratos=[];inputs.forEach(input=>{try{let match=input.name.match(/contratos\[(\d+)\]/);if(match){let id=match[1];let getVal=(n)=>(document.querySelector(`input[name="contratos[${id}][${n}]"]`)?.value||"0");let saldo=document.getElementById(`saldoDevedor-${id}`)?.value||"0";let banco=document.querySelector(`input[name="contratos[${id}][nome_banco_anterior]"]`)?.value||"Desc.";let valP=parseFloat(input.value);let valS=parseFloat(saldo.replace('.','').replace(',','.'));let pagas=parseInt(getVal('anterior_pagas'))||0;let rest=parseInt(getVal('anterior_prazo'))||0;let total=96;if((pagas+rest)>12)total=pagas+rest;if(valP>0){contratos.push({banco:banco,parcela:valP,saldo:valS,pagas:pagas,total:total});}}}catch(e){console.error(e);}});if(contratos.length>0){if(window.opener){window.opener.postMessage({tipo:'DADOS_CONSIG_COMPLETO',nome:nome,cpf:cpf,contratos:contratos},'*');alert(`✅ Sucesso! ${contratos.length} contratos enviados.`);setTimeout(()=>window.close(),1000);}else{alert('⚠️ A Calculadora não foi encontrada! (Abra via botão Buscar).');}}else{alert('❌ Erro ao ler contratos.');}})();</textarea>
+                        <button class="btn btn-dark btn-sm w-100"
+                            onclick="navigator.clipboard.writeText(document.getElementById('codeCopy').value);this.innerText='Copiado!';setTimeout(()=>this.innerText='COPIAR CÓDIGO',2000)">COPIAR
+                            CÓDIGO</button>
+                        <strong>3.</strong> Clique com botão direito na barra de favoritos > <strong>Adicionar
+                            página</strong>.<br>
+                        <strong>4.</strong> Nome: <code>>>> ENVIAR</code> | URL: <strong>Cole o código</strong>.
+                    </div>
+                    <div class="alert alert-success">
+                        <strong>Como usar:</strong> Clique em "Buscar Corban". Quando a tela abrir e carregar, clique no
+                        botão que você criou na barra de favoritos!
+                    </div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">Entendi</button></div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
     <script src='https://cdn.jsdelivr.net/npm/tesseract.js@latest/dist/tesseract.min.js'></script>
 
     <script>
@@ -383,6 +415,80 @@
             toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
         };
 
+        // --- FUNÇÕES DE INTEGRAÇÃO (COLE NO INÍCIO DO SCRIPT) ---
+
+        function abrirModalInstrucoes() {
+            const modal = new bootstrap.Modal(document.getElementById('modalInstrucoes'));
+            modal.show();
+        }
+
+        // --- LÓGICA DE INTEGRAÇÃO CORBAN (INICIO) ---
+
+        function buscarClienteCorban() {
+            const cpf = document.getElementById('clienteCpf').value.replace(/\D/g, '');
+            if (cpf.length !== 11) return alert("CPF inválido.");
+
+            // Abre tutorial na primeira vez
+            if (!sessionStorage.getItem('tutorialVisto')) {
+                new bootstrap.Modal(document.getElementById('modalInstrucoes')).show();
+                sessionStorage.setItem('tutorialVisto', 'true');
+                return;
+            }
+
+            // Formulário invisível para POST (evita erro 404)
+            const form = document.createElement("form");
+            form.target = "JanelaIntegracao";
+            form.method = "POST";
+            form.action = `https://gestao.sistemacorban.com.br/index.php/andamento/consultar?cpf=${cpf}`;
+            form.style.display = "none";
+
+            const input = document.createElement("input");
+            input.type = "hidden"; input.name = "cpf"; input.value = cpf;
+            form.appendChild(input); document.body.appendChild(form);
+
+            // Abre nova aba normal (para exibir barra de favoritos)
+            const popup = window.open("", "JanelaIntegracao");
+            if (popup) form.submit();
+            else alert("Pop-up bloqueado. Permita para este site.");
+
+            setTimeout(() => document.body.removeChild(form), 2000);
+            showToast("Aguardando dados... Use o Favorito na nova aba!", "info");
+        }
+
+        // Recebe os dados do Bookmarklet
+        window.addEventListener("message", (event) => {
+            const dados = event.data;
+            if (dados && dados.tipo === 'DADOS_CONSIG_COMPLETO') {
+                if (dados.nome) document.getElementById('clienteNome').value = dados.nome;
+                if (dados.cpf) document.getElementById('clienteCpf').value = dados.cpf;
+
+                if (dados.contratos && dados.contratos.length > 0) {
+                    parcelasManuais = []; // Limpa lista anterior (certifique-se que essa variável existe no seu código)
+
+                    dados.contratos.forEach(c => {
+                        parcelasManuais.push({
+                            banco: c.banco,
+                            parcela: c.parcela,
+                            totalParcelas: c.total,
+                            parcelasPagas: c.pagas
+                        });
+                    });
+
+                    // Chama suas funções existentes para atualizar a tela
+                    if (typeof renderizarListaManual === "function") renderizarListaManual();
+
+                    // Tenta focar na aba manual
+                    const btnManual = document.getElementById('manual-tab');
+                    if (btnManual && window.bootstrap) { const tab = new bootstrap.Tab(btnManual); tab.show(); }
+
+                    showToast(`${dados.contratos.length} contratos importados!`, "success");
+                }
+            }
+        });
+        // --- LÓGICA DE INTEGRAÇÃO CORBAN (FIM) ---
+
+
+
         function atualizarOperacoes() {
             const convenio = document.getElementById('convenioSelect').value;
             const operacaoSelect = document.getElementById('operacaoSelect');
@@ -394,14 +500,11 @@
                 const option = new Option(op.text, op.value);
                 operacaoSelect.add(option);
 
-                // Lógica para definir 'Compra de Dívida' como padrão
                 if (op.value.includes('compra')) {
                     opcaoPadrao = op.value;
                 }
             });
 
-            // Se encontrou uma opção de compra, seleciona ela. 
-            // Senão, mantém a primeira (padrão do HTML)
             if (opcaoPadrao) {
                 operacaoSelect.value = opcaoPadrao;
             }
@@ -421,23 +524,20 @@
             const simulacaoCard = document.getElementById('simulacaoCard');
             const negativadoFields = document.getElementById('negativado-fields');
             const simulacaoFields = document.getElementById('simulacao-fields');
-            const margemNovaFields = document.getElementById('margem-nova-fields'); // Pega o novo DIV
+            const margemNovaFields = document.getElementById('margem-nova-fields');
             const portRefinFields = document.getElementById('port-refin-fields');
             const compraFields = document.getElementById('compra-fields');
             const submitBtn = document.getElementById('submitBtn');
 
-            // Inputs 'negativado'
             const negativoInput = document.getElementById('negativo');
-            // Inputs 'simulacao'
             const parcelaInput = document.getElementById('parcela');
             const saldoInput = document.getElementById('saldodevedor');
             const coefInput = document.getElementById('coeficiente');
             const comGerenteInput = document.getElementById('comissaoGerente');
             const comEscInput = document.getElementById('comissaoesc');
-            // Inputs 'margem nova'
             const mnNome = document.getElementById('mn-clienteNome');
             const mnCpf = document.getElementById('mn-clienteCpf');
-            const mnBanco = document.getElementById('mn-banco'); // NOVO CAMPO
+            const mnBanco = document.getElementById('mn-banco');
             const mnParcela = document.getElementById('mn-parcela');
             const mnCoef = document.getElementById('mn-coeficiente');
             const mnPrazo = document.getElementById('mn-prazo');
@@ -445,24 +545,22 @@
 
             document.getElementById('pageTitle').textContent = operacao.text ? `Calculadora ${operacao.text} (${convenio.toUpperCase()})` : 'Calculadora Consignado';
 
-            // Reseta todos os 'required' para false antes de aplicar as regras
             [negativoInput, parcelaInput, saldoInput, coefInput, comGerenteInput, comEscInput, mnNome, mnCpf, mnBanco, mnParcela, mnCoef, mnPrazo].forEach(el => el.required = false);
 
             if (operacaoValue.includes('margem_nova')) {
-                clienteCard.style.display = 'none'; // Esconde o card de upload/manual
+                clienteCard.style.display = 'none';
                 simulacaoCard.style.display = 'block';
                 negativadoFields.style.display = 'none';
                 simulacaoFields.style.display = 'none';
-                margemNovaFields.style.display = 'block'; // Mostra os campos de margem nova
+                margemNovaFields.style.display = 'block';
 
                 document.getElementById('simulacaoTitle').textContent = "2. Dados da Margem Nova";
                 submitBtn.textContent = 'Calcular Margem Nova';
                 if (operacao.coef) document.getElementById('mn-coeficiente').value = operacao.coef;
 
-                // Seta 'required' para os campos de margem nova
                 mnNome.required = true;
                 mnCpf.required = true;
-                mnBanco.required = true; // NOVO CAMPO
+                mnBanco.required = true;
                 mnParcela.required = true;
                 mnCoef.required = true;
                 mnPrazo.required = true;
@@ -500,7 +598,6 @@
                     compraFields.style.display = 'none';
                 }
 
-                // Seta 'required' para os campos de simulação padrão
                 parcelaInput.required = true;
                 saldoInput.required = true;
                 coefInput.required = true;
@@ -535,22 +632,18 @@
         }
 
         async function processarPdfExercicio(text) {
-            // Limpa o texto, removendo cabeçalhos de página e rodapés
             let cleanText = text.replace(/--- FIM DA PÁGINA \d+ ---/g, '')
-                .replace(/Consignatária\n\s*▴\s*▾[\s\S]+?Situação\n\s*▴\s*▾/g, '') // Remove header de tabela limpa
-                .replace(/Consignatária Nº Serviço Inclusão Vir.prest. Virfolha Nº Pagas Situação/g, ''); // Remove header de tabela OCR
+                .replace(/Consignatária\n\s*▴\s*▾[\s\S]+?Situação\n\s*▴\s*▾/g, '')
+                .replace(/Consignatária Nº Serviço Inclusão Vir.prest. Virfolha Nº Pagas Situação/g, '');
 
             const listaDiv = document.getElementById("listaEmprestimos");
-            listaDiv.innerHTML = ''; // Limpa a lista anterior
+            listaDiv.innerHTML = '';
             let loansFound = 0;
 
-            // --- DETECÇÃO AUTOMÁTICA DO TIPO DE TEXTO ---
             const isOcrText = cleanText.includes('O74-SABEMI-') || cleanText.includes('R$834/12') || cleanText.includes('R$74046');
 
             if (isOcrText) {
-                // --- LÓGICA B: PARSER TOLERANTE PARA OCR (Tesseract) ---
                 console.log("Detectado texto de OCR (Exército). Usando parser tolerante.");
-
                 const cpfMatch = text.match(/(\d{3}\.\d{3}\.\d{3}-\d{2})/);
                 const nomeMatch = text.match(/(\d{9,12})\s*-\s*([\d.-]+)\s*-\s*([A-ZÀ-Ú ]+)(?:\n([A-ZÀ-Ú ]+))?/);
 
@@ -593,7 +686,6 @@
                     const parcelasMatch = bloco.match(/\s*([\w\.|]+)\s+([\w\d]+)\s+Em/s);
 
                     if (!parcelasMatch) {
-                        console.warn('Contrato pulado (OCR não leu as parcelas):', bloco);
                         return;
                     }
 
@@ -601,7 +693,6 @@
                     let pagas = parcelasMatch[2].replace(/[x|xi|nm]/g, '0');
 
                     if (isNaN(parseInt(pagas, 10)) || (total.toUpperCase() !== 'INDET.' && isNaN(parseInt(total, 10)))) {
-                        console.warn('Contrato pulado (OCR leu lixo nas parcelas):', bloco);
                         return;
                     }
 
@@ -626,7 +717,6 @@
                 });
 
             } else {
-                // --- LÓGICA A: PARSER ORIGINAL (Para PDF limpo) ---
                 console.log("Detectado texto limpo (Exército). Usando parser padrão.");
 
                 const infoRegex = /(\d{9,12})\s*-\s*([\d.-]+)\s*-\s*([A-ZÀ-Ú ]+)(?:\n([A-ZÀ-Ú ]+))?/;
@@ -641,7 +731,6 @@
                 } else {
                     clienteCpfPDF = '';
                     clienteNomePDF = '';
-                    console.warn("Regex de Nome/CPF falhou no parser limpo (Exército).");
                 }
 
                 listaDiv.innerHTML = `<div id="infoCliente" class="mb-3 p-2 border rounded"><p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF}</p><p class="mb-0"><strong>CPF:</strong> ${clienteCpfPDF}</p></div><div class="form-check mb-2 border-bottom pb-2"><input class="form-check-input" type="checkbox" id="selectAllCheckbox"><label class="form-check-label fw-bold" for="selectAllCheckbox">Selecionar Todos</label></div>`;
@@ -685,13 +774,9 @@
             document.getElementById("unificarBtnPdf").style.display = "block";
         }
 
-        // ######################################################################
-        // FUNÇÃO SIAPE ATUALIZADA - COM CÁLCULO DE NEGATIVO (DEPURADO)
-        // ######################################################################
         async function processarPdfSiape(text) {
             console.log("Iniciando processamento SIAPE (UX Aprimorada)...");
 
-            // 1. Extração de Nome e CPF
             const infoRegexNovo = /CPF\nMatrícula\nNome\n([^\n]+)\n(?:[^\n]*\n)?([^\n]+)/;
             const headerRegexAntigo = /Órgão\nCPF\nMatrícula\nNome\n[^\n]+\n([^\n]+)\n[^\n]+\n([^\n]+)/;
 
@@ -713,9 +798,6 @@
             clienteCpfPDF = cpfExtraido;
             clienteNomePDF = nomeExtraido;
 
-            // ------------------------------------------------------------------
-            // 2. CÁLCULO DE NEGATIVO & AUTO-SWITCH DE OPERAÇÃO
-            // ------------------------------------------------------------------
             const blocoValoresRegex = /Total\s+Cartão([\s\S]+?)(?:Extrato\s+de\s+Consignações|Demonstrativo\s+de\s+uso)/i;
             const matchBloco = text.match(blocoValoresRegex);
 
@@ -724,10 +806,9 @@
             let margemDisponivel = 0;
             let calculoRealizado = false;
 
-            // Elementos de UI
             const infoDiv = document.getElementById("infoNegativado");
             const negativoInput = document.getElementById("negativo");
-            const operacaoSelect = document.getElementById("operacaoSelect"); // Para o auto-switch
+            const operacaoSelect = document.getElementById("operacaoSelect");
 
             if (matchBloco) {
                 const valoresEncontrados = matchBloco[1].match(/R\$\s*([\d.,]+)/g);
@@ -740,14 +821,9 @@
             }
 
             if (calculoRealizado) {
-                
-                // 1. PREPARAÇÃO DO LINK DIRETO
-                // Usamos o CPF formatado (com pontos e traços) pois sua imagem mostrou que a URL usa esse formato.
-                // Se der erro, tente trocar por 'cpfLimpo' (apenas números).
-                const cpfParaLink = clienteCpfPDF || ''; 
-                const cpfLimpo = cpfParaLink.replace(/\D/g, ''); // Para a cópia do clipboard
-                
-                // Monta a URL exata que você testou e funcionou
+                const cpfParaLink = clienteCpfPDF || '';
+                const cpfLimpo = cpfParaLink.replace(/\D/g, '');
+
                 const urlPolloDireta = `https://sistema.gconsig.com/admin/consultor/${cpfParaLink}/procurarcliente.html?tipo=cpf`;
 
                 let htmlAnalise = `<h5 class="alert-heading">Análise de Margem (SIAPE)</h5>
@@ -756,8 +832,7 @@
                                <div class="col-6"><strong>Total Utilizado:</strong><br>${formatarMoeda(valTotalFacultativas)}</div>
                            </div>
                            <hr class="my-2">`;
-                
-                // Botão atualizado com o Link Direto
+
                 const botaoLinkPollo = (classeCor) => `
                     <div class="mt-3">
                         <a href="${urlPolloDireta}" target="_blank" class="btn btn-sm ${classeCor} w-100"
@@ -770,14 +845,11 @@
                     </div>`;
 
                 if (margemDisponivel < -0.01) {
-                    // --- CLIENTE NEGATIVO ---
                     const valorNegativo = Math.abs(margemDisponivel);
                     htmlAnalise += `<div class="alert alert-danger mb-0 text-center">
                                 <strong>⚠️ CLIENTE NEGATIVO</strong><br>
                                 Valor Excedente: <strong>${formatarMoeda(valorNegativo)}</strong>
-                                
                                 ${botaoLinkPollo('btn-outline-dark')}
-
                                 <p class="mt-2 mb-0"><small>Ou consulte no <a href="https://c6.c6consig.com.br/WebAutorizador/Login" target="_blank">Banco C6</a></small></p>
                                 </div>`;
 
@@ -790,13 +862,10 @@
                     }
 
                 } else {
-                    // --- MARGEM POSITIVA ---
                     htmlAnalise += `<div class="alert alert-success mb-0 text-center">
                                 <strong>✅ MARGEM DISPONÍVEL</strong><br>
                                 Livre: <strong>${formatarMoeda(margemDisponivel)}</strong>
-                                
                                 ${botaoLinkPollo('btn-outline-success')}
-                                
                                 <p class="mt-2 mb-0"><small>Ou consulte no <a href="https://c6.c6consig.com.br/WebAutorizador/Login" target="_blank">Banco C6</a></small></p>
                             </div>`;
                     negativoInput.value = '';
@@ -808,17 +877,12 @@
                 infoDiv.style.display = 'none';
             }
 
-
-            // ------------------------------------------------------------------
-            // 3. LISTAGEM DE CONTRATOS (COM ORDENAÇÃO MAIOR -> MENOR)
-            // ------------------------------------------------------------------
             const listaDiv = document.getElementById("listaEmprestimos");
             listaDiv.innerHTML = `<div id="infoCliente" class="mb-3 p-2 border rounded"><p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF}</p><p class="mb-0"><strong>CPF:</strong> ${clienteCpfPDF}</p></div><div class="form-check mb-2 border-bottom pb-2"><input class="form-check-input" type="checkbox" id="selectAllCheckbox"><label class="form-check-label fw-bold" for="selectAllCheckbox">Selecionar Todos</label></div>`;
 
             const rgxEmprestimos = /(EMPREST[^\n]+)\n(?:.|\n)*?(R\$\s*[\d\.,]+)\n(\d{2,3}\/\d{2,3})/g;
             let matches = [...text.matchAll(rgxEmprestimos)];
 
-            // Array para armazenar os contratos antes de exibir
             let contratosEncontrados = [];
 
             matches.forEach((match, index) => {
@@ -835,7 +899,6 @@
                 const parcelasRestantes = parseInt(total, 10) - parseInt(pagas, 10);
                 const saldoAproximado = (parcelasRestantes >= 0) ? valorParcelaNum * parcelasRestantes * 0.70 : 0;
 
-                // Adiciona ao array em vez de criar o HTML direto
                 contratosEncontrados.push({
                     id: index,
                     banco: cleanNomeBanco,
@@ -846,18 +909,14 @@
                 });
             });
 
-            // *** ORDENAÇÃO (SORT) ***
-            // Ordena do Maior Valor de Parcela para o Menor
             contratosEncontrados.sort((a, b) => b.valorParcela - a.valorParcela);
 
             if (contratosEncontrados.length === 0) {
                 showToast("AVISO: Nenhum contrato de empréstimo válido foi encontrado.", 'warning');
             } else {
-                // Renderiza os contratos já ordenados
                 contratosEncontrados.forEach((c, i) => {
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'form-check border-bottom py-2';
-                    // Note que usamos 'i' para o ID único no HTML agora, pois a ordem mudou
                     itemDiv.innerHTML = `<input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${c.saldo}" data-parcela="${c.valorParcela}" data-banco="${c.banco}" data-status="${c.pagas} de ${c.total}" id="loan-sorted-${i}"><label class="form-check-label" for="loan-sorted-${i}"><strong>${c.banco}</strong><br><small>Saldo Aprox.: ${formatarMoeda(c.saldo)} | Parcela: ${formatarMoeda(c.valorParcela)} | Status: ${c.pagas} de ${c.total}</small></label>`;
                     listaDiv.appendChild(itemDiv);
                 });
@@ -869,22 +928,18 @@
         }
 
 
-        // ######################################################################
-        // FUNÇÃO DE PARSE COM DETECÇÃO AUTOMÁTICA
-        // ######################################################################
-        async function parsearPdf(event) {
+        function parsearPdf(event) {
             const file = event.target.files[0];
             if (!file) return;
             clienteNomePDF = ''; clienteCpfPDF = '';
 
             const loadingDiv = document.getElementById("loading");
-            const loadingText = document.getElementById("loading-text"); // Certifique-se que este ID existe no seu HTML
+            const loadingText = document.getElementById("loading-text");
 
             loadingText.textContent = 'Analisando...';
             loadingDiv.classList.remove('d-none');
             loadingDiv.classList.add('d-flex');
             document.getElementById('upload-text').style.display = 'none';
-            // Limpa a lista de empréstimos anterior ao carregar novo PDF
             document.getElementById('listaEmprestimos').innerHTML = '';
             document.getElementById('listaEmprestimos').style.display = 'none';
             document.getElementById('unificarBtnPdf').style.display = 'none';
@@ -892,13 +947,12 @@
 
             const fileReader = new FileReader();
             fileReader.onload = async function () {
-                let extractedText = ''; // Renomeado para evitar conflito de escopo
+                let extractedText = '';
                 try {
                     const typedarray = new Uint8Array(this.result);
                     const pdf = await pdfjsLib.getDocument(typedarray).promise;
                     let textFound = false;
 
-                    // --- PLANO A: TENTATIVA DE LEITURA RÁPIDA ---
                     for (let i = 1; i <= pdf.numPages; i++) {
                         const page = await pdf.getPage(i);
                         const textContent = await page.getTextContent();
@@ -910,27 +964,23 @@
                         extractedText += textContent.items.map(item => item.str).join('\n') + '\n\n';
                     }
 
-                    // --- GATILHO ---
                     const hasRealData = extractedText.toUpperCase().includes('CONSIGNATÁRIA') || extractedText.toUpperCase().includes('EMPRÉSTIMO') || extractedText.toUpperCase().includes('CPF') || extractedText.toUpperCase().includes('RUBRICA');
 
                     if (extractedText.trim().length < 50 || !hasRealData) {
-                        textFound = false; // Força o Plano B
+                        textFound = false;
                         console.log("Texto 'limpo' não parece válido. Forçando OCR (Plano B).");
                     }
 
 
-                    // --- PLANO B: FALLBACK PARA OCR (TESSERACT) ---
                     if (!textFound) {
                         console.warn("PDF parece ser uma imagem ou sem texto real. Iniciando OCR...");
-                        extractedText = ''; // Reseta o texto
+                        extractedText = '';
 
-                        // Verifica se Tesseract está carregado antes de usar
                         if (typeof Tesseract === 'undefined') {
                             throw new Error("Tesseract.js não foi carregado. Verifique a inclusão do script.");
                         }
 
-                        // Cria o worker aqui para garantir que esteja definido
-                        const worker = await Tesseract.createWorker('por'); // 'por' = Português
+                        const worker = await Tesseract.createWorker('por');
 
                         for (let i = 1; i <= pdf.numPages; i++) {
                             loadingText.textContent = `Lendo imagem: Página ${i} de ${pdf.numPages}...`;
@@ -948,56 +998,45 @@
                             extractedText += ocrText + '\n\n';
                         }
 
-                        await worker.terminate(); // Libera recursos do worker
+                        await worker.terminate();
                         console.log("OCR Concluído.");
                     }
-                    // --- FIM DO PLANO B ---
 
-                    // **** INÍCIO DA DETECÇÃO AUTOMÁTICA ****
-                    let convenioDetectado = 'exercito'; // Valor padrão
+                    let convenioDetectado = 'exercito';
                     const convenioSelect = document.getElementById('convenioSelect');
 
-                    // Verifica palavras-chave para SIAPE (mais específicas primeiro)
                     if (extractedText.includes("Extrato de Consignações Vigentes") || extractedText.includes("Rubrica\nSequência")) {
                         convenioDetectado = 'siape';
                         console.log("Convênio detectado: SIAPE");
                     }
-                    // Verifica palavras-chave para Exército
                     else if (extractedText.includes("eConsig") || extractedText.includes("MARGEM CONSIGNACAO") || extractedText.includes("Consignatária")) {
                         convenioDetectado = 'exercito';
                         console.log("Convênio detectado: Exército (eConsig)");
                     }
-                    // Se nenhuma chave específica for encontrada
                     else {
                         console.warn("Não foi possível detectar o convênio automaticamente com alta confiança, usando padrão 'Exército'.");
                         showToast("Não foi possível detectar o convênio. Verifique a seleção.", "warning");
-                        // Mantém 'exercito' como padrão
                     }
 
-                    // Atualiza o select e a UI relacionada ao convênio
                     convenioSelect.value = convenioDetectado;
-                    atualizarOperacoes(); // Isso também atualiza as operações e a visibilidade da UI
+                    atualizarOperacoes();
 
-                    // Chama a função de processamento correta com o texto extraído
                     if (convenioDetectado === 'exercito') {
                         await processarPdfExercicio(extractedText);
-                    } else { // Se for 'siape'
+                    } else {
                         await processarPdfSiape(extractedText);
                     }
-                    // **** FIM DA DETECÇÃO AUTOMÁTICA ****
-
 
                     showToast("Extrato lido e convênio detectado com sucesso!", "success");
 
                 } catch (error) {
                     console.error("Erro ao processar o PDF:", error);
-                    // Adiciona a mensagem de erro específica ao Toast para melhor depuração
                     showToast(`Ocorreu um erro ao ler o PDF: ${error.message}`, "danger");
                 } finally {
                     loadingDiv.classList.add('d-none');
                     loadingDiv.classList.remove('d-flex');
                     document.getElementById('upload-text').style.display = 'block';
-                    loadingText.textContent = 'Analisando...'; // Reseta o texto do loading
+                    loadingText.textContent = 'Analisando...';
                 }
             };
             fileReader.readAsArrayBuffer(file);
@@ -1068,7 +1107,7 @@
 
             parcelasManuais.push({ banco, parcela: parcelaValor, totalParcelas, parcelasPagas });
             ['manualBanco', 'manualParcela', 'manualParcelasPagas'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('manualTotalParcelas').value = '96'; // Reset default
+            document.getElementById('manualTotalParcelas').value = '96';
             renderizarListaManual();
             showToast("Contrato adicionado.");
         }
@@ -1103,7 +1142,6 @@
             const novaParcela = totalParcelas - negativo;
             if (novaParcela < 0) {
                 showToast("A nova parcela calculada é negativa. Verifique os valores.", "warning");
-                // Você pode optar por parar aqui ou continuar mostrando o resultado negativo
             }
 
             const nomeFinal = document.getElementById('clienteNome').value.trim() || clienteNomePDF;
@@ -1124,21 +1162,18 @@
             document.getElementById("resultadoNegativadoContainer").scrollIntoView({ behavior: 'smooth' });
         }
 
-
-        // ##### NOVA FUNÇÃO PARA CALCULAR MARGEM NOVA #####
         function calcularMargemNova() {
             const operacao = document.getElementById('operacaoSelect').value;
 
             const nome = document.getElementById('mn-clienteNome').value;
             const cpf = document.getElementById('mn-clienteCpf').value;
-            const banco = document.getElementById('mn-banco').value; // NOVO CAMPO
+            const banco = document.getElementById('mn-banco').value;
             const parcela = moedaParaFloat(document.getElementById('mn-parcela').value);
             const coeficiente = parseFloat(document.getElementById('mn-coeficiente').value.replace(",", ".")) || 0;
             const prazo = parseInt(document.getElementById('mn-prazo').value, 10) || 0;
 
-            // Validações
             if (!nome || !cpf) return showToast('Preencha o Nome e CPF do cliente.', 'danger');
-            if (!banco) return showToast('Preencha o Banco Destino.', 'danger'); // NOVO CAMPO
+            if (!banco) return showToast('Preencha o Banco Destino.', 'danger');
             if (!parcela || parcela <= 0) return showToast('Preencha um Valor de Parcela válido.', 'danger');
             if (!coeficiente || coeficiente <= 0) return showToast('Preencha um Coeficiente válido.', 'danger');
             if (!prazo || prazo <= 0) return showToast('Preencha um Prazo válido.', 'danger');
@@ -1146,12 +1181,11 @@
             const valorLiberado = parcela / coeficiente;
             const valorTotalContrato = parcela * prazo;
 
-            // Salva no objeto global para os PDFs
             calculoDetalhado = {
                 tipo: operacao,
                 nome: nome,
                 cpf: cpf,
-                novoBanco: banco, // NOVO CAMPO
+                novoBanco: banco,
                 novaParcelaValor: parcela,
                 coef: coeficiente,
                 novoPrazo: prazo,
@@ -1159,7 +1193,6 @@
                 valorTotalContrato: valorTotalContrato
             };
 
-            // Exibe o resultado na tela
             const resultadoDiv = document.getElementById("resultadoFinal");
             resultadoDiv.innerHTML = `
                 <div class="card">
@@ -1188,7 +1221,6 @@
 
             resultadoDiv.style.display = 'block';
             resultadoDiv.scrollIntoView({ behavior: 'smooth' });
-            // Adiciona os listeners aos novos botões
             document.getElementById("baixarPdfClienteBtn").addEventListener("click", gerarPDFCliente);
             document.getElementById("baixarPdfEscritorioBtn").addEventListener("click", gerarPDFEscritorio);
         }
@@ -1200,7 +1232,7 @@
 
             const p = moedaParaFloat(document.getElementById("parcela").value);
             const s = moedaParaFloat(document.getElementById("saldodevedor").value);
-            const d = moedaParaFloat(document.getElementById("desconto").value); // Pode ser 0
+            const d = moedaParaFloat(document.getElementById("desconto").value);
             const coef = parseFloat(document.getElementById("coeficiente").value.replace(",", ".")) || 0;
             const comissaoG = parseFloat(document.getElementById("comissaoGerente").value.replace(",", ".")) || 0;
             const comissaoEsc = moedaParaFloat(document.getElementById("comissaoesc").value);
@@ -1208,17 +1240,15 @@
             const novoBanco = document.getElementById("novoBanco").value || 'Bradesco';
             const novoPrazo = parseInt(document.getElementById("novoPrazo").value, 10) || 96;
 
-            // Validações Essenciais
             if (!p || p <= 0) return showToast('Preencha um Valor Total da Parcela válido (maior que zero).', 'danger');
-            if (!s || s < 0) return showToast('Preencha um Saldo Devedor Aprox. Total válido (pode ser zero).', 'danger'); // Saldo pode ser 0
-            if (!comissaoEsc || comissaoEsc < 0) return showToast('Preencha uma Comissão Escritório válida (pode ser zero).', 'danger'); // Comissão pode ser 0
+            if (!s || s < 0) return showToast('Preencha um Saldo Devedor Aprox. Total válido (pode ser zero).', 'danger');
+            if (!comissaoEsc || comissaoEsc < 0) return showToast('Preencha uma Comissão Escritório válida (pode ser zero).', 'danger');
             if (!coef || coef <= 0) return showToast('Preencha um Coeficiente válido (maior que zero).', 'danger');
             if (comissaoG < 0 || comissaoG > 100) return showToast('Comissão Gerente deve ser entre 0 e 100.', 'danger');
             if (novoPrazo <= 0) return showToast('Prazo do Novo Contrato deve ser positivo.', 'danger');
 
 
             const novoS = p / coef;
-            // Pega nome/cpf dos campos de entrada manual se estiverem preenchidos, senão usa os do PDF
             const nomeFinal = document.getElementById('clienteNome').value.trim() || clienteNomePDF;
             const cpfFinal = document.getElementById('clienteCpf').value.trim() || clienteCpfPDF;
 
@@ -1230,15 +1260,13 @@
                 const tipoCompra = document.getElementById("tipoCompra").value;
                 const investidorR = (tipoCompra === 'bradesco') ? 0.10 : 0.08;
                 const sub = novoS - s - d;
-                const investidor = s * investidorR; // Comissão investidor é sobre o saldo devedor quitado
-                const gerente = sub * (comissaoG / 100); // Comissão gerente sobre o valor bruto liberado
+                const investidor = s * investidorR;
+                const gerente = sub * (comissaoG / 100);
                 const valorGeral = sub - investidor - gerente;
                 valorOfertaFinal = valorGeral - comissaoEsc;
 
-                // A verificação de viabilidade deve considerar todas as deduções
                 if (novoS < (s + d + investidor + gerente + comissaoEsc)) {
                     showToast('Operação Não Viável: O novo saldo gerado é insuficiente para cobrir todas as despesas (saldo devedor, produto, comissões).', 'danger');
-                    // Limpa resultado anterior se houver
                     document.getElementById("resultadoFinal").innerHTML = '';
                     document.getElementById("resultadoFinal").style.display = 'none';
                     return;
@@ -1256,8 +1284,8 @@
                     <li class="list-group-item d-flex justify-content-between"><span>(=) Valor Geral Líquido (antes Escritório):</span> <strong>${formatarMoeda(valorGeral)}</strong></li>
                     <li class="list-group-item d-flex justify-content-between"><span>(-) Comissão Escritório:</span> <span class="text-danger">- ${formatarMoeda(comissaoEsc)}</span></li>`;
 
-            } else { // Portabilidade ou Refin
-                const valorBrutoLiberado = novoS - s - d; // Troco inicial
+            } else {
+                const valorBrutoLiberado = novoS - s - d;
                 let sub = valorBrutoLiberado;
                 let valorQuitado = 0;
                 let comissaoQuitado = 0;
@@ -1266,16 +1294,15 @@
                     valorQuitado = moedaParaFloat(document.getElementById('valorQuitado').value);
                     if (valorQuitado < 0) return showToast('Valor a ser quitado não pode ser negativo.', 'danger');
                     if (valorQuitado > 0) {
-                        comissaoQuitado = valorQuitado * 0.10; // 10% sobre o valor quitado
-                        sub -= (valorQuitado + comissaoQuitado); // Deduz do troco
+                        comissaoQuitado = valorQuitado * 0.10;
+                        sub -= (valorQuitado + comissaoQuitado);
                     }
                 }
 
-                const gerente = sub * (comissaoG / 100); // Comissão gerente sobre o troco líquido (após quitação se houver)
+                const gerente = sub * (comissaoG / 100);
                 const valorGeral = sub - gerente;
                 valorOfertaFinal = valorGeral - comissaoEsc;
 
-                // A verificação de viabilidade deve considerar todas as deduções
                 if (novoS < (s + d + valorQuitado + comissaoQuitado + gerente + comissaoEsc)) {
                     showToast('Operação Não Viável: O novo saldo gerado é insuficiente para cobrir todas as despesas (saldo devedor, produto, quitação, comissões).', 'danger');
                     document.getElementById("resultadoFinal").innerHTML = '';
@@ -1295,20 +1322,16 @@
                     <li class="list-group-item d-flex justify-content-between"><span>(-) Comissão Escritório:</span> <span class="text-danger">- ${formatarMoeda(comissaoEsc)}</span></li>`;
             }
 
-            // ########## INÍCIO DA LÓGICA DO COEFICIENTE REAL ##########
             let coeficienteReal = 0;
-            // Evita divisão por zero. O saldo (s) pode ser 0 (ex: refin de margem)
             if ((valorOfertaFinal + s) > 0) {
                 coeficienteReal = p / (valorOfertaFinal + s);
             }
-            calculoDetalhado.coeficienteReal = coeficienteReal; // Salva no objeto de detalhes
+            calculoDetalhado.coeficienteReal = coeficienteReal;
 
-            // Adiciona o Coeficiente Real ao HTML
             resultadoHtml += `<li class="list-group-item d-flex justify-content-between bg-light-subtle">
                                 <strong>Coeficiente Real (Calculado):</strong> 
                                 <strong class="text-primary">${coeficienteReal.toFixed(8)}</strong>
                              </li>`;
-            // ########## FIM DA LÓGICA DO COEFICIENTE REAL ##########
 
 
             const resultadoDiv = document.getElementById("resultadoFinal");
@@ -1351,7 +1374,6 @@
             let y = 15;
             const pageWidth = doc.internal.pageSize.getWidth();
             const logoPrincipalWidth = 40, logoConvenioWidth = 30;
-            // Cálculo seguro da altura, evitando divisão por zero se a imagem não carregar
             const logoPrincipalHeight = (logoPrincipalImg && logoPrincipalImg.naturalWidth > 0) ? logoPrincipalImg.naturalHeight * (logoPrincipalWidth / logoPrincipalImg.naturalWidth) : 0;
             const logoConvenioHeight = (convenioImgElem && convenioImgElem.naturalWidth > 0) ? convenioImgElem.naturalHeight * (logoConvenioWidth / convenioImgElem.naturalWidth) : 0;
             const maxHeight = Math.max(logoPrincipalHeight, logoConvenioHeight);
@@ -1359,16 +1381,13 @@
             if (logoPrincipalBase64) doc.addImage(logoPrincipalBase64, 'PNG', 15, y + (maxHeight - logoPrincipalHeight) / 2, logoPrincipalWidth, logoPrincipalHeight);
             if (convenioBase64) doc.addImage(convenioBase64, 'PNG', pageWidth - logoConvenioWidth - 15, y + (maxHeight - logoConvenioHeight) / 2, logoConvenioWidth, logoConvenioHeight);
 
-            y += maxHeight > 0 ? maxHeight + 10 : 25; // Garante espaço mesmo sem logos
+            y += maxHeight > 0 ? maxHeight + 10 : 25;
 
-            // Obtém o texto da operação selecionada de forma segura
             const operacaoSelectElement = document.getElementById('operacaoSelect');
             const operacaoText = operacaoSelectElement.options[operacaoSelectElement.selectedIndex]?.text || 'Operação Desconhecida';
 
-            doc.setFontSize(18); doc.text(`Simulação de ${operacaoText} (${tipo})`, pageWidth / 2, y, { align: 'center' }); y += 20; // Centralizado
+            doc.setFontSize(18); doc.text(`Simulação de ${operacaoText} (${tipo})`, pageWidth / 2, y, { align: 'center' }); y += 20;
 
-            // ##### LÓGICA DE DADOS DO CLIENTE ATUALIZADA #####
-            // Pega o nome/cpf do objeto de cálculo, que foi preenchido pela função de cálculo correta
             const nomeFinal = calculoDetalhado?.nome || 'Não informado';
             const cpfFinal = calculoDetalhado?.cpf || 'Não informado';
 
@@ -1376,8 +1395,6 @@
             doc.setFontSize(10); doc.text(`Nome: ${nomeFinal}`, 15, y); y += 6; doc.text(`CPF: ${cpfFinal}`, 15, y);
 
 
-            // ##### LÓGICA DE CONTRATOS ATUALIZADA #####
-            // Só mostra a lista de contratos se NÃO for Margem Nova
             if (calculoDetalhado && !calculoDetalhado.tipo.includes('margem_nova')) {
                 const isManualTabActive = document.getElementById('manual-tab').classList.contains('active');
                 const listaDeParcelas = isManualTabActive ? parcelasManuais.map(p => {
@@ -1400,7 +1417,7 @@
                     y += 10;
                 }
             } else {
-                y += 10; // Adiciona um espaço se for Margem Nova
+                y += 10;
             }
 
 
@@ -1408,21 +1425,18 @@
             doc.setFontSize(12); doc.text("Dados do Novo Contrato", 15, y); y += 8;
             doc.setFontSize(10);
 
-            // ##### LÓGICA DO BANCO ATUALIZADA #####
-            // Agora todas as operações (incluindo margem nova) preenchem 'novoBanco'
             let bancoNovoTexto = `Banco: ${calculoDetalhado?.novoBanco || '(Não especificado)'}`;
             doc.text(bancoNovoTexto, 15, y); y += 6;
 
             doc.text(`Prazo: ${calculoDetalhado?.novoPrazo || 'Não inf.'}x`, 15, y); y += 6;
             doc.text(`Valor da Parcela: ${formatarMoeda(calculoDetalhado?.novaParcelaValor)}`, 15, y); y += 6;
 
-            return y; // Retorna a posição Y final para as funções seguintes
+            return y;
         }
 
 
         function gerarNomeArquivo(tipoPdf) {
             const dataFormatada = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
-            // Pega o nome do cliente direto do objeto de cálculo
             let nomeCliente = (calculoDetalhado?.nome || 'cliente').trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
 
             if (!nomeCliente) nomeCliente = 'cliente_desconhecido';
@@ -1449,7 +1463,6 @@
             y += 10;
             doc.setFontSize(12);
 
-            // ##### LÓGICA DE RESULTADO ATUALIZADA #####
             if (calculoDetalhado.tipo.includes('margem_nova')) {
                 doc.text("Resumo da Simulação de Margem Nova", 15, y); y += 8;
                 doc.setFontSize(14); doc.setFont('helvetica', 'bold');
@@ -1457,7 +1470,7 @@
                 doc.setFontSize(10); doc.setFont('helvetica', 'normal');
                 doc.text(`Valor Total do Contrato: ${formatarMoeda(calculoDetalhado.valorTotalContrato)}`, 15, y);
 
-            } else { // Lógica antiga para Port/Refin/Compra
+            } else {
                 doc.text("Resumo da Operação Simulada", 15, y); y += 8; doc.setFontSize(10);
                 doc.text(`Saldo Devedor Total a Quitar (Aprox.): ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 10;
                 doc.setFontSize(14); doc.setFont('helvetica', 'bold');
@@ -1494,7 +1507,6 @@
             y += 10;
             doc.setFontSize(12);
 
-            // ##### LÓGICA DE RESULTADO ATUALIZADA #####
             if (calculoDetalhado.tipo.includes('margem_nova')) {
                 doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
                 doc.setFontSize(14); doc.setFont('helvetica', 'bold');
@@ -1503,7 +1515,7 @@
                 doc.text(`Valor Total do Contrato: ${formatarMoeda(calculoDetalhado.valorTotalContrato)}`, 15, y); y += 6;
                 doc.text(`Coeficiente Informado: ${calculoDetalhado.coef ? calculoDetalhado.coef.toFixed(8) : 'N/A'}`, 15, y);
 
-            } else { // Lógica antiga para Port/Refin/Compra
+            } else {
                 doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
                 doc.text(`Novo Saldo (Gerado pela Parcela): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
                 doc.text(`Saldo Devedor a Quitar: ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 6;
@@ -1574,7 +1586,6 @@
                     return;
                 }
 
-                // ##### ROTEAMENTO DA LÓGICA DE CÁLCULO #####
                 if (operacao.includes('margem_nova')) {
                     calcularMargemNova();
 
@@ -1592,7 +1603,7 @@
                     }
                     calcularNegativado();
 
-                } else { // Port/Refin/Compra
+                } else {
                     if (!document.getElementById("parcela").value || !document.getElementById("saldodevedor").value || !document.getElementById("coeficiente").value || !document.getElementById("comissaoGerente").value || !document.getElementById("comissaoesc").value) {
                         showToast("Preencha todos os campos obrigatórios da simulação (Parcela, Saldo, Coeficiente, Comissões).", "warning");
                         return;
@@ -1647,7 +1658,6 @@
                 }
             }));
 
-            // Aplica máscara de moeda aos campos relevantes
             ['#manualParcela', '#negativo', '#parcela', '#saldodevedor', '#desconto', '#valorQuitado', '#comissaoesc', '#mn-parcela'].forEach(selector => {
                 const el = document.querySelector(selector);
                 if (el) {
@@ -1667,12 +1677,12 @@
             });
 
 
-            // Inicializa a UI
             verificarDadosNegativado();
             atualizarOperacoes();
         });
 
     </script>
+
 </body>
 
 </html>
