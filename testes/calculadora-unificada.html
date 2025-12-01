@@ -30,6 +30,7 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
+        /* Estilo da Área de Upload */
         .upload-area {
             border: 2px dashed #0d6efd;
             padding: 30px;
@@ -53,6 +54,7 @@
             height: 1.5rem;
         }
 
+        /* Toast de Notificação */
         .toast-container {
             position: fixed;
             top: 20px;
@@ -73,11 +75,18 @@
         .logos {
             display: none;
         }
+        
+        /* Ajuste do botão de busca */
+        .btn-search-group {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
     </style>
 </head>
 
 <body>
     <a href="/index.html" class="btn btn-secondary btn-voltar">← Voltar</a>
+
     <div class="toast-container" id="toast-container"></div>
 
     <div class="logos">
@@ -127,6 +136,7 @@
                 </div>
             </div>
         </div>
+
         <div id="infoNegativado" class="alert alert-warning" style="display:none;"></div>
 
         <form id="calcForm">
@@ -136,13 +146,17 @@
                 </div>
                 <div class="card-body">
                     <ul class="nav nav-tabs" id="entryTab" role="tablist">
-                        <li class="nav-item" role="presentation"><button class="nav-link active" id="pdf-tab"
-                                data-bs-toggle="tab" data-bs-target="#pdf-tab-pane" type="button" role="tab">Carregar
-                                Extrato</button></li>
-                        <li class="nav-item" role="presentation"><button class="nav-link" id="manual-tab"
-                                data-bs-toggle="tab" data-bs-target="#manual-tab-pane" type="button" role="tab">Inserir
-                                Manualmente / Integração</button></li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="pdf-tab" data-bs-toggle="tab"
+                                data-bs-target="#pdf-tab-pane" type="button" role="tab">Carregar Extrato</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="manual-tab" data-bs-toggle="tab"
+                                data-bs-target="#manual-tab-pane" type="button" role="tab">Inserir Manualmente /
+                                Integração</button>
+                        </li>
                     </ul>
+
                     <div class="tab-content" id="entryTabContent">
                         <div class="tab-pane fade show active p-3" id="pdf-tab-pane" role="tabpanel">
                             <input type="file" id="pdf-upload" accept=".pdf">
@@ -153,19 +167,21 @@
                                     <strong class="ms-2" id="loading-text">Analisando...</strong>
                                 </div>
                             </label>
+
                             <div id="listaEmprestimos" class="mt-3" style="display:none;"></div>
                             <button type="button" id="unificarBtnPdf" class="btn btn-info w-100 mt-3"
                                 style="display:none;">Usar Contratos Selecionados</button>
                         </div>
 
                         <div class="tab-pane fade p-3" id="manual-tab-pane" role="tabpanel">
+                            
                             <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
                                 <h4 class="h6 mb-0 text-primary">Entrada de Dados</h4>
-                                <button type="button" class="btn btn-sm btn-info text-white"
-                                    onclick="abrirModalInstrucoes()">
+                                <button type="button" class="btn btn-sm btn-info text-white" onclick="abrirModalInstrucoes()">
                                     ⚙️ Configurar Integração
                                 </button>
                             </div>
+
                             <div class="row mb-3">
                                 <div class="col-md-6 mb-2">
                                     <label for="clienteNome" class="form-label">Nome do Cliente</label>
@@ -174,33 +190,42 @@
                                 <div class="col-md-6 mb-2">
                                     <label for="clienteCpf" class="form-label">CPF do Cliente</label>
                                     <div class="input-group">
-                                        <input type="text" id="clienteCpf" class="form-control"
-                                            placeholder="000.000.000-00">
-                                        <button class="btn btn-warning" type="button" onclick="buscarClienteCorban()">
-                                            🔍 Buscar Corban
+                                        <input type="text" id="clienteCpf" class="form-control" placeholder="000.000.000-00">
+                                        
+                                        <button class="btn btn-primary dropdown-toggle btn-search-group" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            🔍 Buscar no Sistema
                                         </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><a class="dropdown-item" href="#" onclick="buscarClientePolo()">🔴 Abrir GConsig / Polo</a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="buscarClienteCorban()">🔵 Abrir Corban</a></li>
+                                        </ul>
                                     </div>
-                                    <small class="text-muted" style="font-size: 0.75rem;">Digite o CPF e clique para
-                                        importar dados automaticamente.</small>
+                                    <small class="text-muted" style="font-size: 0.75rem;">Selecione o sistema para abrir a ficha do cliente.</small>
                                 </div>
                             </div>
+
                             <div class="p-3 mb-3 border rounded">
                                 <h3 class="fs-5 text-center mb-3">Adicionar Contratos</h3>
                                 <div class="row g-2">
-                                    <div class="col-md-7 mb-2"><label for="manualBanco"
-                                            class="form-label">Banco</label><input type="text" id="manualBanco"
-                                            class="form-control"></div>
-                                    <div class="col-md-5 mb-2"><label for="manualParcela" class="form-label">Valor
-                                            Parcela</label><input type="text" id="manualParcela" class="form-control">
+                                    <div class="col-md-7 mb-2">
+                                        <label for="manualBanco" class="form-label">Banco</label>
+                                        <input type="text" id="manualBanco" class="form-control">
                                     </div>
-                                    <div class="col-6 col-md-4 mb-2"><label for="manualTotalParcelas"
-                                            class="form-label">Total</label><input type="number"
-                                            id="manualTotalParcelas" class="form-control" value="96"></div>
-                                    <div class="col-6 col-md-4 mb-2"><label for="manualParcelasPagas"
-                                            class="form-label">Pagas</label><input type="number"
-                                            id="manualParcelasPagas" class="form-control"></div>
-                                    <div class="col-12 col-md-4 d-flex align-items-end mb-2"><button type="button"
-                                            id="addManualBtn" class="btn btn-secondary w-100">Adicionar</button></div>
+                                    <div class="col-md-5 mb-2">
+                                        <label for="manualParcela" class="form-label">Valor Parcela</label>
+                                        <input type="text" id="manualParcela" class="form-control">
+                                    </div>
+                                    <div class="col-6 col-md-4 mb-2">
+                                        <label for="manualTotalParcelas" class="form-label">Total</label>
+                                        <input type="number" id="manualTotalParcelas" class="form-control" value="96">
+                                    </div>
+                                    <div class="col-6 col-md-4 mb-2">
+                                        <label for="manualParcelasPagas" class="form-label">Pagas</label>
+                                        <input type="number" id="manualParcelasPagas" class="form-control">
+                                    </div>
+                                    <div class="col-12 col-md-4 d-flex align-items-end mb-2">
+                                        <button type="button" id="addManualBtn" class="btn btn-secondary w-100">Adicionar</button>
+                                    </div>
                                 </div>
                                 <div id="manual-loans-list" class="mt-3"></div>
                             </div>
@@ -216,108 +241,134 @@
                 <div class="card-body">
                     <div class="row">
                         <div id="negativado-fields" style="display:none;">
-                            <div class="mb-3"><label class="form-label">Soma das parcelas:</label>
+                            <div class="mb-3">
+                                <label class="form-label">Soma das parcelas:</label>
                                 <h4 id="totalParcelasDisplay" class="fw-bold text-primary">R$ 0,00</h4>
                             </div>
-                            <div class="mb-3"><label for="negativo" class="form-label">Valor Negativo do
-                                    Cliente</label><input type="text" id="negativo" class="form-control"
-                                    placeholder="Ex: 1000,00" required></div>
+                            <div class="mb-3">
+                                <label for="negativo" class="form-label">Valor Negativo do Cliente</label>
+                                <input type="text" id="negativo" class="form-control" placeholder="Ex: 1000,00" required>
+                            </div>
                         </div>
 
                         <div id="simulacao-fields" style="display:none;">
                             <div class="row">
-                                <div class="col-md-6 mb-3"><label for="parcela" class="form-label">Valor Total da
-                                        Parcela</label><input type="text" id="parcela" class="form-control" required
-                                        placeholder="Unificado do passo anterior"></div>
-                                <div class="col-md-6 mb-3"><label for="saldodevedor" class="form-label">Saldo Devedor
-                                        Aprox. Total</label><input type="text" id="saldodevedor" class="form-control"
-                                        required placeholder="Unificado do passo anterior"></div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="parcela" class="form-label">Valor Total da Parcela</label>
+                                    <input type="text" id="parcela" class="form-control" required placeholder="Unificado do passo anterior">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="saldodevedor" class="form-label">Saldo Devedor Aprox. Total</label>
+                                    <input type="text" id="saldodevedor" class="form-control" required placeholder="Unificado do passo anterior">
+                                </div>
                             </div>
+
                             <div class="p-3 mb-3 border rounded">
                                 <h5 class="fs-6 text-primary mb-3">Dados do Novo Contrato</h5>
                                 <div class="row">
-                                    <div class="col-md-8 mb-2"><label for="novoBanco" class="form-label">Banco
-                                            Destino</label><input type="text" id="novoBanco" class="form-control"
-                                            value="Bradesco"></div>
-                                    <div class="col-md-4 mb-2"><label for="novoPrazo" class="form-label">Prazo
-                                            (meses)</label><input type="number" id="novoPrazo" class="form-control"
-                                            value="96"></div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-12 mb-3"><label for="desconto" class="form-label">Produto
-                                        (Opcional)</label><input type="text" id="desconto" class="form-control"
-                                        placeholder="Ex: 1.000,00"></div>
-                            </div>
-                            <div id="port-refin-fields" style="display:none;">
-                                <div class="col-md-12 mb-3"><label class="form-label">Houve quitação de algum
-                                        valor?</label>
-                                    <div>
-                                        <div class="form-check form-check-inline"><input class="form-check-input"
-                                                type="radio" name="quitacao" id="quitacaoNao" value="nao" checked><label
-                                                class="form-check-label" for="quitacaoNao">Não</label></div>
-                                        <div class="form-check form-check-inline"><input class="form-check-input"
-                                                type="radio" name="quitacao" id="quitacaoSim" value="sim"><label
-                                                class="form-check-label" for="quitacaoSim">Sim</label></div>
+                                    <div class="col-md-8 mb-2">
+                                        <label for="novoBanco" class="form-label">Banco Destino</label>
+                                        <input type="text" id="novoBanco" class="form-control" value="Bradesco">
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <label for="novoPrazo" class="form-label">Prazo (meses)</label>
+                                        <input type="number" id="novoPrazo" class="form-control" value="96">
                                     </div>
                                 </div>
-                                <div id="quitadoContainer" style="display:none;" class="col-md-12 mb-3"><label
-                                        for="valorQuitado" class="form-label">Valor a ser quitado</label><input
-                                        type="text" id="valorQuitado" class="form-control" placeholder="Ex: 5.000,00">
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="desconto" class="form-label">Produto (Opcional)</label>
+                                    <input type="text" id="desconto" class="form-control" placeholder="Ex: 1.000,00">
                                 </div>
                             </div>
+
+                            <div id="port-refin-fields" style="display:none;">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label">Houve quitação de algum valor?</label>
+                                    <div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="quitacao" id="quitacaoNao" value="nao" checked>
+                                            <label class="form-check-label" for="quitacaoNao">Não</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="quitacao" id="quitacaoSim" value="sim">
+                                            <label class="form-check-label" for="quitacaoSim">Sim</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="quitadoContainer" style="display:none;" class="col-md-12 mb-3">
+                                    <label for="valorQuitado" class="form-label">Valor a ser quitado</label>
+                                    <input type="text" id="valorQuitado" class="form-control" placeholder="Ex: 5.000,00">
+                                </div>
+                            </div>
+
                             <div id="compra-fields" style="display:none;">
-                                <div class="col-md-12 mb-3"><label for="tipoCompra" class="form-label">Tipo de
-                                        Compra</label><select id="tipoCompra" class="form-select">
+                                <div class="col-md-12 mb-3">
+                                    <label for="tipoCompra" class="form-label">Tipo de Compra</label>
+                                    <select id="tipoCompra" class="form-select">
                                         <option value="bradesco" selected>Bradesco (Inv. 10%)</option>
                                         <option value="cef">Caixa (CEF) (Inv. 8%)</option>
-                                    </select></div>
+                                    </select>
+                                </div>
                             </div>
+
                             <hr class="my-3">
                             <div class="row">
-                                <div class="col-md-4 mb-3"><label for="coeficiente"
-                                        class="form-label">Coeficiente</label><input type="text" id="coeficiente"
-                                        class="form-control" value="0.02" required></div>
-                                <div class="col-md-4 mb-3"><label for="comissaoGerente" class="form-label">Comissão
-                                        Gerente (%)</label><input type="text" id="comissaoGerente" class="form-control"
-                                        value="15" required></div>
-                                <div class="col-md-4 mb-3"><label for="comissaoesc" class="form-label">Comissão
-                                        Escritório</label><input type="text" id="comissaoesc" class="form-control"
-                                        required value="100"></div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="coeficiente" class="form-label">Coeficiente</label>
+                                    <input type="text" id="coeficiente" class="form-control" value="0.02" required>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="comissaoGerente" class="form-label">Comissão Gerente (%)</label>
+                                    <input type="text" id="comissaoGerente" class="form-control" value="15" required>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="comissaoesc" class="form-label">Comissão Escritório</label>
+                                    <input type="text" id="comissaoesc" class="form-control" required value="100">
+                                </div>
                             </div>
                         </div>
 
                         <div id="margem-nova-fields" style="display:none;">
                             <div class="row mb-3">
-                                <div class="col-md-6 mb-2"><label for="mn-clienteNome" class="form-label">Nome do
-                                        Cliente</label><input type="text" id="mn-clienteNome" class="form-control"
-                                        required></div>
-                                <div class="col-md-6 mb-2"><label for="mn-clienteCpf" class="form-label">CPF do
-                                        Cliente</label><input type="text" id="mn-clienteCpf" class="form-control"
-                                        placeholder="000.000.000-00" required></div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="mn-clienteNome" class="form-label">Nome do Cliente</label>
+                                    <input type="text" id="mn-clienteNome" class="form-control" required>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="mn-clienteCpf" class="form-label">CPF do Cliente</label>
+                                    <input type="text" id="mn-clienteCpf" class="form-control" placeholder="000.000.000-00" required>
+                                </div>
                             </div>
                             <hr>
                             <div class="row">
-                                <div class="col-md-12 mb-3"><label for="mn-banco" class="form-label">Banco
-                                        Destino</label><input type="text" id="mn-banco" class="form-control"
-                                        value="Bradesco" required></div>
+                                <div class="col-md-12 mb-3">
+                                    <label for="mn-banco" class="form-label">Banco Destino</label>
+                                    <input type="text" id="mn-banco" class="form-control" value="Bradesco" required>
+                                </div>
                             </div>
                             <div class="row">
-                                <div class="col-md-4 mb-3"><label for="mn-parcela" class="form-label">Valor da Parcela
-                                        (Margem)</label><input type="text" id="mn-parcela" class="form-control" required
-                                        placeholder="Ex: 350,00"></div>
-                                <div class="col-md-4 mb-3"><label for="mn-coeficiente"
-                                        class="form-label">Coeficiente</label><input type="text" id="mn-coeficiente"
-                                        class="form-control" required value="0.023"></div>
-                                <div class="col-md-4 mb-3"><label for="mn-prazo" class="form-label">Prazo
-                                        (meses)</label><input type="number" id="mn-prazo" class="form-control" required
-                                        value="96"></div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="mn-parcela" class="form-label">Valor da Parcela (Margem)</label>
+                                    <input type="text" id="mn-parcela" class="form-control" required placeholder="Ex: 350,00">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="mn-coeficiente" class="form-label">Coeficiente</label>
+                                    <input type="text" id="mn-coeficiente" class="form-control" required value="0.023">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="mn-prazo" class="form-label">Prazo (meses)</label>
+                                    <input type="number" id="mn-prazo" class="form-control" required value="96">
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="card-footer"><button class="btn btn-primary w-100" type="submit"
-                        id="submitBtn">Calcular</button></div>
+                <div class="card-footer">
+                    <button class="btn btn-primary w-100" type="submit" id="submitBtn">Calcular</button>
+                </div>
             </div>
         </form>
 
@@ -343,31 +394,26 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title">Configuração da Integração (Apenas 1 vez)</h5>
+                    <h5 class="modal-title">Configurar Integração Inteligente</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Para o sistema puxar os dados, crie um botão de atalho:</p>
-                    <div class="alert alert-secondary">
-                        <strong>1.</strong> Aperte <strong>Ctrl + Shift + B</strong> para mostrar a barra de
-                        favoritos.<br>
-                        <strong>2.</strong> Copie o código abaixo:
-                        <textarea class="form-control mt-2 mb-2" rows="3" readonly
-                            id="codeCopy">javascript:(function(){const inputs=document.querySelectorAll('input[name*="[anterior_parcela]"]');if(!inputs||inputs.length===0){alert('❌ Nenhum contrato encontrado na tela! Aguarde o carregamento e clique de novo.');return;}let nome=document.getElementById('cliNome')?.value||document.querySelector('#cliNome2')?.innerText||"Cliente";let cpf=document.getElementById('cliCpf')?.value||document.querySelector('#cliCpf2')?.innerText||"";cpf=cpf.replace(/\D/g,'');let contratos=[];inputs.forEach(input=>{try{let match=input.name.match(/contratos\[(\d+)\]/);if(match){let id=match[1];let getVal=(n)=>(document.querySelector(`input[name="contratos[${id}][${n}]"]`)?.value||"0");let saldo=document.getElementById(`saldoDevedor-${id}`)?.value||"0";let banco=document.querySelector(`input[name="contratos[${id}][nome_banco_anterior]"]`)?.value||"Desc.";let valP=parseFloat(input.value);let valS=parseFloat(saldo.replace('.','').replace(',','.'));let pagas=parseInt(getVal('anterior_pagas'))||0;let rest=parseInt(getVal('anterior_prazo'))||0;let total=96;if((pagas+rest)>12)total=pagas+rest;if(valP>0){contratos.push({banco:banco,parcela:valP,saldo:valS,pagas:pagas,total:total});}}}catch(e){console.error(e);}});if(contratos.length>0){if(window.opener){window.opener.postMessage({tipo:'DADOS_CONSIG_COMPLETO',nome:nome,cpf:cpf,contratos:contratos},'*');alert(`✅ Sucesso! ${contratos.length} contratos enviados.`);setTimeout(()=>window.close(),1000);}else{alert('⚠️ A Calculadora não foi encontrada! (Abra via botão Buscar).');}}else{alert('❌ Erro ao ler contratos.');}})();</textarea>
-                        <button class="btn btn-dark btn-sm w-100"
-                            onclick="navigator.clipboard.writeText(document.getElementById('codeCopy').value);this.innerText='Copiado!';setTimeout(()=>this.innerText='COPIAR CÓDIGO',2000)">COPIAR
-                            CÓDIGO</button>
-                        <strong>3.</strong> Clique com botão direito na barra de favoritos > <strong>Adicionar
-                            página</strong>.<br>
-                        <strong>4.</strong> Nome: <code>>>> ENVIAR</code> | URL: <strong>Cole o código</strong>.
-                    </div>
                     <div class="alert alert-success">
-                        <strong>Como usar:</strong> Clique em "Buscar Corban". Quando a tela abrir e carregar, clique no
-                        botão que você criou na barra de favoritos!
+                        <strong>Um botão para todos!</strong> O código abaixo detecta automaticamente se você está no <em>GConsig/Polo</em> ou no <em>Corban</em>.
                     </div>
+                    
+                    <p><strong>Passo a passo:</strong></p>
+                    <ol>
+                        <li>Copie o código abaixo.</li>
+                        <li>Crie um favorito no seu navegador (ex: na barra de favoritos).</li>
+                        <li>No campo URL/Endereço do favorito, cole o código.</li>
+                        <li>Dê o nome de <strong>>>> ENVIAR DADOS</strong>.</li>
+                    </ol>
+
+                    <textarea class="form-control mb-3" rows="6" readonly id="codeUniversal">javascript:(function(){const moeda=(v)=>parseFloat(String(v).replace("R$","").replace(/\./g,"").replace(",", "."))||0;if(document.getElementById("tbodyContratos")){try{console.log("Detectado sistema: POLO/GCONSIG");const nome=document.querySelector('span[data-info="Nome"]')?.innerText?.trim()||"Cliente";const cpf=document.querySelector('span[data-info="CPF"]')?.innerText?.replace(/\D/g,"")||"";const rows=document.querySelectorAll("#tbodyContratos tr");let contratos=[];rows.forEach(row=>{try{const inputs=row.querySelectorAll("input");let parcela=0,saldo=0,prazo=0;inputs.forEach(i=>{if(i.id.includes("vl_parcela_"))parcela=moeda(i.value);if(i.id.includes("vl_quitacao_"))saldo=moeda(i.value);if(i.id.includes("valida_prazo_"))prazo=parseInt(i.value)||0});let banco="Desconhecido";const copyIcon=row.querySelector(".copy");if(copyIcon)banco=copyIcon.getAttribute("val-banco")||"Banco";if(parcela>0){contratos.push({banco:banco,parcela:parcela,saldoDevedorExato:saldo,prazoRestante:prazo,origem:"POLO"})}}catch(err){console.error("Erro linha Polo",err)}});if(contratos.length>0)return enviar(nome,cpf,contratos,"POLO (GConsig)")}catch(e){console.error("Erro Polo:",e)}}if(document.querySelectorAll('input[name*="[anterior_parcela]"]').length>0){try{console.log("Detectado sistema: CORBAN");let nome=document.getElementById('cliNome')?.value||document.querySelector('#cliNome2')?.innerText||"Cliente";let cpf=document.getElementById('cliCpf')?.value||document.querySelector('#cliCpf2')?.innerText||"";cpf=cpf.replace(/\D/g,'');const inputs=document.querySelectorAll('input[name*="[anterior_parcela]"]');let contratos=[];inputs.forEach(input=>{try{let match=input.name.match(/contratos\[(\d+)\]/);if(match){let id=match[1];let getVal=(n)=>(document.querySelector(`input[name="contratos[${id}][${n}]"]`)?.value||"0");let banco=document.querySelector(`input[name="contratos[${id}][nome_banco_anterior]"]`)?.value||"Banco";let valP=parseFloat(input.value);let pagas=parseInt(getVal('anterior_pagas'))||0;let total=parseInt(getVal('anterior_prazo'))||0;if(valP>0){contratos.push({banco:banco,parcela:valP,pagas:pagas,total:total,origem:"CORBAN"})}}}catch(e){console.error(e)}});if(contratos.length>0)return enviar(nome,cpf,contratos,"CORBAN")}catch(e){console.error("Erro Corban:",e)}}alert("⚠️ Não foi possível detectar contratos do Polo ou Corban nesta página.");function enviar(nome,cpf,contratos,sistema){if(window.opener){window.opener.postMessage({tipo:'DADOS_CONSIG_COMPLETO',nome:nome,cpf:cpf,contratos:contratos,sistema:sistema},'*');alert(`✅ ${contratos.length} contratos enviados via ${sistema}!`);}else{alert('⚠️ A Calculadora não foi encontrada! (Você abriu esta página através dela?)');}}})();</textarea>
+                    <button class="btn btn-dark w-100" onclick="navigator.clipboard.writeText(document.getElementById('codeUniversal').value); alert('Código copiado!')">COPIAR CÓDIGO INTELIGENTE</button>
                 </div>
-                <div class="modal-footer"><button type="button" class="btn btn-secondary"
-                        data-bs-dismiss="modal">Entendi</button></div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button></div>
             </div>
         </div>
     </div>
@@ -383,6 +429,7 @@
         let clienteNomePDF = '', clienteCpfPDF = '', parcelasSelecionadasPDF = [], calculoDetalhado = {};
         let parcelasManuais = [], dadosNegativado = null;
 
+        // Configurações das Operações
         const operacoes = {
             exercito: [
                 { value: 'portabilidade_exercito', text: 'Portabilidade', coef: '0.01930' },
@@ -399,6 +446,7 @@
             ]
         };
 
+        // Funções Utilitárias
         const moedaParaFloat = (v) => parseFloat(String(v || '').replace('R$', '').trim().replace(/\./g, "").replace(",", ".")) || 0;
         const formatarMoeda = (v) => (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
         const formatarInputMoeda = (v) => (v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\s/g, '');
@@ -415,27 +463,35 @@
             toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
         };
 
-        // --- FUNÇÕES DE INTEGRAÇÃO (COLE NO INÍCIO DO SCRIPT) ---
+        // --- FUNÇÕES DE INTEGRAÇÃO ---
 
         function abrirModalInstrucoes() {
             const modal = new bootstrap.Modal(document.getElementById('modalInstrucoes'));
             modal.show();
         }
 
-        // --- LÓGICA DE INTEGRAÇÃO CORBAN (INICIO) ---
-
-        function buscarClienteCorban() {
+        // Função para validar CPF
+        function getCpfLimpo() {
             const cpf = document.getElementById('clienteCpf').value.replace(/\D/g, '');
-            if (cpf.length !== 11) return alert("CPF inválido.");
-
-            // Abre tutorial na primeira vez
-            if (!sessionStorage.getItem('tutorialVisto')) {
-                new bootstrap.Modal(document.getElementById('modalInstrucoes')).show();
-                sessionStorage.setItem('tutorialVisto', 'true');
-                return;
+            if (cpf.length !== 11) {
+                alert("Por favor, digite um CPF válido com 11 dígitos.");
+                return null;
             }
+            // Verifica tutorial na primeira vez
+            if (!sessionStorage.getItem('tutorialVisto')) {
+                abrirModalInstrucoes();
+                sessionStorage.setItem('tutorialVisto', 'true');
+                return null; // Interrompe para ver o tutorial
+            }
+            return cpf;
+        }
 
-            // Formulário invisível para POST (evita erro 404)
+        // 1. ABRIR CORBAN
+        function buscarClienteCorban() {
+            const cpf = getCpfLimpo();
+            if (!cpf) return;
+
+            // Formulário invisível para POST (evita erro 404 em alguns sistemas)
             const form = document.createElement("form");
             form.target = "JanelaIntegracao";
             form.method = "POST";
@@ -446,16 +502,28 @@
             input.type = "hidden"; input.name = "cpf"; input.value = cpf;
             form.appendChild(input); document.body.appendChild(form);
 
-            // Abre nova aba normal (para exibir barra de favoritos)
             const popup = window.open("", "JanelaIntegracao");
             if (popup) form.submit();
             else alert("Pop-up bloqueado. Permita para este site.");
 
             setTimeout(() => document.body.removeChild(form), 2000);
-            showToast("Aguardando dados... Use o Favorito na nova aba!", "info");
+            showToast("Aguardando... Use o Favorito 'ENVIAR' na aba do Corban!", "info");
         }
 
-        // Recebe os dados do Bookmarklet
+        // 2. ABRIR POLO / GCONSIG
+        function buscarClientePolo() {
+            const cpf = getCpfLimpo();
+            if (!cpf) return;
+
+            const url = `https://sistema.gconsig.com/admin/consultor/${cpf}/procurarcliente.html?tipo=cpf`;
+            const popup = window.open(url, "JanelaIntegracao");
+            
+            if(!popup) alert("Pop-up bloqueado. Permita para este site.");
+            
+            showToast("Aguardando... Use o Favorito 'ENVIAR' na aba do GConsig!", "info");
+        }
+
+        // RECEBIMENTO INTELIGENTE DOS DADOS (OUVE A MENSAGEM DO FAVORITO)
         window.addEventListener("message", (event) => {
             const dados = event.data;
             if (dados && dados.tipo === 'DADOS_CONSIG_COMPLETO') {
@@ -463,31 +531,62 @@
                 if (dados.cpf) document.getElementById('clienteCpf').value = dados.cpf;
 
                 if (dados.contratos && dados.contratos.length > 0) {
-                    parcelasManuais = []; // Limpa lista anterior (certifique-se que essa variável existe no seu código)
+                    parcelasManuais = []; 
 
                     dados.contratos.forEach(c => {
+                        let saldoReal = 0;
+                        let pagas = c.pagas || 0;
+                        let total = c.total || 0;
+                        
+                        // INTELIGÊNCIA HÍBRIDA DE CÁLCULO
+                        
+                        // 1. Prioridade: Se vier do POLO, usamos o saldo exato (campo vl_quitacao)
+                        if (c.saldoDevedorExato && c.saldoDevedorExato > 0) {
+                            saldoReal = c.saldoDevedorExato;
+                        } 
+                        // 2. Fallback: Se vier do CORBAN (sem saldo exato), calculamos a estimativa
+                        else {
+                            let prazoRestante = c.prazoRestante || ((total > 0) ? total - pagas : 0);
+                            if (prazoRestante > 0) {
+                                saldoReal = c.parcela * prazoRestante * 0.70; 
+                            }
+                        }
+
+                        // LÓGICA DE PRAZO POLO (96 - Restante)
+                        if (dados.sistema && dados.sistema.includes('POLO') && c.prazoRestante > 0) {
+                            total = 96; 
+                            pagas = 96 - c.prazoRestante; 
+                            if (pagas < 0) { total = c.prazoRestante; pagas = 0; }
+                        } 
+                        else if (!total && c.prazoRestante > 0) {
+                            total = c.prazoRestante; 
+                            pagas = 0; 
+                        }
+
+                        // LIMPEZA DO NOME DO BANCO (Remove códigos como "041 - ")
+                        let nomeBancoLimpo = c.banco ? c.banco.replace(/^\d+\s*-\s*/, '') : 'Banco';
+
                         parcelasManuais.push({
-                            banco: c.banco,
+                            banco: nomeBancoLimpo,
                             parcela: c.parcela,
-                            totalParcelas: c.total,
-                            parcelasPagas: c.pagas
+                            totalParcelas: total,
+                            parcelasPagas: pagas,
+                            saldoDevedorExato: saldoReal, // Guarda o saldo para uso posterior
+                            origem: dados.sistema
                         });
                     });
 
-                    // Chama suas funções existentes para atualizar a tela
-                    if (typeof renderizarListaManual === "function") renderizarListaManual();
-
-                    // Tenta focar na aba manual
+                    renderizarListaManual(); // Atualiza a tela
+                    
                     const btnManual = document.getElementById('manual-tab');
                     if (btnManual && window.bootstrap) { const tab = new bootstrap.Tab(btnManual); tab.show(); }
-
-                    showToast(`${dados.contratos.length} contratos importados!`, "success");
+                    
+                    showToast(`${dados.contratos.length} contratos importados via ${dados.sistema}!`, "success");
                 }
             }
         });
-        // --- LÓGICA DE INTEGRAÇÃO CORBAN (FIM) ---
 
-
+        // --- FIM INTEGRAÇÃO ---
 
         function atualizarOperacoes() {
             const convenio = document.getElementById('convenioSelect').value;
@@ -1042,7 +1141,7 @@
             fileReader.readAsArrayBuffer(file);
         }
 
-
+        // --- FUNÇÃO ATUALIZADA PARA USAR SALDO EXATO SE EXISTIR ---
         function unificarContratos(isManual) {
             let totalSaldo = 0, totalParcela = 0;
             parcelasSelecionadasPDF = [];
@@ -1050,8 +1149,14 @@
             if (isManual) {
                 parcelasManuais.forEach(p => {
                     totalParcela += p.parcela;
-                    const parcelasRestantes = (p.totalParcelas || 0) - (p.parcelasPagas || 0);
-                    if (parcelasRestantes > 0) totalSaldo += p.parcela * parcelasRestantes * 0.70;
+                    
+                    // LÓGICA DE OURO: Se tem saldo exato (Polo), usa ele. Se não, usa estimativa.
+                    if (p.saldoDevedorExato && p.saldoDevedorExato > 0) {
+                        totalSaldo += p.saldoDevedorExato;
+                    } else {
+                        const parcelasRestantes = (p.totalParcelas || 0) - (p.parcelasPagas || 0);
+                        if (parcelasRestantes > 0) totalSaldo += p.parcela * parcelasRestantes * 0.70;
+                    }
                 });
             } else {
                 const checkedBoxes = document.querySelectorAll('.loan-checkbox:checked');
