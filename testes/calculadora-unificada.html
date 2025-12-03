@@ -75,7 +75,7 @@
         .logos {
             display: none;
         }
-        
+
         /* Ajuste do botão de busca */
         .btn-search-group {
             border-top-left-radius: 0;
@@ -109,8 +109,8 @@
                     <div class="col-md-6 mb-3">
                         <label for="convenioSelect" class="form-label">1. Convênio</label>
                         <select id="convenioSelect" class="form-select">
-                            <option value="exercito" selected>Exército (eConsig)</option>
-                            <option value="siape">SIAPE</option>
+                            <option value="siape" selected>SIAPE</option>
+                            <option value="exercito">Exército (eConsig)</option>
                         </select>
                     </div>
                     <div class="col-md-6 mb-3">
@@ -129,8 +129,8 @@
                 <div class="mb-0">
                     <label for="empresaSelect" class="form-label">Empresa Responsável pela Simulação</label>
                     <select id="empresaSelect" class="form-select">
-                        <option value="alianca" selected>Aliança Consig</option>
-                        <option value="polo">Polo Promotora</option>
+                        <option value="polo" selected>Polo Promotora</option>
+                        <option value="alianca">Aliança Consig</option>
                         <option value="estilo">Estilo Promotora</option>
                     </select>
                 </div>
@@ -174,10 +174,11 @@
                         </div>
 
                         <div class="tab-pane fade p-3" id="manual-tab-pane" role="tabpanel">
-                            
+
                             <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
                                 <h4 class="h6 mb-0 text-primary">Entrada de Dados</h4>
-                                <button type="button" class="btn btn-sm btn-info text-white" onclick="abrirModalInstrucoes()">
+                                <button type="button" class="btn btn-sm btn-info text-white"
+                                    onclick="abrirModalInstrucoes()">
                                     ⚙️ Configurar Integração
                                 </button>
                             </div>
@@ -190,17 +191,22 @@
                                 <div class="col-md-6 mb-2">
                                     <label for="clienteCpf" class="form-label">CPF do Cliente</label>
                                     <div class="input-group">
-                                        <input type="text" id="clienteCpf" class="form-control" placeholder="000.000.000-00">
-                                        
-                                        <button class="btn btn-primary dropdown-toggle btn-search-group" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <input type="text" id="clienteCpf" class="form-control"
+                                            placeholder="000.000.000-00">
+
+                                        <button class="btn btn-primary dropdown-toggle btn-search-group" type="button"
+                                            data-bs-toggle="dropdown" aria-expanded="false">
                                             🔍 Buscar no Sistema
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end">
-                                            <li><a class="dropdown-item" href="#" onclick="buscarClientePolo()">🔴 Abrir GConsig / Polo</a></li>
-                                            <li><a class="dropdown-item" href="#" onclick="buscarClienteCorban()">🔵 Abrir Corban</a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="buscarClientePolo()">🔴 Abrir
+                                                    GConsig / Polo</a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="buscarClienteCorban()">🔵
+                                                    Abrir Corban</a></li>
                                         </ul>
                                     </div>
-                                    <small class="text-muted" style="font-size: 0.75rem;">Selecione o sistema para abrir a ficha do cliente.</small>
+                                    <small class="text-muted" style="font-size: 0.75rem;">Selecione o sistema para abrir
+                                        a ficha do cliente.</small>
                                 </div>
                             </div>
 
@@ -224,7 +230,8 @@
                                         <input type="number" id="manualParcelasPagas" class="form-control">
                                     </div>
                                     <div class="col-12 col-md-4 d-flex align-items-end mb-2">
-                                        <button type="button" id="addManualBtn" class="btn btn-secondary w-100">Adicionar</button>
+                                        <button type="button" id="addManualBtn"
+                                            class="btn btn-secondary w-100">Adicionar</button>
                                     </div>
                                 </div>
                                 <div id="manual-loans-list" class="mt-3"></div>
@@ -247,7 +254,8 @@
                             </div>
                             <div class="mb-3">
                                 <label for="negativo" class="form-label">Valor Negativo do Cliente</label>
-                                <input type="text" id="negativo" class="form-control" placeholder="Ex: 1000,00" required>
+                                <input type="text" id="negativo" class="form-control" placeholder="Ex: 1000,00"
+                                    required>
                             </div>
                         </div>
 
@@ -255,11 +263,13 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="parcela" class="form-label">Valor Total da Parcela</label>
-                                    <input type="text" id="parcela" class="form-control" required placeholder="Unificado do passo anterior">
+                                    <input type="text" id="parcela" class="form-control" required
+                                        placeholder="Unificado do passo anterior">
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="saldodevedor" class="form-label">Saldo Devedor Aprox. Total</label>
-                                    <input type="text" id="saldodevedor" class="form-control" required placeholder="Unificado do passo anterior">
+                                    <input type="text" id="saldodevedor" class="form-control" required
+                                        placeholder="Unificado do passo anterior">
                                 </div>
                             </div>
 
@@ -289,18 +299,21 @@
                                     <label class="form-label">Houve quitação de algum valor?</label>
                                     <div>
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="quitacao" id="quitacaoNao" value="nao" checked>
+                                            <input class="form-check-input" type="radio" name="quitacao"
+                                                id="quitacaoNao" value="nao" checked>
                                             <label class="form-check-label" for="quitacaoNao">Não</label>
                                         </div>
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="quitacao" id="quitacaoSim" value="sim">
+                                            <input class="form-check-input" type="radio" name="quitacao"
+                                                id="quitacaoSim" value="sim">
                                             <label class="form-check-label" for="quitacaoSim">Sim</label>
                                         </div>
                                     </div>
                                 </div>
                                 <div id="quitadoContainer" style="display:none;" class="col-md-12 mb-3">
                                     <label for="valorQuitado" class="form-label">Valor a ser quitado</label>
-                                    <input type="text" id="valorQuitado" class="form-control" placeholder="Ex: 5.000,00">
+                                    <input type="text" id="valorQuitado" class="form-control"
+                                        placeholder="Ex: 5.000,00">
                                 </div>
                             </div>
 
@@ -326,7 +339,7 @@
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <label for="comissaoesc" class="form-label">Comissão Escritório</label>
-                                    <input type="text" id="comissaoesc" class="form-control" required value="100">
+                                    <input type="text" id="comissaoesc" class="form-control" value="100">
                                 </div>
                             </div>
                         </div>
@@ -339,7 +352,8 @@
                                 </div>
                                 <div class="col-md-6 mb-2">
                                     <label for="mn-clienteCpf" class="form-label">CPF do Cliente</label>
-                                    <input type="text" id="mn-clienteCpf" class="form-control" placeholder="000.000.000-00" required>
+                                    <input type="text" id="mn-clienteCpf" class="form-control"
+                                        placeholder="000.000.000-00" required>
                                 </div>
                             </div>
                             <hr>
@@ -352,7 +366,8 @@
                             <div class="row">
                                 <div class="col-md-4 mb-3">
                                     <label for="mn-parcela" class="form-label">Valor da Parcela (Margem)</label>
-                                    <input type="text" id="mn-parcela" class="form-control" required placeholder="Ex: 350,00">
+                                    <input type="text" id="mn-parcela" class="form-control" required
+                                        placeholder="Ex: 350,00">
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <label for="mn-coeficiente" class="form-label">Coeficiente</label>
@@ -399,9 +414,10 @@
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-success">
-                        <strong>Um botão para todos!</strong> O código abaixo detecta automaticamente se você está no <em>GConsig/Polo</em> ou no <em>Corban</em>.
+                        <strong>Um botão para todos!</strong> O código abaixo detecta automaticamente se você está no
+                        <em>GConsig/Polo</em> ou no <em>Corban</em>.
                     </div>
-                    
+
                     <p><strong>Passo a passo:</strong></p>
                     <ol>
                         <li>Copie o código abaixo.</li>
@@ -410,10 +426,14 @@
                         <li>Dê o nome de <strong>>>> ENVIAR DADOS</strong>.</li>
                     </ol>
 
-                    <textarea class="form-control mb-3" rows="6" readonly id="codeUniversal">javascript:(function(){const moeda=(v)=>parseFloat(String(v).replace("R$","").replace(/\./g,"").replace(",", "."))||0;if(document.getElementById("tbodyContratos")){try{console.log("Detectado sistema: POLO/GCONSIG");const nome=document.querySelector('span[data-info="Nome"]')?.innerText?.trim()||"Cliente";const cpf=document.querySelector('span[data-info="CPF"]')?.innerText?.replace(/\D/g,"")||"";const rows=document.querySelectorAll("#tbodyContratos tr");let contratos=[];rows.forEach(row=>{try{const inputs=row.querySelectorAll("input");let parcela=0,saldo=0,prazo=0;inputs.forEach(i=>{if(i.id.includes("vl_parcela_"))parcela=moeda(i.value);if(i.id.includes("vl_quitacao_"))saldo=moeda(i.value);if(i.id.includes("valida_prazo_"))prazo=parseInt(i.value)||0});let banco="Desconhecido";const copyIcon=row.querySelector(".copy");if(copyIcon)banco=copyIcon.getAttribute("val-banco")||"Banco";if(parcela>0){contratos.push({banco:banco,parcela:parcela,saldoDevedorExato:saldo,prazoRestante:prazo,origem:"POLO"})}}catch(err){console.error("Erro linha Polo",err)}});if(contratos.length>0)return enviar(nome,cpf,contratos,"POLO (GConsig)")}catch(e){console.error("Erro Polo:",e)}}if(document.querySelectorAll('input[name*="[anterior_parcela]"]').length>0){try{console.log("Detectado sistema: CORBAN");let nome=document.getElementById('cliNome')?.value||document.querySelector('#cliNome2')?.innerText||"Cliente";let cpf=document.getElementById('cliCpf')?.value||document.querySelector('#cliCpf2')?.innerText||"";cpf=cpf.replace(/\D/g,'');const inputs=document.querySelectorAll('input[name*="[anterior_parcela]"]');let contratos=[];inputs.forEach(input=>{try{let match=input.name.match(/contratos\[(\d+)\]/);if(match){let id=match[1];let getVal=(n)=>(document.querySelector(`input[name="contratos[${id}][${n}]"]`)?.value||"0");let banco=document.querySelector(`input[name="contratos[${id}][nome_banco_anterior]"]`)?.value||"Banco";let valP=parseFloat(input.value);let pagas=parseInt(getVal('anterior_pagas'))||0;let total=parseInt(getVal('anterior_prazo'))||0;if(valP>0){contratos.push({banco:banco,parcela:valP,pagas:pagas,total:total,origem:"CORBAN"})}}}catch(e){console.error(e)}});if(contratos.length>0)return enviar(nome,cpf,contratos,"CORBAN")}catch(e){console.error("Erro Corban:",e)}}alert("⚠️ Não foi possível detectar contratos do Polo ou Corban nesta página.");function enviar(nome,cpf,contratos,sistema){if(window.opener){window.opener.postMessage({tipo:'DADOS_CONSIG_COMPLETO',nome:nome,cpf:cpf,contratos:contratos,sistema:sistema},'*');alert(`✅ ${contratos.length} contratos enviados via ${sistema}!`);}else{alert('⚠️ A Calculadora não foi encontrada! (Você abriu esta página através dela?)');}}})();</textarea>
-                    <button class="btn btn-dark w-100" onclick="navigator.clipboard.writeText(document.getElementById('codeUniversal').value); alert('Código copiado!')">COPIAR CÓDIGO INTELIGENTE</button>
+                    <textarea class="form-control mb-3" rows="6" readonly
+                        id="codeUniversal">javascript:(function(){const moeda=(v)=>parseFloat(String(v).replace("R$","").replace(/\./g,"").replace(",", "."))||0;if(document.getElementById("tbodyContratos")){try{console.log("Detectado sistema: POLO/GCONSIG");const nome=document.querySelector('span[data-info="Nome"]')?.innerText?.trim()||"Cliente";const cpf=document.querySelector('span[data-info="CPF"]')?.innerText?.replace(/\D/g,"")||"";const rows=document.querySelectorAll("#tbodyContratos tr");let contratos=[];rows.forEach(row=>{try{const inputs=row.querySelectorAll("input");let parcela=0,saldo=0,prazo=0;inputs.forEach(i=>{if(i.id.includes("vl_parcela_"))parcela=moeda(i.value);if(i.id.includes("vl_quitacao_"))saldo=moeda(i.value);if(i.id.includes("valida_prazo_"))prazo=parseInt(i.value)||0});let banco="Desconhecido";const copyIcon=row.querySelector(".copy");if(copyIcon)banco=copyIcon.getAttribute("val-banco")||"Banco";if(parcela>0){contratos.push({banco:banco,parcela:parcela,saldoDevedorExato:saldo,prazoRestante:prazo,origem:"POLO"})}}catch(err){console.error("Erro linha Polo",err)}});if(contratos.length>0)return enviar(nome,cpf,contratos,"POLO (GConsig)")}catch(e){console.error("Erro Polo:",e)}}if(document.querySelectorAll('input[name*="[anterior_parcela]"]').length>0){try{console.log("Detectado sistema: CORBAN");let nome=document.getElementById('cliNome')?.value||document.querySelector('#cliNome2')?.innerText||"Cliente";let cpf=document.getElementById('cliCpf')?.value||document.querySelector('#cliCpf2')?.innerText||"";cpf=cpf.replace(/\D/g,'');const inputs=document.querySelectorAll('input[name*="[anterior_parcela]"]');let contratos=[];inputs.forEach(input=>{try{let match=input.name.match(/contratos\[(\d+)\]/);if(match){let id=match[1];let getVal=(n)=>(document.querySelector(`input[name="contratos[${id}][${n}]"]`)?.value||"0");let banco=document.querySelector(`input[name="contratos[${id}][nome_banco_anterior]"]`)?.value||"Banco";let valP=parseFloat(input.value);let pagas=parseInt(getVal('anterior_pagas'))||0;let total=parseInt(getVal('anterior_prazo'))||0;if(valP>0){contratos.push({banco:banco,parcela:valP,pagas:pagas,total:total,origem:"CORBAN"})}}}catch(e){console.error(e)}});if(contratos.length>0)return enviar(nome,cpf,contratos,"CORBAN")}catch(e){console.error("Erro Corban:",e)}}alert("⚠️ Não foi possível detectar contratos do Polo ou Corban nesta página.");function enviar(nome,cpf,contratos,sistema){if(window.opener){window.opener.postMessage({tipo:'DADOS_CONSIG_COMPLETO',nome:nome,cpf:cpf,contratos:contratos,sistema:sistema},'*');alert(`✅ ${contratos.length} contratos enviados via ${sistema}!`);}else{alert('⚠️ A Calculadora não foi encontrada! (Você abriu esta página através dela?)');}}})();</textarea>
+                    <button class="btn btn-dark w-100"
+                        onclick="navigator.clipboard.writeText(document.getElementById('codeUniversal').value); alert('Código copiado!')">COPIAR
+                        CÓDIGO INTELIGENTE</button>
                 </div>
-                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button></div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">Fechar</button></div>
             </div>
         </div>
     </div>
@@ -428,6 +448,25 @@
 
         let clienteNomePDF = '', clienteCpfPDF = '', parcelasSelecionadasPDF = [], calculoDetalhado = {};
         let parcelasManuais = [], dadosNegativado = null;
+
+        // DADOS DAS EMPRESAS PARA O RODAPÉ
+        const dadosEmpresas = {
+            polo: {
+                razao: "Pollo Promotora LTDA",
+                cnpj: "44.906.703/0001-59",
+                endereco: "CSE 06, Lote 30, Edifício Mineirão, Sala 203 2° Andar, Brasília-DF CEP: 72.025-065"
+            },
+            alianca: {
+                razao: "Alianca Solucoes em Negocios Ltda",
+                cnpj: "50.113.116/0001-05",
+                endereco: "CSE 06, Lote 30, Edifício Mineirão, Sala 203 2° Andar, Brasília-DF CEP: 72.025-065"
+            },
+            estilo: {
+                razao: "Estilo Solucoes em Negocios Ltda",
+                cnpj: "24.332.679/0001-84",
+                endereco: "CSE 06, Lote 30, Edifício Mineirão, Sala 203 2° Andar, Brasília-DF CEP: 72.025-065"
+            }
+        };
 
         // Configurações das Operações
         const operacoes = {
@@ -470,60 +509,47 @@
             modal.show();
         }
 
-        // Função para validar CPF
         function getCpfLimpo() {
             const cpf = document.getElementById('clienteCpf').value.replace(/\D/g, '');
             if (cpf.length !== 11) {
                 alert("Por favor, digite um CPF válido com 11 dígitos.");
                 return null;
             }
-            // Verifica tutorial na primeira vez
             if (!sessionStorage.getItem('tutorialVisto')) {
                 abrirModalInstrucoes();
                 sessionStorage.setItem('tutorialVisto', 'true');
-                return null; // Interrompe para ver o tutorial
+                return null;
             }
             return cpf;
         }
 
-        // 1. ABRIR CORBAN
         function buscarClienteCorban() {
             const cpf = getCpfLimpo();
             if (!cpf) return;
-
-            // Formulário invisível para POST (evita erro 404 em alguns sistemas)
             const form = document.createElement("form");
             form.target = "JanelaIntegracao";
             form.method = "POST";
             form.action = `https://gestao.sistemacorban.com.br/index.php/andamento/consultar?cpf=${cpf}`;
             form.style.display = "none";
-
             const input = document.createElement("input");
             input.type = "hidden"; input.name = "cpf"; input.value = cpf;
             form.appendChild(input); document.body.appendChild(form);
-
             const popup = window.open("", "JanelaIntegracao");
             if (popup) form.submit();
             else alert("Pop-up bloqueado. Permita para este site.");
-
             setTimeout(() => document.body.removeChild(form), 2000);
             showToast("Aguardando... Use o Favorito 'ENVIAR' na aba do Corban!", "info");
         }
 
-        // 2. ABRIR POLO / GCONSIG
         function buscarClientePolo() {
             const cpf = getCpfLimpo();
             if (!cpf) return;
-
             const url = `https://sistema.gconsig.com/admin/consultor/${cpf}/procurarcliente.html?tipo=cpf`;
             const popup = window.open(url, "JanelaIntegracao");
-            
-            if(!popup) alert("Pop-up bloqueado. Permita para este site.");
-            
+            if (!popup) alert("Pop-up bloqueado. Permita para este site.");
             showToast("Aguardando... Use o Favorito 'ENVIAR' na aba do GConsig!", "info");
         }
 
-        // RECEBIMENTO INTELIGENTE DOS DADOS (OUVE A MENSAGEM DO FAVORITO)
         window.addEventListener("message", (event) => {
             const dados = event.data;
             if (dados && dados.tipo === 'DADOS_CONSIG_COMPLETO') {
@@ -531,39 +557,28 @@
                 if (dados.cpf) document.getElementById('clienteCpf').value = dados.cpf;
 
                 if (dados.contratos && dados.contratos.length > 0) {
-                    parcelasManuais = []; 
-
+                    parcelasManuais = [];
                     dados.contratos.forEach(c => {
                         let saldoReal = 0;
                         let pagas = c.pagas || 0;
                         let total = c.total || 0;
-                        
-                        // INTELIGÊNCIA HÍBRIDA DE CÁLCULO
-                        
-                        // 1. Prioridade: Se vier do POLO, usamos o saldo exato (campo vl_quitacao)
+
                         if (c.saldoDevedorExato && c.saldoDevedorExato > 0) {
                             saldoReal = c.saldoDevedorExato;
-                        } 
-                        // 2. Fallback: Se vier do CORBAN (sem saldo exato), calculamos a estimativa
-                        else {
+                        } else {
                             let prazoRestante = c.prazoRestante || ((total > 0) ? total - pagas : 0);
                             if (prazoRestante > 0) {
-                                saldoReal = c.parcela * prazoRestante * 0.70; 
+                                saldoReal = c.parcela * prazoRestante * 0.70;
                             }
                         }
 
-                        // LÓGICA DE PRAZO POLO (96 - Restante)
                         if (dados.sistema && dados.sistema.includes('POLO') && c.prazoRestante > 0) {
-                            total = 96; 
-                            pagas = 96 - c.prazoRestante; 
+                            total = 96; pagas = 96 - c.prazoRestante;
                             if (pagas < 0) { total = c.prazoRestante; pagas = 0; }
-                        } 
-                        else if (!total && c.prazoRestante > 0) {
-                            total = c.prazoRestante; 
-                            pagas = 0; 
+                        } else if (!total && c.prazoRestante > 0) {
+                            total = c.prazoRestante; pagas = 0;
                         }
 
-                        // LIMPEZA DO NOME DO BANCO (Remove códigos como "041 - ")
                         let nomeBancoLimpo = c.banco ? c.banco.replace(/^\d+\s*-\s*/, '') : 'Banco';
 
                         parcelasManuais.push({
@@ -571,22 +586,17 @@
                             parcela: c.parcela,
                             totalParcelas: total,
                             parcelasPagas: pagas,
-                            saldoDevedorExato: saldoReal, // Guarda o saldo para uso posterior
+                            saldoDevedorExato: saldoReal,
                             origem: dados.sistema
                         });
                     });
-
-                    renderizarListaManual(); // Atualiza a tela
-                    
+                    renderizarListaManual();
                     const btnManual = document.getElementById('manual-tab');
                     if (btnManual && window.bootstrap) { const tab = new bootstrap.Tab(btnManual); tab.show(); }
-                    
                     showToast(`${dados.contratos.length} contratos importados via ${dados.sistema}!`, "success");
                 }
             }
         });
-
-        // --- FIM INTEGRAÇÃO ---
 
         function atualizarOperacoes() {
             const convenio = document.getElementById('convenioSelect').value;
@@ -595,10 +605,11 @@
 
             let opcaoPadrao = null;
 
-            operacoes[convenio].forEach((op, index) => {
+            operacoes[convenio].forEach((op) => {
                 const option = new Option(op.text, op.value);
                 operacaoSelect.add(option);
 
+                // LÓGICA PADRÃO: Prioriza 'compra'
                 if (op.value.includes('compra')) {
                     opcaoPadrao = op.value;
                 }
@@ -634,6 +645,7 @@
             const coefInput = document.getElementById('coeficiente');
             const comGerenteInput = document.getElementById('comissaoGerente');
             const comEscInput = document.getElementById('comissaoesc');
+
             const mnNome = document.getElementById('mn-clienteNome');
             const mnCpf = document.getElementById('mn-clienteCpf');
             const mnBanco = document.getElementById('mn-banco');
@@ -641,9 +653,9 @@
             const mnCoef = document.getElementById('mn-coeficiente');
             const mnPrazo = document.getElementById('mn-prazo');
 
-
             document.getElementById('pageTitle').textContent = operacao.text ? `Calculadora ${operacao.text} (${convenio.toUpperCase()})` : 'Calculadora Consignado';
 
+            // Reseta required de todos
             [negativoInput, parcelaInput, saldoInput, coefInput, comGerenteInput, comEscInput, mnNome, mnCpf, mnBanco, mnParcela, mnCoef, mnPrazo].forEach(el => el.required = false);
 
             if (operacaoValue.includes('margem_nova')) {
@@ -701,7 +713,8 @@
                 saldoInput.required = true;
                 coefInput.required = true;
                 comGerenteInput.required = true;
-                comEscInput.required = true;
+
+                comEscInput.required = false;
             }
         }
 
@@ -731,417 +744,179 @@
         }
 
         async function processarPdfExercicio(text) {
-            let cleanText = text.replace(/--- FIM DA PÁGINA \d+ ---/g, '')
-                .replace(/Consignatária\n\s*▴\s*▾[\s\S]+?Situação\n\s*▴\s*▾/g, '')
-                .replace(/Consignatária Nº Serviço Inclusão Vir.prest. Virfolha Nº Pagas Situação/g, '');
-
-            const listaDiv = document.getElementById("listaEmprestimos");
-            listaDiv.innerHTML = '';
-            let loansFound = 0;
-
-            const isOcrText = cleanText.includes('O74-SABEMI-') || cleanText.includes('R$834/12') || cleanText.includes('R$74046');
+            let cleanText = text.replace(/--- FIM DA PÁGINA \d+ ---/g, '').replace(/Consignatária\n\s*▴\s*▾[\s\S]+?Situação\n\s*▴\s*▾/g, '').replace(/Consignatária Nº Serviço Inclusão Vir.prest. Virfolha Nº Pagas Situação/g, '');
+            const listaDiv = document.getElementById("listaEmprestimos"); listaDiv.innerHTML = ''; let loansFound = 0;
+            const isOcrText = cleanText.includes('O74-SABEMI-') || cleanText.includes('R$834/12');
 
             if (isOcrText) {
-                console.log("Detectado texto de OCR (Exército). Usando parser tolerante.");
                 const cpfMatch = text.match(/(\d{3}\.\d{3}\.\d{3}-\d{2})/);
                 const nomeMatch = text.match(/(\d{9,12})\s*-\s*([\d.-]+)\s*-\s*([A-ZÀ-Ú ]+)(?:\n([A-ZÀ-Ú ]+))?/);
-
-                if (cpfMatch) {
-                    clienteCpfPDF = cpfMatch[0];
-                } else if (nomeMatch) {
-                    clienteCpfPDF = nomeMatch[2].trim();
-                }
-
-                if (nomeMatch) {
-                    clienteNomePDF = nomeMatch[3].trim() + (nomeMatch[4] ? ' ' + nomeMatch[4].trim() : '');
-                }
+                if (cpfMatch) clienteCpfPDF = cpfMatch[0]; else if (nomeMatch) clienteCpfPDF = nomeMatch[2].trim();
+                if (nomeMatch) clienteNomePDF = nomeMatch[3].trim() + (nomeMatch[4] ? ' ' + nomeMatch[4].trim() : '');
 
                 listaDiv.innerHTML = `<div id="infoCliente" class="mb-3 p-2 border rounded"><p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF || 'Não lido (OCR)'}</p><p class="mb-0"><strong>CPF:</strong> ${clienteCpfPDF || 'Não lido (OCR)'}</p></div><div class="form-check mb-2 border-bottom pb-2"><input class="form-check-input" type="checkbox" id="selectAllCheckbox"><label class="form-check-label fw-bold" for="selectAllCheckbox">Selecionar Todos</label></div>`;
-
                 const blocos = cleanText.split(/Andamento/gi);
-
                 blocos.forEach((bloco, index) => {
                     if (!bloco.toUpperCase().includes('EMPRÉSTIMO') && !bloco.toUpperCase().includes('DEDUT')) return;
-
-                    let nomeBanco = 'Banco (Não lido)';
-                    if (bloco.includes('SABEMI')) nomeBanco = 'SABEMI - PRIVADA';
-
-                    const valorMatches = bloco.match(/R\$\s*([\d.,\/]+)/g);
-                    if (!valorMatches) return;
-
-                    let valorStr = valorMatches[valorMatches.length - 1];
-                    valorStr = valorStr.replace('/', ',').replace(/[\[|]/g, '');
-
-                    if (!valorStr.includes(',')) {
-                        let digits = valorStr.replace(/R\$\s*/, '').trim();
-                        if (digits.length > 2) {
-                            valorStr = "R$ " + digits.slice(0, -2) + ',' + digits.slice(-2);
-                        }
-                    }
-
-                    const valorParcelaNum = moedaParaFloat(valorStr);
-                    if (valorParcelaNum === 0) return;
-
-                    const parcelasMatch = bloco.match(/\s*([\w\.|]+)\s+([\w\d]+)\s+Em/s);
-
-                    if (!parcelasMatch) {
-                        return;
-                    }
-
-                    let total = parcelasMatch[1].replace(/[\[|TP]/g, '').trim();
-                    let pagas = parcelasMatch[2].replace(/[x|xi|nm]/g, '0');
-
-                    if (isNaN(parseInt(pagas, 10)) || (total.toUpperCase() !== 'INDET.' && isNaN(parseInt(total, 10)))) {
-                        return;
-                    }
-
+                    let nomeBanco = 'Banco (Não lido)'; if (bloco.includes('SABEMI')) nomeBanco = 'SABEMI - PRIVADA';
+                    const valorMatches = bloco.match(/R\$\s*([\d.,\/]+)/g); if (!valorMatches) return;
+                    let valorStr = valorMatches[valorMatches.length - 1].replace('/', ',').replace(/[\[|]/g, '');
+                    if (!valorStr.includes(',')) { let digits = valorStr.replace(/R\$\s*/, '').trim(); if (digits.length > 2) valorStr = "R$ " + digits.slice(0, -2) + ',' + digits.slice(-2); }
+                    const valorParcelaNum = moedaParaFloat(valorStr); if (valorParcelaNum === 0) return;
+                    const parcelasMatch = bloco.match(/\s*([\w\.|]+)\s+([\w\d]+)\s+Em/s); if (!parcelasMatch) return;
+                    let total = parcelasMatch[1].replace(/[\[|TP]/g, '').trim(); let pagas = parcelasMatch[2].replace(/[x|xi|nm]/g, '0');
                     if (total.toUpperCase() === 'INDET.') {
                         loansFound++;
                         const itemDiv = document.createElement('div');
                         itemDiv.className = 'form-check border-bottom py-2';
-                        itemDiv.innerHTML = `<input class="form-check-input loan-checkbox" type="checkbox" data-saldo="0" data-parcela="${valorParcelaNum}" data-banco="${nomeBanco}" data-status="${pagas} de ${total}" id="loan-${index}"><label class="form-check-label" for="loan-${index}"><strong>${nomeBanco}</strong><br><small>Saldo Aprox.: ${formatarMoeda(0)} | Parcela: ${formatarMoeda(valorParcelaNum)} | Status: ${pagas} de ${total}</small></label>`;
-                        listaDiv.appendChild(itemDiv);
-                        return;
+                        // ORDEM ALTERADA AQUI: Parcela - Prazo (Pagas de Total) - Saldo
+                        itemDiv.innerHTML = `<input class="form-check-input loan-checkbox" type="checkbox" data-saldo="0" data-parcela="${valorParcelaNum}" data-banco="${nomeBanco}" data-status="${pagas} de ${total}" id="loan-${index}"><label class="form-check-label" for="loan-${index}"><strong>${nomeBanco}</strong><br><small>Parcela: ${formatarMoeda(valorParcelaNum)} | Prazo: ${pagas} de ${total} | Saldo Aprox.: ${formatarMoeda(0)}</small></label>`;
+                        listaDiv.appendChild(itemDiv); return;
                     }
-
-                    const parcelasRestantes = parseInt(total, 10) - parseInt(pagas, 10);
-                    if (parcelasRestantes < 0) return;
-
-                    loansFound++;
-                    const saldoAproximado = valorParcelaNum * parcelasRestantes * 0.70;
+                    const parcelasRestantes = parseInt(total, 10) - parseInt(pagas, 10); if (parcelasRestantes < 0) return;
+                    loansFound++; const saldoAproximado = valorParcelaNum * parcelasRestantes * 0.70;
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'form-check border-bottom py-2';
-                    itemDiv.innerHTML = `<input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${saldoAproximado}" data-parcela="${valorParcelaNum}" data-banco="${nomeBanco}" data-status="${pagas} de ${total}" id="loan-${index}"><label class="form-check-label" for="loan-${index}"><strong>${nomeBanco}</strong><br><small>Saldo Aprox.: ${formatarMoeda(saldoAproximado)} | Parcela: ${formatarMoeda(valorParcelaNum)} | Status: ${pagas} de ${total}</small></label>`;
+                    // ORDEM ALTERADA AQUI: Parcela - Prazo (Pagas de Total) - Saldo
+                    itemDiv.innerHTML = `<input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${saldoAproximado}" data-parcela="${valorParcelaNum}" data-banco="${nomeBanco}" data-status="${pagas} de ${total}" id="loan-${index}"><label class="form-check-label" for="loan-${index}"><strong>${nomeBanco}</strong><br><small>Parcela: ${formatarMoeda(valorParcelaNum)} | Prazo: ${pagas} de ${total} | Saldo Aprox.: ${formatarMoeda(saldoAproximado)}</small></label>`;
                     listaDiv.appendChild(itemDiv);
                 });
-
             } else {
-                console.log("Detectado texto limpo (Exército). Usando parser padrão.");
-
-                const infoRegex = /(\d{9,12})\s*-\s*([\d.-]+)\s*-\s*([A-ZÀ-Ú ]+)(?:\n([A-ZÀ-Ú ]+))?/;
-                const infoMatch = text.match(infoRegex);
-
-                if (infoMatch) {
-                    clienteCpfPDF = infoMatch[2].trim();
-                    clienteNomePDF = infoMatch[3].trim();
-                    if (infoMatch[4]) {
-                        clienteNomePDF += ` ${infoMatch[4].trim()}`;
-                    }
-                } else {
-                    clienteCpfPDF = '';
-                    clienteNomePDF = '';
-                }
-
+                const infoMatch = text.match(/(\d{9,12})\s*-\s*([\d.-]+)\s*-\s*([A-ZÀ-Ú ]+)(?:\n([A-ZÀ-Ú ]+))?/);
+                if (infoMatch) { clienteCpfPDF = infoMatch[2].trim(); clienteNomePDF = infoMatch[3].trim(); if (infoMatch[4]) clienteNomePDF += ` ${infoMatch[4].trim()}`; }
                 listaDiv.innerHTML = `<div id="infoCliente" class="mb-3 p-2 border rounded"><p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF}</p><p class="mb-0"><strong>CPF:</strong> ${clienteCpfPDF}</p></div><div class="form-check mb-2 border-bottom pb-2"><input class="form-check-input" type="checkbox" id="selectAllCheckbox"><label class="form-check-label fw-bold" for="selectAllCheckbox">Selecionar Todos</label></div>`;
-
                 const blocos = cleanText.split(/\n(?=\d{3}\s*-\s*)/);
-
                 blocos.forEach((bloco, index) => {
                     if (bloco.toUpperCase().includes('EMPRÉSTIMO') && /Em\s+Andamento/.test(bloco)) {
-                        const bancoMatch = bloco.match(/^([\s\S]+?)\n(\d{7})\n/);
-                        const valorMatch = bloco.match(/R\$\s*[\d.,]+/);
-                        const parcelasMatch = /([\w\.]+)\s*\n\s*(\d+)\s+Em\s+Andamento/;
-                        const parcelasResult = bloco.match(parcelasMatch);
-
+                        const bancoMatch = bloco.match(/^([\s\S]+?)\n(\d{7})\n/); const valorMatch = bloco.match(/R\$\s*[\d.,]+/); const parcelasResult = bloco.match(/([\w\.]+)\s*\n\s*(\d+)\s+Em\s+Andamento/);
                         if (bancoMatch && valorMatch && parcelasResult) {
-                            const nomeBanco = bancoMatch[1].replace(/\n/g, ' ').trim();
-                            const valor = valorMatch[0];
-                            const total = parcelasResult[1];
-                            const pagas = parcelasResult[2];
-
+                            const nomeBanco = bancoMatch[1].replace(/\n/g, ' ').trim(); const valor = valorMatch[0]; const total = parcelasResult[1]; const pagas = parcelasResult[2];
                             if (total.toUpperCase() === 'INDET.') return;
-
-                            loansFound++;
-                            const valorParcelaNum = moedaParaFloat(valor);
-                            const parcelasRestantes = parseInt(total, 10) - parseInt(pagas, 10);
-                            if (parcelasRestantes < 0) return;
-
+                            loansFound++; const valorParcelaNum = moedaParaFloat(valor); const parcelasRestantes = parseInt(total, 10) - parseInt(pagas, 10); if (parcelasRestantes < 0) return;
                             const saldoAproximado = valorParcelaNum * parcelasRestantes * 0.70;
                             const itemDiv = document.createElement('div');
                             itemDiv.className = 'form-check border-bottom py-2';
-                            itemDiv.innerHTML = `<input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${saldoAproximado}" data-parcela="${valorParcelaNum}" data-banco="${nomeBanco}" data-status="${pagas} de ${total}" id="loan-${index}"><label class="form-check-label" for="loan-${index}"><strong>${nomeBanco}</strong><br><small>Saldo Aprox.: ${formatarMoeda(saldoAproximado)} | Parcela: ${formatarMoeda(valorParcelaNum)} | Status: ${pagas} de ${total}</small></label>`;
+                            // ORDEM ALTERADA AQUI: Parcela - Prazo (Pagas de Total) - Saldo
+                            itemDiv.innerHTML = `<input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${saldoAproximado}" data-parcela="${valorParcelaNum}" data-banco="${nomeBanco}" data-status="${pagas} de ${total}" id="loan-${index}"><label class="form-check-label" for="loan-${index}"><strong>${nomeBanco}</strong><br><small>Parcela: ${formatarMoeda(valorParcelaNum)} | Prazo: ${pagas} de ${total} | Saldo Aprox.: ${formatarMoeda(saldoAproximado)}</small></label>`;
                             listaDiv.appendChild(itemDiv);
                         }
                     }
                 });
             }
-
             if (loansFound === 0) showToast("AVISO: Nenhum contrato 'Em Andamento' foi encontrado no formato esperado.", 'warning');
-
             document.getElementById('selectAllCheckbox').addEventListener('change', (e) => document.querySelectorAll('.loan-checkbox').forEach(cb => cb.checked = e.target.checked));
-            listaDiv.style.display = "block";
-            document.getElementById("unificarBtnPdf").style.display = "block";
+            listaDiv.style.display = "block"; document.getElementById("unificarBtnPdf").style.display = "block";
         }
 
         async function processarPdfSiape(text) {
-            console.log("Iniciando processamento SIAPE (UX Aprimorada)...");
-
             const infoRegexNovo = /CPF\nMatrícula\nNome\n([^\n]+)\n(?:[^\n]*\n)?([^\n]+)/;
             const headerRegexAntigo = /Órgão\nCPF\nMatrícula\nNome\n[^\n]+\n([^\n]+)\n[^\n]+\n([^\n]+)/;
-
-            let infoMatchNovo = text.match(infoRegexNovo);
-            let headerMatchAntigo = text.match(headerRegexAntigo);
+            let infoMatchNovo = text.match(infoRegexNovo); let headerMatchAntigo = text.match(headerRegexAntigo);
             let cpfExtraido = 'Não lido', nomeExtraido = 'Não lido';
-
-            if (infoMatchNovo && (/\d{3}\.\d{3}\.\d{3}-\d{2}/.test(infoMatchNovo[1].trim()) || /\d{11}/.test(infoMatchNovo[1].replace(/[.-]/g, '')))) {
-                cpfExtraido = infoMatchNovo[1].trim();
-                nomeExtraido = infoMatchNovo[2].trim();
-            } else if (headerMatchAntigo) {
-                cpfExtraido = headerMatchAntigo[1].trim();
-                nomeExtraido = headerMatchAntigo[2].trim();
-            } else {
-                const cpfSimples = text.match(/\d{3}\.\d{3}\.\d{3}-\d{2}/);
-                if (cpfSimples) cpfExtraido = cpfSimples[0];
-            }
-
-            clienteCpfPDF = cpfExtraido;
-            clienteNomePDF = nomeExtraido;
+            if (infoMatchNovo && (/\d{3}\.\d{3}\.\d{3}-\d{2}/.test(infoMatchNovo[1].trim()) || /\d{11}/.test(infoMatchNovo[1].replace(/[.-]/g, '')))) { cpfExtraido = infoMatchNovo[1].trim(); nomeExtraido = infoMatchNovo[2].trim(); }
+            else if (headerMatchAntigo) { cpfExtraido = headerMatchAntigo[1].trim(); nomeExtraido = headerMatchAntigo[2].trim(); }
+            else { const cpfSimples = text.match(/\d{3}\.\d{3}\.\d{3}-\d{2}/); if (cpfSimples) cpfExtraido = cpfSimples[0]; }
+            clienteCpfPDF = cpfExtraido; clienteNomePDF = nomeExtraido;
 
             const blocoValoresRegex = /Total\s+Cartão([\s\S]+?)(?:Extrato\s+de\s+Consignações|Demonstrativo\s+de\s+uso)/i;
             const matchBloco = text.match(blocoValoresRegex);
-
-            let valBrutaFacultativa = 0;
-            let valTotalFacultativas = 0;
-            let margemDisponivel = 0;
-            let calculoRealizado = false;
-
-            const infoDiv = document.getElementById("infoNegativado");
-            const negativoInput = document.getElementById("negativo");
-            const operacaoSelect = document.getElementById("operacaoSelect");
-
+            let valBrutaFacultativa = 0, valTotalFacultativas = 0, margemDisponivel = 0, calculoRealizado = false;
             if (matchBloco) {
                 const valoresEncontrados = matchBloco[1].match(/R\$\s*([\d.,]+)/g);
                 if (valoresEncontrados && valoresEncontrados.length >= 7) {
-                    valBrutaFacultativa = moedaParaFloat(valoresEncontrados[2]);
-                    valTotalFacultativas = moedaParaFloat(valoresEncontrados[6]);
-                    margemDisponivel = valBrutaFacultativa - valTotalFacultativas;
-                    calculoRealizado = true;
+                    valBrutaFacultativa = moedaParaFloat(valoresEncontrados[2]); valTotalFacultativas = moedaParaFloat(valoresEncontrados[6]);
+                    margemDisponivel = valBrutaFacultativa - valTotalFacultativas; calculoRealizado = true;
                 }
             }
-
+            const infoDiv = document.getElementById("infoNegativado"); const negativoInput = document.getElementById("negativo"); const operacaoSelect = document.getElementById("operacaoSelect");
             if (calculoRealizado) {
-                const cpfParaLink = clienteCpfPDF || '';
-                const cpfLimpo = cpfParaLink.replace(/\D/g, '');
-
-                const urlPolloDireta = `https://sistema.gconsig.com/admin/consultor/${cpfParaLink}/procurarcliente.html?tipo=cpf`;
-
-                let htmlAnalise = `<h5 class="alert-heading">Análise de Margem (SIAPE)</h5>
-                           <div class="row">
-                               <div class="col-6"><strong>Bruta Facultativa:</strong><br>${formatarMoeda(valBrutaFacultativa)}</div>
-                               <div class="col-6"><strong>Total Utilizado:</strong><br>${formatarMoeda(valTotalFacultativas)}</div>
-                           </div>
-                           <hr class="my-2">`;
-
-                const botaoLinkPollo = (classeCor) => `
-                    <div class="mt-3">
-                        <a href="${urlPolloDireta}" target="_blank" class="btn btn-sm ${classeCor} w-100"
-                           onclick="navigator.clipboard.writeText('${cpfLimpo}'); showToast('Abrindo sistema... CPF copiado por segurança!', 'info');">
-                            <strong>🔗 Abrir Cliente no Pollo</strong>
-                        </a>
-                        <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">
-                            (Vai direto para o cadastro. Se falhar, o CPF já foi copiado)
-                        </small>
-                    </div>`;
-
+                const cpfParaLink = clienteCpfPDF || ''; const cpfLimpo = cpfParaLink.replace(/\D/g, ''); const urlPolloDireta = `https://sistema.gconsig.com/admin/consultor/${cpfParaLink}/procurarcliente.html?tipo=cpf`;
+                let htmlAnalise = `<h5 class="alert-heading">Análise de Margem (SIAPE)</h5><div class="row"><div class="col-6"><strong>Bruta Facultativa:</strong><br>${formatarMoeda(valBrutaFacultativa)}</div><div class="col-6"><strong>Total Utilizado:</strong><br>${formatarMoeda(valTotalFacultativas)}</div></div><hr class="my-2">`;
+                const botaoLinkPollo = (classeCor) => `<div class="mt-3"><a href="${urlPolloDireta}" target="_blank" class="btn btn-sm ${classeCor} w-100" onclick="navigator.clipboard.writeText('${cpfLimpo}'); showToast('Abrindo sistema... CPF copiado por segurança!', 'info');"><strong>🔗 Abrir Cliente no Pollo</strong></a><small class="text-muted d-block mt-1" style="font-size: 0.75rem;">(Vai direto para o cadastro. Se falhar, o CPF já foi copiado)</small></div>`;
                 if (margemDisponivel < -0.01) {
                     const valorNegativo = Math.abs(margemDisponivel);
-                    htmlAnalise += `<div class="alert alert-danger mb-0 text-center">
-                                <strong>⚠️ CLIENTE NEGATIVO</strong><br>
-                                Valor Excedente: <strong>${formatarMoeda(valorNegativo)}</strong>
-                                ${botaoLinkPollo('btn-outline-dark')}
-                                <p class="mt-2 mb-0"><small>Ou consulte no <a href="https://c6.c6consig.com.br/WebAutorizador/Login" target="_blank">Banco C6</a></small></p>
-                                </div>`;
-
+                    htmlAnalise += `<div class="alert alert-danger mb-0 text-center"><strong>⚠️ CLIENTE NEGATIVO</strong><br>Valor Excedente: <strong>${formatarMoeda(valorNegativo)}</strong>${botaoLinkPollo('btn-outline-dark')}<p class="mt-2 mb-0"><small>Ou consulte no <a href="https://c6.c6consig.com.br/WebAutorizador/Login" target="_blank">Banco C6</a></small></p></div>`;
                     negativoInput.value = formatarInputMoeda(valorNegativo);
-
-                    if (operacaoSelect.value !== 'negativado_siape') {
-                        operacaoSelect.value = 'negativado_siape';
-                        atualizarVisibilidadeUI();
-                        showToast(`Modo 'Análise de Negativado' ativado automaticamente!`, "warning");
-                    }
-
+                    if (operacaoSelect.value !== 'negativado_siape') { operacaoSelect.value = 'negativado_siape'; atualizarVisibilidadeUI(); showToast(`Modo 'Análise de Negativado' ativado automaticamente!`, "warning"); }
                 } else {
-                    htmlAnalise += `<div class="alert alert-success mb-0 text-center">
-                                <strong>✅ MARGEM DISPONÍVEL</strong><br>
-                                Livre: <strong>${formatarMoeda(margemDisponivel)}</strong>
-                                ${botaoLinkPollo('btn-outline-success')}
-                                <p class="mt-2 mb-0"><small>Ou consulte no <a href="https://c6.c6consig.com.br/WebAutorizador/Login" target="_blank">Banco C6</a></small></p>
-                            </div>`;
+                    htmlAnalise += `<div class="alert alert-success mb-0 text-center"><strong>✅ MARGEM DISPONÍVEL</strong><br>Livre: <strong>${formatarMoeda(margemDisponivel)}</strong>${botaoLinkPollo('btn-outline-success')}<p class="mt-2 mb-0"><small>Ou consulte no <a href="https://c6.c6consig.com.br/WebAutorizador/Login" target="_blank">Banco C6</a></small></p></div>`;
                     negativoInput.value = '';
                 }
-
-                infoDiv.innerHTML = htmlAnalise;
-                infoDiv.style.display = 'block';
-            } else {
-                infoDiv.style.display = 'none';
-            }
+                infoDiv.innerHTML = htmlAnalise; infoDiv.style.display = 'block';
+            } else { infoDiv.style.display = 'none'; }
 
             const listaDiv = document.getElementById("listaEmprestimos");
             listaDiv.innerHTML = `<div id="infoCliente" class="mb-3 p-2 border rounded"><p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF}</p><p class="mb-0"><strong>CPF:</strong> ${clienteCpfPDF}</p></div><div class="form-check mb-2 border-bottom pb-2"><input class="form-check-input" type="checkbox" id="selectAllCheckbox"><label class="form-check-label fw-bold" for="selectAllCheckbox">Selecionar Todos</label></div>`;
-
-            const rgxEmprestimos = /(EMPREST[^\n]+)\n(?:.|\n)*?(R\$\s*[\d\.,]+)\n(\d{2,3}\/\d{2,3})/g;
-            let matches = [...text.matchAll(rgxEmprestimos)];
-
-            let contratosEncontrados = [];
-
+            const rgxEmprestimos = /(EMPREST[^\n]+)\n(?:.|\n)*?(R\$\s*[\d\.,]+)\n(\d{2,3}\/\d{2,3})/g; let matches = [...text.matchAll(rgxEmprestimos)]; let contratosEncontrados = [];
             matches.forEach((match, index) => {
                 const [_, nomeBanco, valor, parcelasStr] = match;
-                let cleanNomeBanco = nomeBanco.replace(/^\d+\s*-\s*/, '').trim()
-                    .replace('EMPREST BCO PRIVADOS - ', '')
-                    .replace('EMPREST BCO OFICIAL - ', '');
-
-                const [pagas, total] = parcelasStr.split('/');
-                const valorParcelaNum = moedaParaFloat(valor);
-
+                let cleanNomeBanco = nomeBanco.replace(/^\d+\s*-\s*/, '').trim().replace('EMPREST BCO PRIVADOS - ', '').replace('EMPREST BCO OFICIAL - ', '');
+                const [pagas, total] = parcelasStr.split('/'); const valorParcelaNum = moedaParaFloat(valor);
                 if (parseInt(total, 10) > 900) return;
-
-                const parcelasRestantes = parseInt(total, 10) - parseInt(pagas, 10);
-                const saldoAproximado = (parcelasRestantes >= 0) ? valorParcelaNum * parcelasRestantes * 0.70 : 0;
-
-                contratosEncontrados.push({
-                    id: index,
-                    banco: cleanNomeBanco,
-                    valorParcela: valorParcelaNum,
-                    saldo: saldoAproximado,
-                    pagas: pagas,
-                    total: total
-                });
+                const parcelasRestantes = parseInt(total, 10) - parseInt(pagas, 10); const saldoAproximado = (parcelasRestantes >= 0) ? valorParcelaNum * parcelasRestantes * 0.70 : 0;
+                contratosEncontrados.push({ id: index, banco: cleanNomeBanco, valorParcela: valorParcelaNum, saldo: saldoAproximado, pagas: pagas, total: total });
             });
-
             contratosEncontrados.sort((a, b) => b.valorParcela - a.valorParcela);
-
-            if (contratosEncontrados.length === 0) {
-                showToast("AVISO: Nenhum contrato de empréstimo válido foi encontrado.", 'warning');
-            } else {
+            if (contratosEncontrados.length === 0) { showToast("AVISO: Nenhum contrato de empréstimo válido foi encontrado.", 'warning'); }
+            else {
                 contratosEncontrados.forEach((c, i) => {
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'form-check border-bottom py-2';
-                    itemDiv.innerHTML = `<input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${c.saldo}" data-parcela="${c.valorParcela}" data-banco="${c.banco}" data-status="${c.pagas} de ${c.total}" id="loan-sorted-${i}"><label class="form-check-label" for="loan-sorted-${i}"><strong>${c.banco}</strong><br><small>Saldo Aprox.: ${formatarMoeda(c.saldo)} | Parcela: ${formatarMoeda(c.valorParcela)} | Status: ${c.pagas} de ${c.total}</small></label>`;
+                    // ORDEM ALTERADA AQUI: Parcela - Prazo (Pagas de Total) - Saldo
+                    itemDiv.innerHTML = `<input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${c.saldo}" data-parcela="${c.valorParcela}" data-banco="${c.banco}" data-status="${c.pagas} de ${c.total}" id="loan-sorted-${i}"><label class="form-check-label" for="loan-sorted-${i}"><strong>${c.banco}</strong><br><small>Parcela: ${formatarMoeda(c.valorParcela)} | Prazo: ${c.pagas} de ${c.total} | Saldo Aprox.: ${formatarMoeda(c.saldo)}</small></label>`;
                     listaDiv.appendChild(itemDiv);
                 });
             }
-
             document.getElementById('selectAllCheckbox').addEventListener('change', (e) => document.querySelectorAll('.loan-checkbox').forEach(cb => cb.checked = e.target.checked));
-            listaDiv.style.display = "block";
-            document.getElementById("unificarBtnPdf").style.display = "block";
+            listaDiv.style.display = "block"; document.getElementById("unificarBtnPdf").style.display = "block";
         }
 
-
         function parsearPdf(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+            const file = event.target.files[0]; if (!file) return;
             clienteNomePDF = ''; clienteCpfPDF = '';
-
-            const loadingDiv = document.getElementById("loading");
-            const loadingText = document.getElementById("loading-text");
-
-            loadingText.textContent = 'Analisando...';
-            loadingDiv.classList.remove('d-none');
-            loadingDiv.classList.add('d-flex');
-            document.getElementById('upload-text').style.display = 'none';
-            document.getElementById('listaEmprestimos').innerHTML = '';
-            document.getElementById('listaEmprestimos').style.display = 'none';
-            document.getElementById('unificarBtnPdf').style.display = 'none';
-
+            const loadingDiv = document.getElementById("loading"); const loadingText = document.getElementById("loading-text");
+            loadingText.textContent = 'Analisando...'; loadingDiv.classList.remove('d-none'); loadingDiv.classList.add('d-flex');
+            document.getElementById('upload-text').style.display = 'none'; document.getElementById('listaEmprestimos').innerHTML = '';
+            document.getElementById('listaEmprestimos').style.display = 'none'; document.getElementById('unificarBtnPdf').style.display = 'none';
 
             const fileReader = new FileReader();
             fileReader.onload = async function () {
                 let extractedText = '';
                 try {
-                    const typedarray = new Uint8Array(this.result);
-                    const pdf = await pdfjsLib.getDocument(typedarray).promise;
-                    let textFound = false;
-
-                    for (let i = 1; i <= pdf.numPages; i++) {
-                        const page = await pdf.getPage(i);
-                        const textContent = await page.getTextContent();
-
-                        if (textContent.items.length > 0) {
-                            textFound = true;
-                        }
-
-                        extractedText += textContent.items.map(item => item.str).join('\n') + '\n\n';
-                    }
-
+                    const typedarray = new Uint8Array(this.result); const pdf = await pdfjsLib.getDocument(typedarray).promise; let textFound = false;
+                    for (let i = 1; i <= pdf.numPages; i++) { const page = await pdf.getPage(i); const textContent = await page.getTextContent(); if (textContent.items.length > 0) textFound = true; extractedText += textContent.items.map(item => item.str).join('\n') + '\n\n'; }
                     const hasRealData = extractedText.toUpperCase().includes('CONSIGNATÁRIA') || extractedText.toUpperCase().includes('EMPRÉSTIMO') || extractedText.toUpperCase().includes('CPF') || extractedText.toUpperCase().includes('RUBRICA');
-
-                    if (extractedText.trim().length < 50 || !hasRealData) {
-                        textFound = false;
-                        console.log("Texto 'limpo' não parece válido. Forçando OCR (Plano B).");
-                    }
-
+                    if (extractedText.trim().length < 50 || !hasRealData) { textFound = false; console.log("Texto 'limpo' não parece válido. Forçando OCR (Plano B)."); }
 
                     if (!textFound) {
-                        console.warn("PDF parece ser uma imagem ou sem texto real. Iniciando OCR...");
-                        extractedText = '';
-
-                        if (typeof Tesseract === 'undefined') {
-                            throw new Error("Tesseract.js não foi carregado. Verifique a inclusão do script.");
-                        }
-
+                        console.warn("PDF parece ser uma imagem ou sem texto real. Iniciando OCR..."); extractedText = '';
+                        if (typeof Tesseract === 'undefined') throw new Error("Tesseract.js não foi carregado.");
                         const worker = await Tesseract.createWorker('por');
-
                         for (let i = 1; i <= pdf.numPages; i++) {
                             loadingText.textContent = `Lendo imagem: Página ${i} de ${pdf.numPages}...`;
-                            const page = await pdf.getPage(i);
-                            const viewport = page.getViewport({ scale: 2.0 });
-
-                            const canvas = document.createElement('canvas');
-                            const context = canvas.getContext('2d');
-                            canvas.height = viewport.height;
-                            canvas.width = viewport.width;
-
+                            const page = await pdf.getPage(i); const viewport = page.getViewport({ scale: 2.0 });
+                            const canvas = document.createElement('canvas'); const context = canvas.getContext('2d'); canvas.height = viewport.height; canvas.width = viewport.width;
                             await page.render({ canvasContext: context, viewport: viewport }).promise;
-
-                            const { data: { text: ocrText } } = await worker.recognize(canvas);
-                            extractedText += ocrText + '\n\n';
+                            const { data: { text: ocrText } } = await worker.recognize(canvas); extractedText += ocrText + '\n\n';
                         }
-
-                        await worker.terminate();
-                        console.log("OCR Concluído.");
+                        await worker.terminate(); console.log("OCR Concluído.");
                     }
 
-                    let convenioDetectado = 'exercito';
-                    const convenioSelect = document.getElementById('convenioSelect');
+                    let convenioDetectado = 'exercito'; const convenioSelect = document.getElementById('convenioSelect');
+                    if (extractedText.includes("Extrato de Consignações Vigentes") || extractedText.includes("Rubrica\nSequência")) { convenioDetectado = 'siape'; console.log("Convênio detectado: SIAPE"); }
+                    else if (extractedText.includes("eConsig") || extractedText.includes("MARGEM CONSIGNACAO") || extractedText.includes("Consignatária")) { convenioDetectado = 'exercito'; console.log("Convênio detectado: Exército (eConsig)"); }
+                    else { console.warn("Não foi possível detectar o convênio automaticamente com alta confiança, usando padrão."); showToast("Não foi possível detectar o convênio. Verifique a seleção.", "warning"); }
 
-                    if (extractedText.includes("Extrato de Consignações Vigentes") || extractedText.includes("Rubrica\nSequência")) {
-                        convenioDetectado = 'siape';
-                        console.log("Convênio detectado: SIAPE");
-                    }
-                    else if (extractedText.includes("eConsig") || extractedText.includes("MARGEM CONSIGNACAO") || extractedText.includes("Consignatária")) {
-                        convenioDetectado = 'exercito';
-                        console.log("Convênio detectado: Exército (eConsig)");
-                    }
-                    else {
-                        console.warn("Não foi possível detectar o convênio automaticamente com alta confiança, usando padrão 'Exército'.");
-                        showToast("Não foi possível detectar o convênio. Verifique a seleção.", "warning");
-                    }
-
-                    convenioSelect.value = convenioDetectado;
-                    atualizarOperacoes();
-
-                    if (convenioDetectado === 'exercito') {
-                        await processarPdfExercicio(extractedText);
-                    } else {
-                        await processarPdfSiape(extractedText);
-                    }
-
+                    convenioSelect.value = convenioDetectado; atualizarOperacoes();
+                    if (convenioDetectado === 'exercito') await processarPdfExercicio(extractedText); else await processarPdfSiape(extractedText);
                     showToast("Extrato lido e convênio detectado com sucesso!", "success");
 
-                } catch (error) {
-                    console.error("Erro ao processar o PDF:", error);
-                    showToast(`Ocorreu um erro ao ler o PDF: ${error.message}`, "danger");
-                } finally {
-                    loadingDiv.classList.add('d-none');
-                    loadingDiv.classList.remove('d-flex');
-                    document.getElementById('upload-text').style.display = 'block';
-                    loadingText.textContent = 'Analisando...';
-                }
+                } catch (error) { console.error("Erro ao processar o PDF:", error); showToast(`Ocorreu um erro ao ler o PDF: ${error.message}`, "danger"); }
+                finally { loadingDiv.classList.add('d-none'); loadingDiv.classList.remove('d-flex'); document.getElementById('upload-text').style.display = 'block'; loadingText.textContent = 'Analisando...'; }
             };
             fileReader.readAsArrayBuffer(file);
         }
 
-        // --- FUNÇÃO ATUALIZADA PARA USAR SALDO EXATO SE EXISTIR ---
         function unificarContratos(isManual) {
             let totalSaldo = 0, totalParcela = 0;
             parcelasSelecionadasPDF = [];
@@ -1149,52 +924,75 @@
             if (isManual) {
                 parcelasManuais.forEach(p => {
                     totalParcela += p.parcela;
-                    
-                    // LÓGICA DE OURO: Se tem saldo exato (Polo), usa ele. Se não, usa estimativa.
-                    if (p.saldoDevedorExato && p.saldoDevedorExato > 0) {
-                        totalSaldo += p.saldoDevedorExato;
-                    } else {
-                        const parcelasRestantes = (p.totalParcelas || 0) - (p.parcelasPagas || 0);
-                        if (parcelasRestantes > 0) totalSaldo += p.parcela * parcelasRestantes * 0.70;
-                    }
+                    if (p.saldoDevedorExato && p.saldoDevedorExato > 0) { totalSaldo += p.saldoDevedorExato; }
+                    else { const parcelasRestantes = (p.totalParcelas || 0) - (p.parcelasPagas || 0); if (parcelasRestantes > 0) totalSaldo += p.parcela * parcelasRestantes * 0.70; }
                 });
             } else {
                 const checkedBoxes = document.querySelectorAll('.loan-checkbox:checked');
                 if (checkedBoxes.length === 0) return showToast("Selecione ao menos um contrato.", "warning");
-
                 checkedBoxes.forEach(cb => {
-                    totalSaldo += parseFloat(cb.dataset.saldo);
-                    totalParcela += parseFloat(cb.dataset.parcela);
+                    totalSaldo += parseFloat(cb.dataset.saldo); totalParcela += parseFloat(cb.dataset.parcela);
                     parcelasSelecionadasPDF.push({ banco: cb.dataset.banco, parcela: formatarMoeda(parseFloat(cb.dataset.parcela)), saldo: formatarMoeda(parseFloat(cb.dataset.saldo)), status: cb.dataset.status });
                 });
             }
 
             const operacao = document.getElementById('operacaoSelect').value;
-            if (operacao.includes('negativado')) {
-                document.getElementById("totalParcelasDisplay").textContent = formatarMoeda(totalParcela);
-            } else {
-                document.getElementById("parcela").value = formatarInputMoeda(totalParcela);
-                document.getElementById("saldodevedor").value = formatarInputMoeda(totalSaldo);
-            }
-
+            if (operacao.includes('negativado')) { document.getElementById("totalParcelasDisplay").textContent = formatarMoeda(totalParcela); }
+            else { document.getElementById("parcela").value = formatarInputMoeda(totalParcela); document.getElementById("saldodevedor").value = formatarInputMoeda(totalSaldo); }
             if (!isManual) showToast("Valores unificados e preenchidos no formulário.");
         }
 
         function renderizarListaManual() {
             const listaDiv = document.getElementById('manual-loans-list');
             listaDiv.innerHTML = '';
+
             if (parcelasManuais.length > 0) {
                 const ul = document.createElement('ul');
                 ul.className = 'list-group list-group-flush';
+
                 parcelasManuais.forEach((p, index) => {
                     const li = document.createElement('li');
                     li.className = 'list-group-item d-flex justify-content-between align-items-center';
-                    li.innerHTML = `<div><strong>${p.banco}</strong> - ${formatarMoeda(p.parcela)}<br><small class="text-muted">${p.parcelasPagas} de ${p.totalParcelas}</small></div><button type="button" class="btn btn-outline-danger btn-sm" onclick="removerParcelaManual(${index})">X</button>`;
+
+                    // Cálculo visual do saldo (mantendo a lógica original)
+                    const parcelasRestantes = (p.totalParcelas || 0) - (p.parcelasPagas || 0);
+                    const saldoManual = (p.saldoDevedorExato && p.saldoDevedorExato > 0)
+                        ? p.saldoDevedorExato
+                        : ((parcelasRestantes > 0) ? p.parcela * parcelasRestantes * 0.70 : 0);
+
+                    li.innerHTML = `
+                        <div>
+                            <strong>${p.banco}</strong><br>
+                            <small class="text-muted">
+                                Parcela: ${formatarMoeda(p.parcela)} | 
+                                Prazo: ${p.parcelasPagas} de ${p.totalParcelas} | 
+                                Saldo Aprox.: ${formatarMoeda(saldoManual)}
+                            </small>
+                        </div>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-primary" onclick="editarParcelaManual(${index})" title="Editar">
+                                ✏️
+                            </button>
+                            <button type="button" class="btn btn-outline-danger" onclick="removerParcelaManual(${index})" title="Excluir">
+                                🗑️
+                            </button>
+                        </div>`;
                     ul.appendChild(li);
                 });
                 listaDiv.appendChild(ul);
             }
             unificarContratos(true);
+        }
+        window.editarParcelaManual = (index) => {
+            const item = parcelasManuais[index];
+            document.getElementById('manualBanco').value = item.banco;
+            document.getElementById('manualParcela').value = formatarInputMoeda(item.parcela);
+            document.getElementById('manualTotalParcelas').value = item.totalParcelas;
+            document.getElementById('manualParcelasPagas').value = item.parcelasPagas;
+            parcelasManuais.splice(index, 1);
+            renderizarListaManual();
+            document.getElementById('manualParcela').focus();
+            showToast("Item carregado para edição. Ajuste e clique em 'Adicionar'.", "info");
         }
 
         window.removerParcelaManual = (index) => { parcelasManuais.splice(index, 1); renderizarListaManual(); }
@@ -1204,132 +1002,55 @@
             const parcelaValor = moedaParaFloat(document.getElementById('manualParcela').value);
             const totalParcelas = parseInt(document.getElementById('manualTotalParcelas').value, 10);
             const parcelasPagas = parseInt(document.getElementById('manualParcelasPagas').value, 10);
-
             if (!parcelaValor || !totalParcelas || isNaN(parcelasPagas)) return showToast("Preencha valor e parcelas corretamente.", 'danger');
-            if (parcelasPagas < 0 || totalParcelas <= 0 || parcelaValor <= 0) return showToast("Valores numéricos devem ser positivos.", 'danger');
-            if (parcelasPagas > totalParcelas) return showToast("Pagas não pode ser maior que o total.", 'danger');
-
-
             parcelasManuais.push({ banco, parcela: parcelaValor, totalParcelas, parcelasPagas });
             ['manualBanco', 'manualParcela', 'manualParcelasPagas'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('manualTotalParcelas').value = '96';
-            renderizarListaManual();
-            showToast("Contrato adicionado.");
+            document.getElementById('manualTotalParcelas').value = '96'; renderizarListaManual(); showToast("Contrato adicionado.");
         }
 
-
         function calcularNegativado() {
-            let totalParcelas = 0, saldoFinal = 0;
-            const isManualTabActive = document.getElementById('manual-tab').classList.contains('active');
-
+            let totalParcelas = 0, saldoFinal = 0; const isManualTabActive = document.getElementById('manual-tab').classList.contains('active');
             if (isManualTabActive) {
                 let saldoManual = 0;
-                parcelasManuais.forEach(p => {
-                    totalParcelas += p.parcela;
-                    const restantes = p.totalParcelas - p.parcelasPagas;
-                    if (restantes > 0) saldoManual += p.parcela * restantes * 0.70;
-                });
+                parcelasManuais.forEach(p => { totalParcelas += p.parcela; const restantes = p.totalParcelas - p.parcelasPagas; if (restantes > 0) saldoManual += p.parcela * restantes * 0.70; });
                 saldoFinal = saldoManual;
             } else {
                 const checkedBoxes = document.querySelectorAll('.loan-checkbox:checked');
                 if (checkedBoxes.length === 0) return showToast("Selecione ao menos um contrato do extrato PDF.", 'danger');
-                checkedBoxes.forEach(cb => {
-                    totalParcelas += parseFloat(cb.dataset.parcela);
-                    saldoFinal += parseFloat(cb.dataset.saldo);
-                });
+                checkedBoxes.forEach(cb => { totalParcelas += parseFloat(cb.dataset.parcela); saldoFinal += parseFloat(cb.dataset.saldo); });
             }
-
             if (totalParcelas === 0) return showToast("Nenhum contrato selecionado ou adicionado para calcular.", 'danger');
-
             const negativo = moedaParaFloat(document.getElementById("negativo").value);
             if (negativo <= 0) return showToast("Insira um valor negativo válido (maior que zero).", 'danger');
-
             const novaParcela = totalParcelas - negativo;
-            if (novaParcela < 0) {
-                showToast("A nova parcela calculada é negativa. Verifique os valores.", "warning");
-            }
-
             const nomeFinal = document.getElementById('clienteNome').value.trim() || clienteNomePDF;
             const cpfFinal = document.getElementById('clienteCpf').value.trim() || clienteCpfPDF;
-
             const operacao = document.getElementById('operacaoSelect').value;
             calculoDetalhado = { tipo: operacao, totalParcelas, negativo, novaParcela, saldoDevedor: saldoFinal, nome: nomeFinal, cpf: cpfFinal };
 
             document.getElementById("resultadoNegativadoContainer").style.display = "block";
-            document.getElementById("resultadoNegativadoBody").innerHTML = `
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex justify-content-between"><span>Total Parcelas Originais:</span> <strong>${formatarMoeda(totalParcelas)}</strong></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>Valor Negativo:</span> <strong class="text-danger">- ${formatarMoeda(negativo)}</strong></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>Saldo Devedor Aprox.:</span> <strong>${formatarMoeda(saldoFinal)}</strong></li>
-                    <li class="list-group-item d-flex justify-content-between ${novaParcela < 0 ? 'bg-danger-subtle' : 'bg-success-subtle'}"><h4>Nova Parcela p/ Cálculo:</h4> <h4 class="fw-bold">${formatarMoeda(novaParcela)}</h4></li>
-                </ul>`;
-
+            document.getElementById("resultadoNegativadoBody").innerHTML = `<ul class="list-group list-group-flush"><li class="list-group-item d-flex justify-content-between"><span>Total Parcelas Originais:</span> <strong>${formatarMoeda(totalParcelas)}</strong></li><li class="list-group-item d-flex justify-content-between"><span>Valor Negativo:</span> <strong class="text-danger">- ${formatarMoeda(negativo)}</strong></li><li class="list-group-item d-flex justify-content-between"><span>Saldo Devedor Aprox.:</span> <strong>${formatarMoeda(saldoFinal)}</strong></li><li class="list-group-item d-flex justify-content-between ${novaParcela < 0 ? 'bg-danger-subtle' : 'bg-success-subtle'}"><h4>Nova Parcela p/ Cálculo:</h4> <h4 class="fw-bold">${formatarMoeda(novaParcela)}</h4></li></ul>`;
             document.getElementById("resultadoNegativadoContainer").scrollIntoView({ behavior: 'smooth' });
         }
 
         function calcularMargemNova() {
             const operacao = document.getElementById('operacaoSelect').value;
-
-            const nome = document.getElementById('mn-clienteNome').value;
-            const cpf = document.getElementById('mn-clienteCpf').value;
-            const banco = document.getElementById('mn-banco').value;
-            const parcela = moedaParaFloat(document.getElementById('mn-parcela').value);
+            const nome = document.getElementById('mn-clienteNome').value; const cpf = document.getElementById('mn-clienteCpf').value;
+            const banco = document.getElementById('mn-banco').value; const parcela = moedaParaFloat(document.getElementById('mn-parcela').value);
             const coeficiente = parseFloat(document.getElementById('mn-coeficiente').value.replace(",", ".")) || 0;
             const prazo = parseInt(document.getElementById('mn-prazo').value, 10) || 0;
 
-            if (!nome || !cpf) return showToast('Preencha o Nome e CPF do cliente.', 'danger');
-            if (!banco) return showToast('Preencha o Banco Destino.', 'danger');
-            if (!parcela || parcela <= 0) return showToast('Preencha um Valor de Parcela válido.', 'danger');
-            if (!coeficiente || coeficiente <= 0) return showToast('Preencha um Coeficiente válido.', 'danger');
-            if (!prazo || prazo <= 0) return showToast('Preencha um Prazo válido.', 'danger');
+            if (!nome || !cpf || !banco || !parcela || parcela <= 0 || !coeficiente || coeficiente <= 0 || !prazo) return showToast('Preencha todos os campos obrigatórios da Margem Nova.', 'danger');
 
-            const valorLiberado = parcela / coeficiente;
-            const valorTotalContrato = parcela * prazo;
-
-            calculoDetalhado = {
-                tipo: operacao,
-                nome: nome,
-                cpf: cpf,
-                novoBanco: banco,
-                novaParcelaValor: parcela,
-                coef: coeficiente,
-                novoPrazo: prazo,
-                valorLiberado: valorLiberado,
-                valorTotalContrato: valorTotalContrato
-            };
+            const valorLiberado = parcela / coeficiente; const valorTotalContrato = parcela * prazo;
+            calculoDetalhado = { tipo: operacao, nome: nome, cpf: cpf, novoBanco: banco, novaParcelaValor: parcela, coef: coeficiente, novoPrazo: prazo, valorLiberado: valorLiberado, valorTotalContrato: valorTotalContrato };
 
             const resultadoDiv = document.getElementById("resultadoFinal");
-            resultadoDiv.innerHTML = `
-                <div class="card">
-                    <div class="card-header bg-primary text-white"><h3 class="h5 mb-0">Resultado da Simulação de Margem Nova</h3></div>
-                    <div class="card-body">
-                        <div class="text-center mb-4 border-bottom pb-3">
-                            <h4 class="text-muted">Valor Liberado (Estimado)</h4>
-                            <p class="resultado-final-valor text-success">${formatarMoeda(valorLiberado)}</p>
-                        </div>
-                        <h5>Detalhamento:</h5>
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item d-flex justify-content-between"><span>Valor da Parcela:</span> <strong>${formatarMoeda(parcela)}</strong></li>
-                            <li class="list-group-item d-flex justify-content-between"><span>Prazo:</span> <strong>${prazo} meses</strong></li>
-                            <li class="list-group-item d-flex justify-content-between"><span>Coeficiente Usado:</span> <strong>${coeficiente.toFixed(8)}</strong></li>
-                            <li class="list-group-item d-flex justify-content-between bg-light-subtle">
-                                <strong>Valor Total do Contrato (Parcela x Prazo):</strong> 
-                                <strong class="text-primary">${formatarMoeda(valorTotalContrato)}</strong>
-                             </li>
-                        </ul>
-                    </div>
-                    <div class="card-footer d-grid gap-2 d-sm-flex justify-content-sm-center">
-                        <button id="baixarPdfClienteBtn" class="btn btn-success" type="button">Baixar PDF (Cliente)</button>
-                        <button id="baixarPdfEscritorioBtn" class="btn btn-secondary" type="button">Baixar PDF (Escritório)</button>
-                    </div>
-                </div>`;
-
-            resultadoDiv.style.display = 'block';
-            resultadoDiv.scrollIntoView({ behavior: 'smooth' });
+            resultadoDiv.innerHTML = `<div class="card"><div class="card-header bg-primary text-white"><h3 class="h5 mb-0">Resultado da Simulação de Margem Nova</h3></div><div class="card-body"><div class="text-center mb-4 border-bottom pb-3"><h4 class="text-muted">Valor Liberado (Estimado)</h4><p class="resultado-final-valor text-success">${formatarMoeda(valorLiberado)}</p></div><h5>Detalhamento:</h5><ul class="list-group list-group-flush"><li class="list-group-item d-flex justify-content-between"><span>Valor da Parcela:</span> <strong>${formatarMoeda(parcela)}</strong></li><li class="list-group-item d-flex justify-content-between"><span>Prazo:</span> <strong>${prazo} meses</strong></li><li class="list-group-item d-flex justify-content-between"><span>Coeficiente Usado:</span> <strong>${coeficiente.toFixed(8)}</strong></li><li class="list-group-item d-flex justify-content-between bg-light-subtle"><strong>Valor Total do Contrato:</strong> <strong class="text-primary">${formatarMoeda(valorTotalContrato)}</strong></li></ul></div><div class="card-footer d-grid gap-2 d-sm-flex justify-content-sm-center"><button id="baixarPdfClienteBtn" class="btn btn-success" type="button">Baixar PDF (Cliente)</button><button id="baixarPdfEscritorioBtn" class="btn btn-secondary" type="button">Baixar PDF (Escritório)</button></div></div>`;
+            resultadoDiv.style.display = 'block'; resultadoDiv.scrollIntoView({ behavior: 'smooth' });
             document.getElementById("baixarPdfClienteBtn").addEventListener("click", gerarPDFCliente);
             document.getElementById("baixarPdfEscritorioBtn").addEventListener("click", gerarPDFEscritorio);
         }
-
 
         function calcularSimulacaoCompleta() {
             const operacao = document.getElementById('operacaoSelect').value;
@@ -1346,12 +1067,7 @@
             const novoPrazo = parseInt(document.getElementById("novoPrazo").value, 10) || 96;
 
             if (!p || p <= 0) return showToast('Preencha um Valor Total da Parcela válido (maior que zero).', 'danger');
-            if (!s || s < 0) return showToast('Preencha um Saldo Devedor Aprox. Total válido (pode ser zero).', 'danger');
-            if (!comissaoEsc || comissaoEsc < 0) return showToast('Preencha uma Comissão Escritório válida (pode ser zero).', 'danger');
             if (!coef || coef <= 0) return showToast('Preencha um Coeficiente válido (maior que zero).', 'danger');
-            if (comissaoG < 0 || comissaoG > 100) return showToast('Comissão Gerente deve ser entre 0 e 100.', 'danger');
-            if (novoPrazo <= 0) return showToast('Prazo do Novo Contrato deve ser positivo.', 'danger');
-
 
             const novoS = p / coef;
             const nomeFinal = document.getElementById('clienteNome').value.trim() || clienteNomePDF;
@@ -1371,37 +1087,26 @@
                 valorOfertaFinal = valorGeral - comissaoEsc;
 
                 if (novoS < (s + d + investidor + gerente + comissaoEsc)) {
-                    showToast('Operação Não Viável: O novo saldo gerado é insuficiente para cobrir todas as despesas (saldo devedor, produto, comissões).', 'danger');
-                    document.getElementById("resultadoFinal").innerHTML = '';
-                    document.getElementById("resultadoFinal").style.display = 'none';
-                    return;
+                    showToast('Operação Não Viável: Saldo insuficiente.', 'danger'); document.getElementById("resultadoFinal").innerHTML = ''; document.getElementById("resultadoFinal").style.display = 'none'; return;
                 }
-
 
                 calculoDetalhado = { ...calculoDetalhado, sub, investidorR, investidor, gerente, valorGeral, valorOfertaFinal };
                 resultadoHtml = `
-                    <li class="list-group-item d-flex justify-content-between"><span>Novo Saldo (Gerado pela Parcela):</span> <strong>${formatarMoeda(novoS)}</strong></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>(-) Saldo Devedor a Quitar:</span> <span class="text-danger">- ${formatarMoeda(s)}</span></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>(-) Produto (Opcional):</span> <span class="text-danger">- ${formatarMoeda(d)}</span></li>
+                    <li class="list-group-item d-flex justify-content-between"><span>Novo Saldo (Gerado):</span> <strong>${formatarMoeda(novoS)}</strong></li>
+                    <li class="list-group-item d-flex justify-content-between"><span>(-) Saldo Devedor:</span> <span class="text-danger">- ${formatarMoeda(s)}</span></li>
                     <li class="list-group-item d-flex justify-content-between"><span>(=) Valor Bruto Disponível:</span> <strong>${formatarMoeda(sub)}</strong></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>(-) Comissão Investidor (${(investidorR * 100).toFixed(0)}% sobre Saldo):</span> <span class="text-danger">- ${formatarMoeda(investidor)}</span></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>(-) Comissão Gerente (${comissaoG}% sobre Bruto):</span> <span class="text-danger">- ${formatarMoeda(gerente)}</span></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>(=) Valor Geral Líquido (antes Escritório):</span> <strong>${formatarMoeda(valorGeral)}</strong></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>(-) Comissão Escritório:</span> <span class="text-danger">- ${formatarMoeda(comissaoEsc)}</span></li>`;
+                    <li class="list-group-item d-flex justify-content-between"><span>(-) Com. Investidor:</span> <span class="text-danger">- ${formatarMoeda(investidor)}</span></li>
+                    <li class="list-group-item d-flex justify-content-between"><span>(-) Com. Gerente:</span> <span class="text-danger">- ${formatarMoeda(gerente)}</span></li>
+                    <li class="list-group-item d-flex justify-content-between"><span>(-) Com. Escritório:</span> <span class="text-danger">- ${formatarMoeda(comissaoEsc)}</span></li>`;
 
             } else {
                 const valorBrutoLiberado = novoS - s - d;
                 let sub = valorBrutoLiberado;
-                let valorQuitado = 0;
-                let comissaoQuitado = 0;
+                let valorQuitado = 0; let comissaoQuitado = 0;
 
                 if (document.getElementById('quitacaoSim').checked) {
                     valorQuitado = moedaParaFloat(document.getElementById('valorQuitado').value);
-                    if (valorQuitado < 0) return showToast('Valor a ser quitado não pode ser negativo.', 'danger');
-                    if (valorQuitado > 0) {
-                        comissaoQuitado = valorQuitado * 0.10;
-                        sub -= (valorQuitado + comissaoQuitado);
-                    }
+                    if (valorQuitado > 0) { comissaoQuitado = valorQuitado * 0.10; sub -= (valorQuitado + comissaoQuitado); }
                 }
 
                 const gerente = sub * (comissaoG / 100);
@@ -1409,75 +1114,43 @@
                 valorOfertaFinal = valorGeral - comissaoEsc;
 
                 if (novoS < (s + d + valorQuitado + comissaoQuitado + gerente + comissaoEsc)) {
-                    showToast('Operação Não Viável: O novo saldo gerado é insuficiente para cobrir todas as despesas (saldo devedor, produto, quitação, comissões).', 'danger');
-                    document.getElementById("resultadoFinal").innerHTML = '';
-                    document.getElementById("resultadoFinal").style.display = 'none';
-                    return;
+                    showToast('Operação Não Viável: Saldo insuficiente.', 'danger'); document.getElementById("resultadoFinal").innerHTML = ''; document.getElementById("resultadoFinal").style.display = 'none'; return;
                 }
 
                 calculoDetalhado = { ...calculoDetalhado, valorBrutoLiberado, gerente, valorQuitado, comissaoQuitado, valorGeral, valorOfertaFinal };
                 resultadoHtml = `
-                    <li class="list-group-item d-flex justify-content-between"><span>Novo Saldo (Gerado pela Parcela):</span> <strong>${formatarMoeda(novoS)}</strong></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>(-) Saldo Devedor a Quitar:</span> <span class="text-danger">- ${formatarMoeda(s)}</span></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>(-) Produto (Opcional):</span> <span class="text-danger">- ${formatarMoeda(d)}</span></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>(=) Valor Bruto Liberado (Troco Inicial):</span> <strong>${formatarMoeda(valorBrutoLiberado)}</strong></li>
-                    ${valorQuitado > 0 ? `<li class="list-group-item d-flex justify-content-between"><span>(-) Valor Quitado Adicional:</span> <span class="text-danger">- ${formatarMoeda(valorQuitado)}</span></li><li class="list-group-item d-flex justify-content-between"><span>(-) Comissão Quitação Adicional (10%):</span> <span class="text-danger">- ${formatarMoeda(comissaoQuitado)}</span></li>` : ''}
-                    <li class="list-group-item d-flex justify-content-between"><span>(-) Comissão Gerente (${comissaoG}% sobre Líquido):</span> <span class="text-danger">- ${formatarMoeda(gerente)}</span></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>(=) Valor Geral Líquido (antes Escritório):</span> <strong>${formatarMoeda(valorGeral)}</strong></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>(-) Comissão Escritório:</span> <span class="text-danger">- ${formatarMoeda(comissaoEsc)}</span></li>`;
+                    <li class="list-group-item d-flex justify-content-between"><span>Novo Saldo (Gerado):</span> <strong>${formatarMoeda(novoS)}</strong></li>
+                    <li class="list-group-item d-flex justify-content-between"><span>(-) Saldo Devedor:</span> <span class="text-danger">- ${formatarMoeda(s)}</span></li>
+                    <li class="list-group-item d-flex justify-content-between"><span>(=) Valor Bruto Liberado:</span> <strong>${formatarMoeda(valorBrutoLiberado)}</strong></li>
+                    ${valorQuitado > 0 ? `<li class="list-group-item d-flex justify-content-between"><span>(-) Valor Quitado Adicional:</span> <span class="text-danger">- ${formatarMoeda(valorQuitado)}</span></li>` : ''}
+                    <li class="list-group-item d-flex justify-content-between"><span>(-) Com. Gerente:</span> <span class="text-danger">- ${formatarMoeda(gerente)}</span></li>
+                    <li class="list-group-item d-flex justify-content-between"><span>(-) Com. Escritório:</span> <span class="text-danger">- ${formatarMoeda(comissaoEsc)}</span></li>`;
             }
 
-            let coeficienteReal = 0;
-            if ((valorOfertaFinal + s) > 0) {
-                coeficienteReal = p / (valorOfertaFinal + s);
-            }
+            let coeficienteReal = 0; if ((valorOfertaFinal + s) > 0) { coeficienteReal = p / (valorOfertaFinal + s); }
             calculoDetalhado.coeficienteReal = coeficienteReal;
-
-            resultadoHtml += `<li class="list-group-item d-flex justify-content-between bg-light-subtle">
-                                <strong>Coeficiente Real (Calculado):</strong> 
-                                <strong class="text-primary">${coeficienteReal.toFixed(8)}</strong>
-                             </li>`;
-
+            resultadoHtml += `<li class="list-group-item d-flex justify-content-between bg-light-subtle"><strong>Coeficiente Real:</strong> <strong class="text-primary">${coeficienteReal.toFixed(8)}</strong></li>`;
 
             const resultadoDiv = document.getElementById("resultadoFinal");
-            resultadoDiv.innerHTML = `
-                <div class="card">
-                    <div class="card-header bg-primary text-white"><h3 class="h5 mb-0">Resultado da Simulação</h3></div>
-                    <div class="card-body">
-                        <div class="text-center mb-4 border-bottom pb-3">
-                            <h4 class="text-muted">Valor Líquido para o Cliente</h4>
-                            <p class="resultado-final-valor text-success">${formatarMoeda(valorOfertaFinal)}</p>
-                        </div>
-                        <h5>Detalhamento:</h5>
-                        <ul class="list-group list-group-flush">${resultadoHtml}</ul>
-                    </div>
-                    <div class="card-footer d-grid gap-2 d-sm-flex justify-content-sm-center">
-                        <button id="baixarPdfClienteBtn" class="btn btn-success" type="button">Baixar PDF (Cliente)</button>
-                        <button id="baixarPdfEscritorioBtn" class="btn btn-secondary" type="button">Baixar PDF (Escritório)</button>
-                    </div>
-                </div>`;
-            resultadoDiv.style.display = 'block';
-            resultadoDiv.scrollIntoView({ behavior: 'smooth' });
+            resultadoDiv.innerHTML = `<div class="card"><div class="card-header bg-primary text-white"><h3 class="h5 mb-0">Resultado da Simulação</h3></div><div class="card-body"><div class="text-center mb-4 border-bottom pb-3"><h4 class="text-muted">Valor Líquido para o Cliente</h4><p class="resultado-final-valor text-success">${formatarMoeda(valorOfertaFinal)}</p></div><h5>Detalhamento:</h5><ul class="list-group list-group-flush">${resultadoHtml}</ul></div><div class="card-footer d-grid gap-2 d-sm-flex justify-content-sm-center"><button id="baixarPdfClienteBtn" class="btn btn-success" type="button">Baixar PDF (Cliente)</button><button id="baixarPdfEscritorioBtn" class="btn btn-secondary" type="button">Baixar PDF (Escritório)</button></div></div>`;
+            resultadoDiv.style.display = 'block'; resultadoDiv.scrollIntoView({ behavior: 'smooth' });
             document.getElementById("baixarPdfClienteBtn").addEventListener("click", gerarPDFCliente);
             document.getElementById("baixarPdfEscritorioBtn").addEventListener("click", gerarPDFEscritorio);
         }
 
-
         function gerarPDFBase(doc, tipo) {
-            const getBase64Image = (img) => { if (!img) return null; try { const c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight; c.getContext("2d").drawImage(img, 0, 0); return c.toDataURL("image/png"); } catch (e) { console.error("Erro ao converter imagem para Base64:", e); return null; } };
+            const getBase64Image = (img) => { if (!img) return null; try { const c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight; c.getContext("2d").drawImage(img, 0, 0); return c.toDataURL("image/png"); } catch (e) { return null; } };
 
             const selectedEmpresa = document.getElementById('empresaSelect').value;
             const logoId = (selectedEmpresa === 'polo') ? 'logo-polo' : (selectedEmpresa === 'estilo' ? 'logo-estilo' : 'logo-alianca');
             const logoPrincipalImg = document.getElementById(logoId);
-
             const convenio = document.getElementById('convenioSelect').value;
             const convenioLogoId = (convenio === 'exercito') ? 'convenio-logo-exercito' : 'convenio-logo-siape';
             const convenioImgElem = document.getElementById(convenioLogoId);
 
             const logoPrincipalBase64 = getBase64Image(logoPrincipalImg);
             const convenioBase64 = getBase64Image(convenioImgElem);
-            let y = 15;
-            const pageWidth = doc.internal.pageSize.getWidth();
+            let y = 15; const pageWidth = doc.internal.pageSize.getWidth(); const pageHeight = doc.internal.pageSize.getHeight();
             const logoPrincipalWidth = 40, logoConvenioWidth = 30;
             const logoPrincipalHeight = (logoPrincipalImg && logoPrincipalImg.naturalWidth > 0) ? logoPrincipalImg.naturalHeight * (logoPrincipalWidth / logoPrincipalImg.naturalWidth) : 0;
             const logoConvenioHeight = (convenioImgElem && convenioImgElem.naturalWidth > 0) ? convenioImgElem.naturalHeight * (logoConvenioWidth / convenioImgElem.naturalWidth) : 0;
@@ -1487,18 +1160,13 @@
             if (convenioBase64) doc.addImage(convenioBase64, 'PNG', pageWidth - logoConvenioWidth - 15, y + (maxHeight - logoConvenioHeight) / 2, logoConvenioWidth, logoConvenioHeight);
 
             y += maxHeight > 0 ? maxHeight + 10 : 25;
-
             const operacaoSelectElement = document.getElementById('operacaoSelect');
             const operacaoText = operacaoSelectElement.options[operacaoSelectElement.selectedIndex]?.text || 'Operação Desconhecida';
-
             doc.setFontSize(18); doc.text(`Simulação de ${operacaoText} (${tipo})`, pageWidth / 2, y, { align: 'center' }); y += 20;
 
-            const nomeFinal = calculoDetalhado?.nome || 'Não informado';
-            const cpfFinal = calculoDetalhado?.cpf || 'Não informado';
-
+            const nomeFinal = calculoDetalhado?.nome || 'Não informado'; const cpfFinal = calculoDetalhado?.cpf || 'Não informado';
             doc.setFontSize(12); doc.text("Dados do Cliente", 15, y); y += 8;
             doc.setFontSize(10); doc.text(`Nome: ${nomeFinal}`, 15, y); y += 6; doc.text(`CPF: ${cpfFinal}`, 15, y);
-
 
             if (calculoDetalhado && !calculoDetalhado.tipo.includes('margem_nova')) {
                 const isManualTabActive = document.getElementById('manual-tab').classList.contains('active');
@@ -1509,109 +1177,91 @@
                 }) : parcelasSelecionadasPDF;
 
                 if (listaDeParcelas && listaDeParcelas.length > 0) {
-                    y += 16;
-                    doc.setFontSize(12); doc.text("Contratos Unificados (Originais)", 15, y); y += 8;
-                    doc.setFontSize(9);
+                    y += 16; doc.setFontSize(12); doc.text("Contratos Unificados (Originais)", 15, y); y += 8; doc.setFontSize(9);
                     listaDeParcelas.forEach(p => {
-                        const linhaContrato = `- Banco: ${p.banco} | Parcela: ${p.parcela} | Saldo Aprox.: ${p.saldo} | Status: ${p.status}`;
+                        // ORDEM ALTERADA AQUI: Parcela - Prazo (Status) - Saldo
+                        const linhaContrato = `- Banco: ${p.banco} | Parcela: ${p.parcela} | Prazo: ${p.status} | Saldo Aprox.: ${p.saldo}`;
                         const linhas = doc.splitTextToSize(linhaContrato, pageWidth - 30);
-                        doc.text(linhas, 15, y);
-                        y += (linhas.length * 4);
+                        doc.text(linhas, 15, y); y += (linhas.length * 4);
                     });
-                } else {
-                    y += 10;
-                }
-            } else {
-                y += 10;
-            }
+                } else { y += 10; }
+            } else { y += 10; }
 
-
-            y += 10;
-            doc.setFontSize(12); doc.text("Dados do Novo Contrato", 15, y); y += 8;
-            doc.setFontSize(10);
-
-            let bancoNovoTexto = `Banco: ${calculoDetalhado?.novoBanco || '(Não especificado)'}`;
-            doc.text(bancoNovoTexto, 15, y); y += 6;
-
+            y += 10; doc.setFontSize(12); doc.text("Dados do Novo Contrato", 15, y); y += 8; doc.setFontSize(10);
+            doc.text(`Banco: ${calculoDetalhado?.novoBanco || '(Não especificado)'}`, 15, y); y += 6;
             doc.text(`Prazo: ${calculoDetalhado?.novoPrazo || 'Não inf.'}x`, 15, y); y += 6;
             doc.text(`Valor da Parcela: ${formatarMoeda(calculoDetalhado?.novaParcelaValor)}`, 15, y); y += 6;
+
+            // --- RODAPÉ COM DADOS DA EMPRESA (NEGRITO) ---
+            const empresaInfo = dadosEmpresas[selectedEmpresa] || {};
+            if (empresaInfo.razao) {
+                let footerY = pageHeight - 25;
+                doc.setFontSize(8);
+                doc.setTextColor(0); // Preto
+                doc.setDrawColor(200);
+                doc.line(15, footerY - 5, pageWidth - 15, footerY - 5);
+
+                doc.setFont('helvetica', 'bold'); // TUDO NEGRITO AQUI
+                doc.text(empresaInfo.razao, 15, footerY);
+                doc.text(`CNPJ: ${empresaInfo.cnpj}`, 15, footerY + 4);
+                doc.text(empresaInfo.endereco, 15, footerY + 8);
+
+                doc.setFont('helvetica', 'normal'); // Reseta
+            }
 
             return y;
         }
 
-
         function gerarNomeArquivo(tipoPdf) {
             const dataFormatada = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
             let nomeCliente = (calculoDetalhado?.nome || 'cliente').trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-
             if (!nomeCliente) nomeCliente = 'cliente_desconhecido';
             const operacao = document.getElementById('operacaoSelect').value || 'calculo';
             return `${operacao}_${nomeCliente}_${tipoPdf}_${dataFormatada}.pdf`;
         }
 
         function gerarPDFCliente() {
-            if (!calculoDetalhado || Object.keys(calculoDetalhado).length === 0) {
-                showToast("Nenhum cálculo foi realizado ainda.", "warning");
-                return;
-            }
-            const { jsPDF } = window.jspdf; const doc = new jsPDF();
-            let y = gerarPDFBase(doc, "Cliente");
+            if (!calculoDetalhado || Object.keys(calculoDetalhado).length === 0) { showToast("Nenhum cálculo foi realizado ainda.", "warning"); return; }
+            const { jsPDF } = window.jspdf; const doc = new jsPDF(); let y = gerarPDFBase(doc, "Cliente");
 
             if (dadosNegativado) {
                 y += 10; doc.setFontSize(12); doc.text("Resumo do Cálculo Negativado", 15, y); y += 8; doc.setFontSize(10);
                 doc.text(`Parcelas Originais: ${formatarMoeda(dadosNegativado.totalParcelas)}`, 15, y); y += 6;
                 doc.text(`Valor Negativo Informado: ${formatarMoeda(dadosNegativado.negativo)}`, 15, y); y += 6;
-                doc.text(`Nova Parcela Calculada: ${formatarMoeda(dadosNegativado.novaParcela)}`, 15, y);
-                y += 6;
+                doc.text(`Nova Parcela Calculada: ${formatarMoeda(dadosNegativado.novaParcela)}`, 15, y); y += 6;
             }
 
-            y += 10;
-            doc.setFontSize(12);
-
+            y += 10; doc.setFontSize(12);
             if (calculoDetalhado.tipo.includes('margem_nova')) {
                 doc.text("Resumo da Simulação de Margem Nova", 15, y); y += 8;
                 doc.setFontSize(14); doc.setFont('helvetica', 'bold');
                 doc.text(`Valor Liberado (Estimado): ${formatarMoeda(calculoDetalhado.valorLiberado)}`, 15, y); y += 10;
                 doc.setFontSize(10); doc.setFont('helvetica', 'normal');
                 doc.text(`Valor Total do Contrato: ${formatarMoeda(calculoDetalhado.valorTotalContrato)}`, 15, y);
-
             } else {
                 doc.text("Resumo da Operação Simulada", 15, y); y += 8; doc.setFontSize(10);
                 doc.text(`Saldo Devedor Total a Quitar (Aprox.): ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 10;
                 doc.setFontSize(14); doc.setFont('helvetica', 'bold');
                 doc.text(`Valor Líquido Estimado para o Cliente: ${formatarMoeda(calculoDetalhado.valorOfertaFinal)}`, 15, y);
-                y += 10;
-                doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+                y += 10; doc.setFontSize(10); doc.setFont('helvetica', 'normal');
                 doc.text(`Coeficiente Real (para conferência): ${calculoDetalhado.coeficienteReal ? calculoDetalhado.coeficienteReal.toFixed(8) : 'N/A'}`, 15, y);
             }
-
-            y += 15;
-            doc.setFontSize(8); doc.setFont('helvetica', 'italic');
-            doc.text("Valores aproximados. A proposta final pode variar.", 15, y);
-
+            y += 15; doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.text("Valores aproximados. A proposta final pode variar.", 15, y);
             doc.save(gerarNomeArquivo('cliente'));
         }
 
-
         function gerarPDFEscritorio() {
-            if (!calculoDetalhado || Object.keys(calculoDetalhado).length === 0) {
-                showToast("Nenhum cálculo foi realizado ainda.", "warning");
-                return;
-            }
-            const { jsPDF } = window.jspdf; const doc = new jsPDF();
-            let y = gerarPDFBase(doc, "Escritório");
+            if (!calculoDetalhado || Object.keys(calculoDetalhado).length === 0) { showToast("Nenhum cálculo foi realizado ainda.", "warning"); return; }
+            const { jsPDF } = window.jspdf; const doc = new jsPDF(); let y = gerarPDFBase(doc, "Escritório");
 
             if (dadosNegativado) {
                 y += 10; doc.setFontSize(12); doc.text("Resumo do Cálculo Negativado", 15, y); y += 8; doc.setFontSize(10);
                 doc.text(`Parcelas Originais: ${formatarMoeda(dadosNegativado.totalParcelas)}`, 15, y); y += 6;
                 doc.text(`Valor Negativo Informado: ${formatarMoeda(dadosNegativado.negativo)}`, 15, y); y += 6;
-                doc.text(`Nova Parcela Calculada: ${formatarMoeda(dadosNegativado.novaParcela)}`, 15, y);
-                y += 6;
+                doc.text(`Nova Parcela Calculada: ${formatarMoeda(dadosNegativado.novaParcela)}`, 15, y); y += 6;
             }
 
-            y += 10;
-            doc.setFontSize(12);
-
+            y += 10; doc.setFontSize(12);
             if (calculoDetalhado.tipo.includes('margem_nova')) {
                 doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
                 doc.setFontSize(14); doc.setFont('helvetica', 'bold');
@@ -1619,7 +1269,6 @@
                 doc.setFontSize(10); doc.setFont('helvetica', 'normal');
                 doc.text(`Valor Total do Contrato: ${formatarMoeda(calculoDetalhado.valorTotalContrato)}`, 15, y); y += 6;
                 doc.text(`Coeficiente Informado: ${calculoDetalhado.coef ? calculoDetalhado.coef.toFixed(8) : 'N/A'}`, 15, y);
-
             } else {
                 doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
                 doc.text(`Novo Saldo (Gerado pela Parcela): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
@@ -1646,34 +1295,22 @@
                 doc.text(`Comissão Escritório: - ${formatarMoeda(calculoDetalhado.comissaoEsc)}`, 15, y); y += 8;
                 doc.setFontSize(14); doc.setFont('helvetica', 'bold');
                 doc.text(`Valor Líquido Cliente (Estimado): ${formatarMoeda(calculoDetalhado.valorOfertaFinal)}`, 15, y);
-                y += 10;
-                doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+                y += 10; doc.setFontSize(10); doc.setFont('helvetica', 'normal');
                 doc.text(`Coeficiente Input (Simulação): ${calculoDetalhado.coef ? calculoDetalhado.coef.toFixed(8) : 'N/A'}`, 15, y); y += 6;
                 doc.text(`Coeficiente Real (Calculado): ${calculoDetalhado.coeficienteReal ? calculoDetalhado.coeficienteReal.toFixed(8) : 'N/A'}`, 15, y);
             }
-
-            y += 15;
-            doc.setFontSize(8); doc.setFont('helvetica', 'italic');
-            doc.text("Valores aproximados para análise interna.", 15, y);
-
-
+            y += 15; doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.text("Valores aproximados para análise interna.", 15, y);
             doc.save(gerarNomeArquivo('escritorio'));
         }
-
 
         document.addEventListener('DOMContentLoaded', () => {
             const uploadArea = document.getElementById('upload-label');
             uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('hover'); });
             uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('hover'));
             uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadArea.classList.remove('hover');
-                if (e.dataTransfer.files.length > 0 && e.dataTransfer.files[0].type === "application/pdf") {
-                    document.getElementById('pdf-upload').files = e.dataTransfer.files;
-                    document.getElementById('pdf-upload').dispatchEvent(new Event('change'));
-                } else if (e.dataTransfer.files.length > 0) {
-                    showToast("Por favor, arraste apenas arquivos PDF.", "warning");
-                }
+                e.preventDefault(); uploadArea.classList.remove('hover');
+                if (e.dataTransfer.files.length > 0 && e.dataTransfer.files[0].type === "application/pdf") { document.getElementById('pdf-upload').files = e.dataTransfer.files; document.getElementById('pdf-upload').dispatchEvent(new Event('change')); }
+                else if (e.dataTransfer.files.length > 0) { showToast("Por favor, arraste apenas arquivos PDF.", "warning"); }
             });
 
             document.getElementById("pdf-upload").addEventListener("change", parsearPdf);
@@ -1684,108 +1321,56 @@
 
             document.getElementById("calcForm").addEventListener("submit", function (e) {
                 e.preventDefault();
-
                 const operacao = document.getElementById('operacaoSelect').value;
-                if (!operacao) {
-                    showToast("Selecione um Tipo de Operação.", "warning");
-                    return;
-                }
-
-                if (operacao.includes('margem_nova')) {
-                    calcularMargemNova();
-
-                } else if (operacao.includes('negativado')) {
-                    if (!document.getElementById("negativo").value) {
-                        showToast("Preencha o Valor Negativo do Cliente.", "warning");
-                        document.getElementById("negativo").focus();
-                        return;
-                    }
+                if (!operacao) { showToast("Selecione um Tipo de Operação.", "warning"); return; }
+                if (operacao.includes('margem_nova')) { calcularMargemNova(); }
+                else if (operacao.includes('negativado')) {
+                    if (!document.getElementById("negativo").value) { showToast("Preencha o Valor Negativo do Cliente.", "warning"); document.getElementById("negativo").focus(); return; }
                     const isManual = document.getElementById('manual-tab').classList.contains('active');
                     const hasContracts = isManual ? parcelasManuais.length > 0 : document.querySelectorAll('.loan-checkbox:checked').length > 0;
-                    if (!hasContracts) {
-                        showToast("Selecione ou adicione contratos antes de calcular o negativado.", "warning");
-                        return;
-                    }
+                    if (!hasContracts) { showToast("Selecione ou adicione contratos antes de calcular o negativado.", "warning"); return; }
                     calcularNegativado();
-
                 } else {
-                    if (!document.getElementById("parcela").value || !document.getElementById("saldodevedor").value || !document.getElementById("coeficiente").value || !document.getElementById("comissaoGerente").value || !document.getElementById("comissaoesc").value) {
-                        showToast("Preencha todos os campos obrigatórios da simulação (Parcela, Saldo, Coeficiente, Comissões).", "warning");
-                        return;
+                    if (!document.getElementById("parcela").value || !document.getElementById("saldodevedor").value || !document.getElementById("coeficiente").value || !document.getElementById("comissaoGerente").value) {
+                        showToast("Preencha todos os campos obrigatórios da simulação (Parcela, Saldo, Coeficiente, Comissões).", "warning"); return;
                     }
                     calcularSimulacaoCompleta();
                 }
             });
 
             document.getElementById('goToPortabilidadeBtn').addEventListener('click', () => {
-                if (!calculoDetalhado || calculoDetalhado.novaParcela === undefined) {
-                    showToast("Realize o cálculo de negativado primeiro.", "warning");
-                    return;
-                }
+                if (!calculoDetalhado || calculoDetalhado.novaParcela === undefined) { showToast("Realize o cálculo de negativado primeiro.", "warning"); return; }
                 sessionStorage.setItem('calculoNegativadoData', JSON.stringify(calculoDetalhado));
-                const convenio = document.getElementById('convenioSelect').value;
-                const opValue = (convenio === 'exercito') ? 'portabilidade_exercito' : 'portabilidade_siape';
-
-                document.getElementById('convenioSelect').value = convenio;
-                atualizarOperacoes();
-                document.getElementById('operacaoSelect').value = opValue;
-
-                verificarDadosNegativado();
-                atualizarVisibilidadeUI();
-                document.getElementById('simulacaoCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const convenio = document.getElementById('convenioSelect').value; const opValue = (convenio === 'exercito') ? 'portabilidade_exercito' : 'portabilidade_siape';
+                document.getElementById('convenioSelect').value = convenio; atualizarOperacoes(); document.getElementById('operacaoSelect').value = opValue;
+                verificarDadosNegativado(); atualizarVisibilidadeUI(); document.getElementById('simulacaoCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
-
 
             document.getElementById('goToCompraBtn').addEventListener('click', () => {
-                if (!calculoDetalhado || calculoDetalhado.novaParcela === undefined) {
-                    showToast("Realize o cálculo de negativado primeiro.", "warning");
-                    return;
-                }
+                if (!calculoDetalhado || calculoDetalhado.novaParcela === undefined) { showToast("Realize o cálculo de negativado primeiro.", "warning"); return; }
                 sessionStorage.setItem('calculoNegativadoData', JSON.stringify(calculoDetalhado));
-                const convenio = document.getElementById('convenioSelect').value;
-                const opValue = (convenio === 'exercito') ? 'compra_exercito' : 'compra_siape';
-
-                document.getElementById('convenioSelect').value = convenio;
-                atualizarOperacoes();
-                document.getElementById('operacaoSelect').value = opValue;
-
-                verificarDadosNegativado();
-                atualizarVisibilidadeUI();
-                document.getElementById('simulacaoCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const convenio = document.getElementById('convenioSelect').value; const opValue = (convenio === 'exercito') ? 'compra_exercito' : 'compra_siape';
+                document.getElementById('convenioSelect').value = convenio; atualizarOperacoes(); document.getElementById('operacaoSelect').value = opValue;
+                verificarDadosNegativado(); atualizarVisibilidadeUI(); document.getElementById('simulacaoCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
 
-
             document.querySelectorAll('input[name="quitacao"]').forEach(r => r.addEventListener('change', function () {
-                const quitadoContainer = document.getElementById('quitadoContainer');
-                quitadoContainer.style.display = this.value === 'sim' ? 'block' : 'none';
-                if (this.value === 'nao') {
-                    document.getElementById('valorQuitado').value = '';
-                }
+                const quitadoContainer = document.getElementById('quitadoContainer'); quitadoContainer.style.display = this.value === 'sim' ? 'block' : 'none';
+                if (this.value === 'nao') { document.getElementById('valorQuitado').value = ''; }
             }));
 
             ['#manualParcela', '#negativo', '#parcela', '#saldodevedor', '#desconto', '#valorQuitado', '#comissaoesc', '#mn-parcela'].forEach(selector => {
                 const el = document.querySelector(selector);
                 if (el) {
-                    el.addEventListener('blur', function () {
-                        if (this.value.trim() !== "") {
-                            const valorNum = moedaParaFloat(this.value);
-                            this.value = formatarInputMoeda(valorNum);
-                        }
-                    });
-                    el.addEventListener('focus', function () {
-                        if (this.value.trim() !== "") {
-                            const valorNum = moedaParaFloat(this.value);
-                            this.value = (valorNum === 0) ? '' : valorNum.toString().replace('.', ',');
-                        }
-                    });
+                    el.addEventListener('blur', function () { if (this.value.trim() !== "") { const valorNum = moedaParaFloat(this.value); this.value = formatarInputMoeda(valorNum); } });
+                    el.addEventListener('focus', function () { if (this.value.trim() !== "") { const valorNum = moedaParaFloat(this.value); this.value = (valorNum === 0) ? '' : valorNum.toString().replace('.', ','); } });
                 }
             });
 
-
             verificarDadosNegativado();
+            // CHAMA ATUALIZAR OPERAÇÕES AO INICIAR PARA GARANTIR SIAPE + COMPRA PADRÃO
             atualizarOperacoes();
         });
-
     </script>
 
 </body>
