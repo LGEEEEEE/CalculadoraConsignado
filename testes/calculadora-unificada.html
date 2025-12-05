@@ -3,10 +3,13 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Calculadora Unificada - Consignado</title>
+    <title>Calculadora Unificada - Consignado Pro</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="../icone.ico" type="image/x-icon">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
     <style>
         body {
             font-family: 'Segoe UI', sans-serif;
@@ -20,14 +23,42 @@
             z-index: 1030;
         }
 
+        /* NOVO: Botão Tutorial Fixo */
+        .btn-tutorial {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1030;
+            background-color: #fff;
+            color: #0d6efd;
+            border: 1px solid #0d6efd;
+        }
+
+        .btn-tutorial:hover {
+            background-color: #0d6efd;
+            color: #fff;
+        }
+
         .container {
             max-width: 800px;
             margin: 20px auto;
+            padding-bottom: 100px;
+            margin-top: 60px;
+            /* Espaço para os botões fixos */
         }
 
         .card {
             border: none;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+            color: #333;
+            padding: 1rem;
         }
 
         /* Estilo da Área de Upload */
@@ -38,6 +69,7 @@
             cursor: pointer;
             background-color: #f8f9fa;
             transition: background-color 0.2s, border-color 0.2s;
+            border-radius: 8px;
         }
 
         .upload-area.hover {
@@ -68,8 +100,10 @@
         }
 
         .resultado-final-valor {
-            font-size: 1.75rem;
-            font-weight: bold;
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #198754;
+            /* Verde Sucesso */
         }
 
         .logos {
@@ -81,11 +115,41 @@
             border-top-left-radius: 0;
             border-bottom-left-radius: 0;
         }
+
+        /* Script Box */
+        .script-box {
+            background-color: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            font-family: monospace;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .script-box:hover {
+            background-color: #c8e6c9;
+        }
+
+        /* Resultado Card Style (Igual foto) */
+        .card-resultado-header {
+            background-color: #0d6efd;
+            /* Azul Bradesco/Padrão */
+            color: white;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 15px;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
     </style>
 </head>
 
 <body>
-    <a href="/index.html" class="btn btn-secondary btn-voltar">← Voltar</a>
+    <a href="/index.html" class="btn btn-secondary btn-voltar"><i class="bi bi-arrow-left"></i> Voltar</a>
+
+    <button class="btn btn-sm btn-tutorial rounded-pill" onclick="abrirModalInstrucoes()">
+        <i class="bi bi-question-circle-fill"></i> Tutorial / Integração
+    </button>
 
     <div class="toast-container" id="toast-container"></div>
 
@@ -98,11 +162,11 @@
     </div>
 
     <div class="container" id="page-container">
-        <h1 class="text-center h3 mb-4" id="pageTitle">Calculadora Consignado</h1>
+        <h1 class="text-center h3 mb-4" id="pageTitle"><i class="bi bi-calculator"></i> Calculadora Consignado</h1>
 
         <div class="card mb-4">
             <div class="card-header">
-                <h2 class="h5 mb-0">Seleção da Operação</h2>
+                <h2 class="h5 mb-0"><i class="bi bi-sliders"></i> Seleção da Operação</h2>
             </div>
             <div class="card-body">
                 <div class="row">
@@ -123,12 +187,12 @@
 
         <div class="card mb-4">
             <div class="card-header">
-                <h2 class="h5 mb-0">Empresa Responsável</h2>
+                <h2 class="h5 mb-0"><i class="bi bi-building"></i> Empresa Responsável</h2>
             </div>
             <div class="card-body">
                 <div class="mb-0">
                     <label for="empresaSelect" class="form-label">Empresa Responsável pela Simulação</label>
-                    <select id="empresaSelect" class="form-select">
+                    <select id="empresaSelect" class="form-select" onchange="atualizarScript()">
                         <option value="polo" selected>Polo Promotora</option>
                         <option value="alianca">Aliança Consig</option>
                         <option value="estilo">Estilo Promotora</option>
@@ -142,18 +206,19 @@
         <form id="calcForm">
             <div class="card mb-4" id="clienteCard">
                 <div class="card-header">
-                    <h2 class="h5 mb-0">1. Dados do Cliente e Contratos</h2>
+                    <h2 class="h5 mb-0"><i class="bi bi-person-vcard"></i> 1. Dados do Cliente e Contratos</h2>
                 </div>
                 <div class="card-body">
                     <ul class="nav nav-tabs" id="entryTab" role="tablist">
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="pdf-tab" data-bs-toggle="tab"
-                                data-bs-target="#pdf-tab-pane" type="button" role="tab">Carregar Extrato</button>
+                                data-bs-target="#pdf-tab-pane" type="button" role="tab"><i
+                                    class="bi bi-file-earmark-pdf"></i> Carregar Extrato</button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="manual-tab" data-bs-toggle="tab"
-                                data-bs-target="#manual-tab-pane" type="button" role="tab">Inserir Manualmente /
-                                Integração</button>
+                                data-bs-target="#manual-tab-pane" type="button" role="tab"><i
+                                    class="bi bi-keyboard"></i> Inserir / Integração</button>
                         </li>
                     </ul>
 
@@ -161,7 +226,8 @@
                         <div class="tab-pane fade show active p-3" id="pdf-tab-pane" role="tabpanel">
                             <input type="file" id="pdf-upload" accept=".pdf">
                             <label for="pdf-upload" class="upload-area" id="upload-label">
-                                <span id="upload-text">Clique ou arraste o extrato PDF</span>
+                                <span id="upload-text"><i class="bi bi-cloud-upload fs-4"></i><br>Clique ou arraste o
+                                    extrato PDF</span>
                                 <div id="loading" class="d-none align-items-center justify-content-center mt-2">
                                     <div class="spinner-border text-primary" id="loading-spinner" role="status"></div>
                                     <strong class="ms-2" id="loading-text">Analisando...</strong>
@@ -169,8 +235,9 @@
                             </label>
 
                             <div id="listaEmprestimos" class="mt-3" style="display:none;"></div>
-                            <button type="button" id="unificarBtnPdf" class="btn btn-info w-100 mt-3"
-                                style="display:none;">Usar Contratos Selecionados</button>
+                            <button type="button" id="unificarBtnPdf" class="btn btn-info w-100 mt-3 text-white"
+                                style="display:none;"><i class="bi bi-check-circle"></i> Usar Contratos
+                                Selecionados</button>
                         </div>
 
                         <div class="tab-pane fade p-3" id="manual-tab-pane" role="tabpanel">
@@ -179,14 +246,14 @@
                                 <h4 class="h6 mb-0 text-primary">Entrada de Dados</h4>
                                 <button type="button" class="btn btn-sm btn-info text-white"
                                     onclick="abrirModalInstrucoes()">
-                                    ⚙️ Configurar Integração
+                                    <i class="bi bi-gear-fill"></i> Configurar Integração
                                 </button>
                             </div>
 
                             <div class="row mb-3">
                                 <div class="col-md-6 mb-2">
                                     <label for="clienteNome" class="form-label">Nome do Cliente</label>
-                                    <input type="text" id="clienteNome" class="form-control">
+                                    <input type="text" id="clienteNome" class="form-control" onblur="atualizarScript()">
                                 </div>
                                 <div class="col-md-6 mb-2">
                                     <label for="clienteCpf" class="form-label">CPF do Cliente</label>
@@ -196,7 +263,7 @@
 
                                         <button class="btn btn-primary dropdown-toggle btn-search-group" type="button"
                                             data-bs-toggle="dropdown" aria-expanded="false">
-                                            🔍 Buscar no Sistema
+                                            <i class="bi bi-search"></i> Buscar no Sistema
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end">
                                             <li><a class="dropdown-item" href="#" onclick="buscarClientePolo()">🔴 Abrir
@@ -210,8 +277,9 @@
                                 </div>
                             </div>
 
-                            <div class="p-3 mb-3 border rounded">
-                                <h3 class="fs-5 text-center mb-3">Adicionar Contratos</h3>
+                            <div class="p-3 mb-3 border rounded bg-light">
+                                <h3 class="fs-5 text-center mb-3"><i class="bi bi-plus-circle"></i> Adicionar Contratos
+                                </h3>
                                 <div class="row g-2">
                                     <div class="col-md-7 mb-2">
                                         <label for="manualBanco" class="form-label">Banco</label>
@@ -243,7 +311,8 @@
 
             <div class="card" id="simulacaoCard">
                 <div class="card-header">
-                    <h2 class="h5 mb-0" id="simulacaoTitle">2. Dados da Simulação</h2>
+                    <h2 class="h5 mb-0" id="simulacaoTitle"><i class="bi bi-calculator-fill"></i> 2. Dados da Simulação
+                    </h2>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -259,7 +328,7 @@
                             </div>
                         </div>
 
-                        <div id="simulacao-fields" style="display:none;">
+                        <div id="simulacao-fields" style="display:block;">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="parcela" class="form-label">Valor Total da Parcela</label>
@@ -317,7 +386,7 @@
                                 </div>
                             </div>
 
-                            <div id="compra-fields" style="display:none;">
+                            <div id="compra-fields" style="display:block;">
                                 <div class="col-md-12 mb-3">
                                     <label for="tipoCompra" class="form-label">Tipo de Compra</label>
                                     <select id="tipoCompra" class="form-select">
@@ -348,7 +417,8 @@
                             <div class="row mb-3">
                                 <div class="col-md-6 mb-2">
                                     <label for="mn-clienteNome" class="form-label">Nome do Cliente</label>
-                                    <input type="text" id="mn-clienteNome" class="form-control" required>
+                                    <input type="text" id="mn-clienteNome" class="form-control" required
+                                        onblur="atualizarScript()">
                                 </div>
                                 <div class="col-md-6 mb-2">
                                     <label for="mn-clienteCpf" class="form-label">CPF do Cliente</label>
@@ -382,10 +452,63 @@
                     </div>
                 </div>
                 <div class="card-footer">
-                    <button class="btn btn-primary w-100" type="submit" id="submitBtn">Calcular</button>
+                    <button class="btn btn-primary w-100 btn-lg" type="submit" id="submitBtn"><i
+                            class="bi bi-calculator"></i> Calcular</button>
                 </div>
             </div>
         </form>
+
+        <div class="card mt-4 border-success mb-4">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-whatsapp"></i> 3. Script de Abordagem</span>
+                <span class="badge bg-white text-success">Automático</span>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3 g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small">Seu Nome (Correspondente)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                            <input type="text" class="form-control" id="nomeCorrespondente"
+                                placeholder="Ex: Luiz Gustavo" onblur="atualizarScript()">
+                        </div>
+                        <div class="form-text">Salvo automaticamente no navegador.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small">Telefone do Cliente (Opcional)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                            <input type="text" class="form-control" id="telefoneCliente" placeholder="5511999999999">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small">Tratamento:</label>
+                    <div class="btn-group w-100" role="group">
+                        <input type="radio" class="btn-check" name="generoCliente" id="generoM" value="M" checked
+                            onchange="atualizarScript()">
+                        <label class="btn btn-outline-success" for="generoM">O Senhor</label>
+
+                        <input type="radio" class="btn-check" name="generoCliente" id="generoF" value="F"
+                            onchange="atualizarScript()">
+                        <label class="btn btn-outline-success" for="generoF">A Senhora</label>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small">Mensagem Gerada (Clique para copiar):</label>
+                    <textarea id="scriptOutput" class="form-control script-box" rows="11" readonly
+                        onclick="copiarScript()"></textarea>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button class="btn btn-success fw-bold" type="button" onclick="abrirWhatsApp()">
+                        <i class="bi bi-whatsapp"></i> Iniciar Conversa no WhatsApp Web
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <div id="resultadoFinal" class="mt-4" style="display:none;"></div>
         <div id="resultadoNegativadoContainer" class="mt-4" style="display:none;">
@@ -406,34 +529,152 @@
     </div>
 
     <div class="modal fade" id="modalInstrucoes" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title">Configurar Integração Inteligente</h5>
+                    <h5 class="modal-title"><i class="bi bi-question-circle-fill"></i> Central de Ajuda</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="alert alert-success">
-                        <strong>Um botão para todos!</strong> O código abaixo detecta automaticamente se você está no
-                        <em>GConsig/Polo</em> ou no <em>Corban</em>.
+
+                <div class="modal-body p-0">
+                    <ul class="nav nav-tabs nav-fill" id="helpTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active fw-bold" id="tutorial-tab" data-bs-toggle="tab"
+                                data-bs-target="#tutorial-pane" type="button">
+                                <i class="bi bi-book"></i> Como Usar a Calculadora
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold" id="integracao-tab" data-bs-toggle="tab"
+                                data-bs-target="#integracao-pane" type="button">
+                                <i class="bi bi-lightning-charge-fill"></i> Instalar Integração (Robô)
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content p-4" id="helpTabContent">
+
+                        <div class="tab-pane fade show active" id="tutorial-pane" role="tabpanel">
+                            <h5 class="text-primary mb-3">Guia Rápido de Uso</h5>
+
+                            <div class="accordion" id="accordionTutorial">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#passo1">
+                                            <strong>1. Configuração Inicial</strong>
+                                        </button>
+                                    </h2>
+                                    <div id="passo1" class="accordion-collapse collapse show"
+                                        data-bs-parent="#accordionTutorial">
+                                        <div class="accordion-body small">
+                                            No topo da página, selecione o <strong>Convênio</strong> (SIAPE ou Exército)
+                                            e o <strong>Tipo de Operação</strong> (Compra, Portabilidade, etc.).
+                                            Isso ajusta automaticamente os coeficientes e as regras de cálculo.
+                                            Selecione também a <strong>Empresa Responsável</strong> para que o logotipo
+                                            correto saia no PDF.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button"
+                                            data-bs-toggle="collapse" data-bs-target="#passo2">
+                                            <strong>2. Inserção de Dados (Cliente e Contratos)</strong>
+                                        </button>
+                                    </h2>
+                                    <div id="passo2" class="accordion-collapse collapse"
+                                        data-bs-parent="#accordionTutorial">
+                                        <div class="accordion-body small">
+                                            Você tem três formas de inserir os dados:
+                                            <ul>
+                                                <li><strong>PDF:</strong> Arraste o extrato do cliente para a área
+                                                    pontilhada. O sistema lerá os contratos automaticamente.</li>
+                                                <li><strong>Integração (Recomendado):</strong> Use o botão "Configurar
+                                                    Integração" (veja a próxima aba) para puxar dados direto do CRM
+                                                    (Polo/Corban).</li>
+                                                <li><strong>Manual:</strong> Vá na aba "Inserir Manualmente" e digite os
+                                                    dados contrato por contrato.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button"
+                                            data-bs-toggle="collapse" data-bs-target="#passo3">
+                                            <strong>3. Simulação e Resultados</strong>
+                                        </button>
+                                    </h2>
+                                    <div id="passo3" class="accordion-collapse collapse"
+                                        data-bs-parent="#accordionTutorial">
+                                        <div class="accordion-body small">
+                                            Após carregar os contratos, clique em <strong>"Usar Selecionados"</strong>
+                                            ou vá para o card de Simulação.
+                                            <br>Verifique os valores de Parcela Total e Saldo Devedor. Ajuste o
+                                            <strong>Coeficiente</strong> e as <strong>Comissões</strong> se necessário.
+                                            <br>Clique em <strong>CALCULAR AGORA</strong> para ver o valor líquido
+                                            estimado e gerar os PDFs.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button"
+                                            data-bs-toggle="collapse" data-bs-target="#passo4">
+                                            <strong>4. Script de Vendas (WhatsApp)</strong>
+                                        </button>
+                                    </h2>
+                                    <div id="passo4" class="accordion-collapse collapse"
+                                        data-bs-parent="#accordionTutorial">
+                                        <div class="accordion-body small">
+                                            No final da página, o sistema gera uma mensagem pronta.
+                                            <ul>
+                                                <li>O sistema detecta o horário (Bom dia/Boa tarde).</li>
+                                                <li>Tenta identificar o gênero do cliente pelo nome (O Senhor/A
+                                                    Senhora).</li>
+                                                <li>Seu nome fica salvo para as próximas vezes.</li>
+                                            </ul>
+                                            Clique em <strong>Iniciar Conversa</strong> para abrir o WhatsApp Web
+                                            diretamente.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="integracao-pane" role="tabpanel">
+                            <div class="alert alert-success small">
+                                <i class="bi bi-robot"></i> <strong>Automação:</strong> Este código cria um botão nos
+                                seus favoritos que "lê" a tela do CRM (Polo/Corban) e preenche a calculadora sozinho.
+                            </div>
+
+                            <p class="small fw-bold">Como instalar:</p>
+                            <ol class="small">
+                                <li>Copie o código da caixa abaixo.</li>
+                                <li>No seu navegador, crie um novo favorito na barra de favoritos.</li>
+                                <li>No campo <strong>Nome</strong>, digite: <code>>>> ENVIAR DADOS</code>.</li>
+                                <li>No campo <strong>URL</strong>, cole o código copiado.</li>
+                                <li>Pronto! Quando estiver na tela do cliente no CRM, clique nesse favorito.</li>
+                            </ol>
+
+                            <label class="form-label small text-muted">Código Javascript:</label>
+                            <textarea class="form-control mb-3 bg-light" rows="6" readonly id="codeUniversal"
+                                style="font-family: monospace; font-size: 0.7rem;">javascript:(function(){const moeda=(v)=>parseFloat(String(v).replace("R$","").replace(/\./g,"").replace(",","."))||0;let telefone="";try{if(document.querySelector('a[href^="tel:"]'))telefone=document.querySelector('a[href^="tel:"]').innerText.replace(/\D/g,'');else if(document.querySelector('a[href^="callto:"]'))telefone=document.querySelector('a[href^="callto:"]').getAttribute('href').replace('callto:','').replace(/\D/g,'');else{const hot=document.getElementById('telefonesHot');if(hot)telefone=hot.innerText.match(/\d{10,11}/)?.[0]||""}}catch(e){console.log("Tel err")}if(document.getElementById("tbodyContratos")){try{console.log("POLO");const nome=document.querySelector('span[data-info="Nome"]')?.innerText?.trim()||"Cliente";const cpf=document.querySelector('span[data-info="CPF"]')?.innerText?.replace(/\D/g,"")||"";const margem=moeda(document.getElementById("margem_consignavel_livre")?.value||"0");const rows=document.querySelectorAll("#tbodyContratos tr");let contratos=[];rows.forEach(row=>{try{const inputs=row.querySelectorAll("input");let parcela=0,saldo=0,prazo=0;inputs.forEach(i=>{if(i.id.includes("vl_parcela_"))parcela=moeda(i.value);if(i.id.includes("vl_quitacao_"))saldo=moeda(i.value);if(i.id.includes("valida_prazo_"))prazo=parseInt(i.value)||0});let banco="Desconhecido";const copyIcon=row.querySelector(".copy");if(copyIcon)banco=copyIcon.getAttribute("val-banco")||"Banco";if(parcela>0&&prazo>0){contratos.push({banco:banco,parcela:parcela,saldoDevedorExato:saldo,prazoRestante:prazo,origem:"POLO"})}}catch(err){console.error(err)}});enviar(nome,cpf,contratos,"POLO (GConsig)",margem,telefone);return}catch(e){console.error("Erro Polo:",e)}}if(document.getElementById("cliNome2")||document.getElementById("cliCpf2")){try{console.log("CORBAN");let nome=document.getElementById('cliNome')?.value||document.querySelector('#cliNome2')?.innerText||"Cliente";let cpf=document.getElementById('cliCpf')?.value||document.querySelector('#cliCpf2')?.innerText||"";cpf=cpf.replace(/\D/g,'');const margem=moeda(document.getElementById("parcela_9")?.value||"0");const inputs=document.querySelectorAll('input[name*="[anterior_parcela]"]');let contratos=[];inputs.forEach(input=>{try{let match=input.name.match(/contratos\[(\d+)\]/);if(match){let id=match[1];let getVal=(n)=>(document.querySelector(`input[name="contratos[${id}][${n}]"]`)?.value||"0");let banco=document.querySelector(`input[name="contratos[${id}][nome_banco_anterior]"]`)?.value||document.querySelector(`#banco_${id} option:checked`)?.text||"Banco";let valP=parseFloat(input.value);let pagas=parseInt(getVal('anterior_pagas'))||0;let total=parseInt(getVal('anterior_prazo'))||0;let saldo=moeda(getVal('saldo_devedor'))||0;if(valP>0&&total>0){contratos.push({banco:banco,parcela:valP,pagas:pagas,total:total,saldoDevedorExato:saldo,origem:"CORBAN"})}}}catch(e){console.error(e)}});if(contratos.length>0||margem>0)return enviar(nome,cpf,contratos,"CORBAN",margem,telefone)}catch(e){console.error("Erro Corban:",e)}}alert("⚠️ Sistema não detectado. Abra o CRM do cliente primeiro.");function enviar(nome,cpf,contratos,sistema,margem=0,tel=""){if(window.opener){window.opener.postMessage({tipo:'DADOS_CONSIG_COMPLETO',nome:nome,cpf:cpf,contratos:contratos,sistema:sistema,margem:margem,telefone:tel},'*');alert(`✅ Enviado!\nTel: ${tel}\nContratos: ${contratos.length}`);}else{alert('⚠️ Calculadora não encontrada! \nVocê precisa abrir a página do CRM *através* do link na Calculadora.');}}})();</textarea>
+
+                            <button class="btn btn-dark w-100 shadow-sm"
+                                onclick="navigator.clipboard.writeText(document.getElementById('codeUniversal').value); alert('Código copiado para a área de transferência!')">
+                                <i class="bi bi-clipboard"></i> COPIAR CÓDIGO
+                            </button>
+                        </div>
                     </div>
-
-                    <p><strong>Passo a passo:</strong></p>
-                    <ol>
-                        <li>Copie o código abaixo.</li>
-                        <li>Crie um favorito no seu navegador (ex: na barra de favoritos).</li>
-                        <li>No campo URL/Endereço do favorito, cole o código.</li>
-                        <li>Dê o nome de <strong>>>> ENVIAR DADOS</strong>.</li>
-                    </ol>
-
-                    <textarea class="form-control mb-3" rows="6" readonly
-                        id="codeUniversal">javascript:(function(){const moeda=(v)=>parseFloat(String(v).replace("R$","").replace(/\./g,"").replace(",", "."))||0;if(document.getElementById("tbodyContratos")){try{console.log("Detectado sistema: POLO/GCONSIG");const nome=document.querySelector('span[data-info="Nome"]')?.innerText?.trim()||"Cliente";const cpf=document.querySelector('span[data-info="CPF"]')?.innerText?.replace(/\D/g,"")||"";const rows=document.querySelectorAll("#tbodyContratos tr");let contratos=[];rows.forEach(row=>{try{const inputs=row.querySelectorAll("input");let parcela=0,saldo=0,prazo=0;inputs.forEach(i=>{if(i.id.includes("vl_parcela_"))parcela=moeda(i.value);if(i.id.includes("vl_quitacao_"))saldo=moeda(i.value);if(i.id.includes("valida_prazo_"))prazo=parseInt(i.value)||0});let banco="Desconhecido";const copyIcon=row.querySelector(".copy");if(copyIcon)banco=copyIcon.getAttribute("val-banco")||"Banco";if(parcela>0){contratos.push({banco:banco,parcela:parcela,saldoDevedorExato:saldo,prazoRestante:prazo,origem:"POLO"})}}catch(err){console.error("Erro linha Polo",err)}});if(contratos.length>0)return enviar(nome,cpf,contratos,"POLO (GConsig)")}catch(e){console.error("Erro Polo:",e)}}if(document.querySelectorAll('input[name*="[anterior_parcela]"]').length>0){try{console.log("Detectado sistema: CORBAN");let nome=document.getElementById('cliNome')?.value||document.querySelector('#cliNome2')?.innerText||"Cliente";let cpf=document.getElementById('cliCpf')?.value||document.querySelector('#cliCpf2')?.innerText||"";cpf=cpf.replace(/\D/g,'');const inputs=document.querySelectorAll('input[name*="[anterior_parcela]"]');let contratos=[];inputs.forEach(input=>{try{let match=input.name.match(/contratos\[(\d+)\]/);if(match){let id=match[1];let getVal=(n)=>(document.querySelector(`input[name="contratos[${id}][${n}]"]`)?.value||"0");let banco=document.querySelector(`input[name="contratos[${id}][nome_banco_anterior]"]`)?.value||"Banco";let valP=parseFloat(input.value);let pagas=parseInt(getVal('anterior_pagas'))||0;let total=parseInt(getVal('anterior_prazo'))||0;if(valP>0){contratos.push({banco:banco,parcela:valP,pagas:pagas,total:total,origem:"CORBAN"})}}}catch(e){console.error(e)}});if(contratos.length>0)return enviar(nome,cpf,contratos,"CORBAN")}catch(e){console.error("Erro Corban:",e)}}alert("⚠️ Não foi possível detectar contratos do Polo ou Corban nesta página.");function enviar(nome,cpf,contratos,sistema){if(window.opener){window.opener.postMessage({tipo:'DADOS_CONSIG_COMPLETO',nome:nome,cpf:cpf,contratos:contratos,sistema:sistema},'*');alert(`✅ ${contratos.length} contratos enviados via ${sistema}!`);}else{alert('⚠️ A Calculadora não foi encontrada! (Você abriu esta página através dela?)');}}})();</textarea>
-                    <button class="btn btn-dark w-100"
-                        onclick="navigator.clipboard.writeText(document.getElementById('codeUniversal').value); alert('Código copiado!')">COPIAR
-                        CÓDIGO INTELIGENTE</button>
                 </div>
-                <div class="modal-footer"><button type="button" class="btn btn-secondary"
-                        data-bs-dismiss="modal">Fechar</button></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
             </div>
         </div>
     </div>
@@ -468,18 +709,25 @@
             }
         };
 
+        // NOVO: Nomes para o Script de WhatsApp (Maleável)
+        const nomesEmpresasScript = {
+            'polo': 'Pollo Promotora',
+            'alianca': 'Aliança Consig',
+            'estilo': 'Estilo Promotora'
+        };
+
         // Configurações das Operações
         const operacoes = {
             exercito: [
-                { value: 'portabilidade_exercito', text: 'Portabilidade', coef: '0.01930' },
                 { value: 'compra_exercito', text: 'Compra de Dívida', coef: '0.02' },
+                { value: 'portabilidade_exercito', text: 'Portabilidade', coef: '0.01930' },
                 { value: 'margem_refin_exercito', text: 'Margem + Refin Bradesco', coef: '0.02' },
                 { value: 'margem_nova_exercito', text: 'Margem Nova', coef: '0.023' },
                 { value: 'negativado_exercito', text: 'Análise de Negativado', coef: '' }
             ],
             siape: [
-                { value: 'portabilidade_siape', text: 'Portabilidade', coef: '0.01930' },
                 { value: 'compra_siape', text: 'Compra de Dívida', coef: '0.02' },
+                { value: 'portabilidade_siape', text: 'Portabilidade', coef: '0.01930' },
                 { value: 'margem_nova_siape', text: 'Margem Nova', coef: '0.023' },
                 { value: 'negativado_siape', text: 'Análise de Negativado', coef: '' }
             ]
@@ -550,12 +798,107 @@
             showToast("Aguardando... Use o Favorito 'ENVIAR' na aba do GConsig!", "info");
         }
 
+        // NOVO: --- LÓGICA SCRIPT MALEÁVEL E INTELIGENTE ---
+        function detectingGenero(nome) {
+            if (!nome) return 'M';
+            const n = nome.trim().split(" ")[0].toLowerCase();
+            if (n.endsWith('a') && !['luca', 'jeova', 'elias', 'jonas', 'lucas', 'messias'].includes(n)) return 'F';
+            return 'M';
+        }
+
+        function saudacaoHorario() {
+            const h = new Date().getHours();
+            const m = new Date().getMinutes();
+            if (h < 12 || (h === 12 && m < 30)) return "bom dia";
+            return "boa tarde";
+        }
+
+        function atualizarScript() {
+            const nomeCliente = document.getElementById('clienteNome').value || document.getElementById('mn-clienteNome').value || "";
+            const nomeCorrespondente = document.getElementById('nomeCorrespondente').value || "[SEU NOME]";
+            // Salva no storage
+            localStorage.setItem('nomeCorrespondente', nomeCorrespondente);
+
+            // Seleção da Empresa Maleável
+            const empresaKey = document.getElementById('empresaSelect').value;
+            const nomeEmpresa = nomesEmpresasScript[empresaKey] || "Aliança Consig";
+
+            const genero = document.querySelector('input[name="generoCliente"]:checked').value;
+            const saudacao = saudacaoHorario();
+            const tratamento = genero === 'M' ? "Seu" : "Dona";
+            const pronomeObliquo = genero === 'M' ? "o senhor" : "a senhora";
+
+            const partes = nomeCliente.split(" ");
+            const nomeFormatado = (partes.length > 1 && partes[1].length <= 3) ? partes[0] + " " + partes[1] : partes[0];
+
+            const script = `Olá, ${saudacao}! Tudo bem? 
+Nesse número eu falo com ${genero === 'M' ? 'o' : 'a'} ${tratamento} ${nomeFormatado}? 
+
+Meu nome é ${nomeCorrespondente}, sou correspondente autorizado do Banco Bradesco pela ${nomeEmpresa}.
+
+O motivo do meu contato é uma oportunidade que abriu hoje para ${pronomeObliquo}. Nós sabemos que, devido a algumas regras bancárias atuais, está mais difícil conseguir crédito novo. Porém, o Bradesco liberou uma campanha especial de *Compra de Dívida*.
+
+Como funciona? A ${nomeEmpresa} quita seus contratos antigos (aqueles com juros altos) e traz para o Bradesco com uma taxa menor. Isso gera um ótimo valor de troco para ${pronomeObliquo}, *sem mexer no seu salário e sem aumentar o valor que ${pronomeObliquo} já paga hoje*.
+
+Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${pronomeObliquo} ver quanto libera de valor. Podemos verificar?`;
+
+            document.getElementById('scriptOutput').value = script;
+        }
+
+        function copiarScript() {
+            const t = document.getElementById('scriptOutput'); t.select(); navigator.clipboard.writeText(t.value); showToast("Script Copiado!", "success");
+        }
+
+        function abrirWhatsApp() {
+            const tel = document.getElementById('telefoneCliente').value.replace(/\D/g, '');
+            const text = encodeURIComponent(document.getElementById('scriptOutput').value);
+            
+            if (tel.length < 10) return showToast("Preencha um telefone válido.", "warning");
+            
+            // A MUDANÇA ESTÁ AQUI: Trocamos '_blank' por 'janelaWhatsapp'
+            // Isso força o navegador a usar sempre a mesma aba
+            window.open(`https://wa.me/55${tel}?text=${text}`, 'janelaWhatsapp');
+        }
+
+        // NOVO: --- INTEGRAÇÃO E MENSAGENS (COM TELEFONE) ---
         window.addEventListener("message", (event) => {
             const dados = event.data;
-            if (dados && dados.tipo === 'DADOS_CONSIG_COMPLETO') {
-                if (dados.nome) document.getElementById('clienteNome').value = dados.nome;
-                if (dados.cpf) document.getElementById('clienteCpf').value = dados.cpf;
+            console.log("Payload recebido:", dados); // Debug para console
 
+            if (dados && dados.tipo === 'DADOS_CONSIG_COMPLETO') {
+
+                // Preenche dados
+                if (dados.nome) {
+                    const n = dados.nome;
+                    document.getElementById('clienteNome').value = n;
+                    document.getElementById('mn-clienteNome').value = n;
+                    // Auto Gênero
+                    if (detectingGenero(n) === 'F') document.getElementById('generoF').click();
+                    else document.getElementById('generoM').click();
+                }
+                if (dados.cpf) {
+                    document.getElementById('clienteCpf').value = dados.cpf;
+                    document.getElementById('mn-clienteCpf').value = dados.cpf;
+                }
+                // Recebe telefone
+                if (dados.telefone) {
+                    document.getElementById('telefoneCliente').value = dados.telefone;
+                }
+
+                // Lógica de Margem Nova
+                if (dados.margem && dados.margem > 0) {
+                    const margemFormatada = formatarInputMoeda(dados.margem);
+                    document.getElementById('mn-parcela').value = margemFormatada;
+
+                    // Se só tem margem e nenhum contrato, muda a tela
+                    if ((!dados.contratos || dados.contratos.length === 0)) {
+                        document.getElementById('operacaoSelect').value = (document.getElementById('convenioSelect').value === 'exercito') ? 'margem_nova_exercito' : 'margem_nova_siape';
+                        atualizarVisibilidadeUI();
+                        showToast(`Apenas Margem de R$ ${margemFormatada} detectada. Mudando para Margem Nova.`, "info");
+                    }
+                }
+
+                // Lógica de Contratos
                 if (dados.contratos && dados.contratos.length > 0) {
                     parcelasManuais = [];
                     dados.contratos.forEach(c => {
@@ -563,23 +906,27 @@
                         let pagas = c.pagas || 0;
                         let total = c.total || 0;
 
+                        // Prioriza saldo exato vindo da integração
                         if (c.saldoDevedorExato && c.saldoDevedorExato > 0) {
                             saldoReal = c.saldoDevedorExato;
                         } else {
+                            // Estimativa padrão
                             let prazoRestante = c.prazoRestante || ((total > 0) ? total - pagas : 0);
                             if (prazoRestante > 0) {
                                 saldoReal = c.parcela * prazoRestante * 0.70;
                             }
                         }
 
+                        // Ajuste de prazos específicos do Pollo
                         if (dados.sistema && dados.sistema.includes('POLO') && c.prazoRestante > 0) {
-                            total = 96; pagas = 96 - c.prazoRestante;
+                            total = 96;
+                            pagas = 96 - c.prazoRestante;
                             if (pagas < 0) { total = c.prazoRestante; pagas = 0; }
                         } else if (!total && c.prazoRestante > 0) {
                             total = c.prazoRestante; pagas = 0;
                         }
 
-                        let nomeBancoLimpo = c.banco ? c.banco.replace(/^\d+\s*-\s*/, '') : 'Banco';
+                        let nomeBancoLimpo = c.banco ? c.banco.replace(/^\d+\s*-\s*/, '').replace('BANCO', '').trim() : 'Banco';
 
                         parcelasManuais.push({
                             banco: nomeBancoLimpo,
@@ -591,10 +938,15 @@
                         });
                     });
                     renderizarListaManual();
+
                     const btnManual = document.getElementById('manual-tab');
-                    if (btnManual && window.bootstrap) { const tab = new bootstrap.Tab(btnManual); tab.show(); }
-                    showToast(`${dados.contratos.length} contratos importados via ${dados.sistema}!`, "success");
+                    if (btnManual && window.bootstrap) {
+                        const tab = new bootstrap.Tab(btnManual);
+                        tab.show();
+                    }
+                    showToast(`✅ ${dados.contratos.length} contratos importados do ${dados.sistema}!`, "success");
                 }
+                atualizarScript(); // Atualiza o script com os novos dados
             }
         });
 
@@ -744,6 +1096,7 @@
         }
 
         async function processarPdfExercicio(text) {
+            console.log("PDF Exército iniciado..."); // DEPURAÇÃO
             let cleanText = text.replace(/--- FIM DA PÁGINA \d+ ---/g, '').replace(/Consignatária\n\s*▴\s*▾[\s\S]+?Situação\n\s*▴\s*▾/g, '').replace(/Consignatária Nº Serviço Inclusão Vir.prest. Virfolha Nº Pagas Situação/g, '');
             const listaDiv = document.getElementById("listaEmprestimos"); listaDiv.innerHTML = ''; let loansFound = 0;
             const isOcrText = cleanText.includes('O74-SABEMI-') || cleanText.includes('R$834/12');
@@ -809,6 +1162,7 @@
         }
 
         async function processarPdfSiape(text) {
+            console.log("PDF SIAPE Iniciado..."); // DEPURAÇÃO
             const infoRegexNovo = /CPF\nMatrícula\nNome\n([^\n]+)\n(?:[^\n]*\n)?([^\n]+)/;
             const headerRegexAntigo = /Órgão\nCPF\nMatrícula\nNome\n[^\n]+\n([^\n]+)\n[^\n]+\n([^\n]+)/;
             let infoMatchNovo = text.match(infoRegexNovo); let headerMatchAntigo = text.match(headerRegexAntigo);
@@ -884,6 +1238,7 @@
                 let extractedText = '';
                 try {
                     const typedarray = new Uint8Array(this.result); const pdf = await pdfjsLib.getDocument(typedarray).promise; let textFound = false;
+                    console.log("PDF loaded. Pages:", pdf.numPages);
                     for (let i = 1; i <= pdf.numPages; i++) { const page = await pdf.getPage(i); const textContent = await page.getTextContent(); if (textContent.items.length > 0) textFound = true; extractedText += textContent.items.map(item => item.str).join('\n') + '\n\n'; }
                     const hasRealData = extractedText.toUpperCase().includes('CONSIGNATÁRIA') || extractedText.toUpperCase().includes('EMPRÉSTIMO') || extractedText.toUpperCase().includes('CPF') || extractedText.toUpperCase().includes('RUBRICA');
                     if (extractedText.trim().length < 50 || !hasRealData) { textFound = false; console.log("Texto 'limpo' não parece válido. Forçando OCR (Plano B)."); }
@@ -1046,94 +1401,234 @@
             calculoDetalhado = { tipo: operacao, nome: nome, cpf: cpf, novoBanco: banco, novaParcelaValor: parcela, coef: coeficiente, novoPrazo: prazo, valorLiberado: valorLiberado, valorTotalContrato: valorTotalContrato };
 
             const resultadoDiv = document.getElementById("resultadoFinal");
-            resultadoDiv.innerHTML = `<div class="card"><div class="card-header bg-primary text-white"><h3 class="h5 mb-0">Resultado da Simulação de Margem Nova</h3></div><div class="card-body"><div class="text-center mb-4 border-bottom pb-3"><h4 class="text-muted">Valor Liberado (Estimado)</h4><p class="resultado-final-valor text-success">${formatarMoeda(valorLiberado)}</p></div><h5>Detalhamento:</h5><ul class="list-group list-group-flush"><li class="list-group-item d-flex justify-content-between"><span>Valor da Parcela:</span> <strong>${formatarMoeda(parcela)}</strong></li><li class="list-group-item d-flex justify-content-between"><span>Prazo:</span> <strong>${prazo} meses</strong></li><li class="list-group-item d-flex justify-content-between"><span>Coeficiente Usado:</span> <strong>${coeficiente.toFixed(8)}</strong></li><li class="list-group-item d-flex justify-content-between bg-light-subtle"><strong>Valor Total do Contrato:</strong> <strong class="text-primary">${formatarMoeda(valorTotalContrato)}</strong></li></ul></div><div class="card-footer d-grid gap-2 d-sm-flex justify-content-sm-center"><button id="baixarPdfClienteBtn" class="btn btn-success" type="button">Baixar PDF (Cliente)</button><button id="baixarPdfEscritorioBtn" class="btn btn-secondary" type="button">Baixar PDF (Escritório)</button></div></div>`;
+            resultadoDiv.innerHTML = `
+                <div class="card border-primary">
+                    <div class="card-header card-resultado-header bg-primary text-white">
+                        Resultado da Simulação (Margem Nova)
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="mb-4">
+                            <small class="text-muted text-uppercase fw-bold">Valor Liberado (Estimado)</small>
+                            <h2 class="resultado-final-valor text-success mb-0">${formatarMoeda(valorLiberado)}</h2>
+                        </div>
+                        <hr>
+                        <div class="row text-start">
+                            <div class="col-6 mb-2">
+                                <span class="text-muted">Valor da Parcela:</span><br>
+                                <strong>${formatarMoeda(parcela)}</strong>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <span class="text-muted">Prazo:</span><br>
+                                <strong>${prazo} meses</strong>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <span class="text-muted">Coeficiente:</span><br>
+                                <strong>${coeficiente.toFixed(6)}</strong>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <span class="text-muted">Total Contrato:</span><br>
+                                <strong>${formatarMoeda(valorTotalContrato)}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer d-grid gap-2 d-md-flex justify-content-md-center">
+                        <button id="baixarPdfClienteBtn" class="btn btn-success"><i class="bi bi-file-earmark-pdf"></i> PDF Cliente</button>
+                        <button id="baixarPdfEscritorioBtn" class="btn btn-secondary"><i class="bi bi-file-earmark-text"></i> PDF Escritório</button>
+                    </div>
+                </div>`;
+
             resultadoDiv.style.display = 'block'; resultadoDiv.scrollIntoView({ behavior: 'smooth' });
             document.getElementById("baixarPdfClienteBtn").addEventListener("click", gerarPDFCliente);
             document.getElementById("baixarPdfEscritorioBtn").addEventListener("click", gerarPDFEscritorio);
         }
 
         function calcularSimulacaoCompleta() {
-            const operacao = document.getElementById('operacaoSelect').value;
-            calculoDetalhado = { tipo: operacao };
+            const op = document.getElementById('operacaoSelect').value;
 
+            // Tratamento de valores para evitar NaN
             const p = moedaParaFloat(document.getElementById("parcela").value);
             const s = moedaParaFloat(document.getElementById("saldodevedor").value);
-            const d = moedaParaFloat(document.getElementById("desconto").value);
-            const coef = parseFloat(document.getElementById("coeficiente").value.replace(",", ".")) || 0;
-            const comissaoG = parseFloat(document.getElementById("comissaoGerente").value.replace(",", ".")) || 0;
-            const comissaoEsc = moedaParaFloat(document.getElementById("comissaoesc").value);
+            const d = moedaParaFloat(document.getElementById("desconto").value); 
+            const coef = parseFloat(document.getElementById("coeficiente").value.replace(',', '.')) || 0.02;
+            const comG_pct = parseFloat(document.getElementById('comissaoGerente').value.replace(',', '.')) || 0;
+            const comEsc = moedaParaFloat(document.getElementById('comissaoesc').value);
 
             const novoBanco = document.getElementById("novoBanco").value || 'Bradesco';
             const novoPrazo = parseInt(document.getElementById("novoPrazo").value, 10) || 96;
 
-            if (!p || p <= 0) return showToast('Preencha um Valor Total da Parcela válido (maior que zero).', 'danger');
-            if (!coef || coef <= 0) return showToast('Preencha um Coeficiente válido (maior que zero).', 'danger');
+            // Validação básica
+            if (p <= 0 || coef <= 0) return showToast("Dados inválidos (Parcela ou Coeficiente zerados)", 'danger');
 
-            const novoS = p / coef;
-            const nomeFinal = document.getElementById('clienteNome').value.trim() || clienteNomePDF;
-            const cpfFinal = document.getElementById('clienteCpf').value.trim() || clienteCpfPDF;
+            const novoContrato = p / coef;
 
-            calculoDetalhado = { ...calculoDetalhado, nome: nomeFinal, cpf: cpfFinal, p, s, d, novoS, comissaoG, comissaoEsc, coef, novoBanco, novoPrazo, novaParcelaValor: p };
+            // Variáveis de cálculo
+            let brutoDisponivel = 0;
+            let comissaoInv = 0;
+            let comissaoG_valor = 0;
+            let liquidoFinal = 0;
+            let pctInv = 0; 
+            
+            // Textos para exibição na tela (HTML)
+            let txtPctInvestidor = "0%";
+            let txtPctGerente = `${comG_pct}%`;
+            let htmlDet = '';
 
-            let resultadoHtml = '', valorOfertaFinal = 0;
+            if (op.includes('compra')) {
+                const tipoC = document.getElementById('tipoCompra').value;
+                pctInv = (tipoC === 'bradesco') ? 0.10 : 0.08; // Define a taxa (10% ou 8%)
+                txtPctInvestidor = (pctInv * 100).toFixed(0) + "%";
 
-            if (operacao.includes('compra')) {
-                const tipoCompra = document.getElementById("tipoCompra").value;
-                const investidorR = (tipoCompra === 'bradesco') ? 0.10 : 0.08;
-                const sub = novoS - s - d;
-                const investidor = s * investidorR;
-                const gerente = sub * (comissaoG / 100);
-                const valorGeral = sub - investidor - gerente;
-                valorOfertaFinal = valorGeral - comissaoEsc;
+                brutoDisponivel = novoContrato - s - d;
+                comissaoInv = s * pctInv; 
+                comissaoG_valor = brutoDisponivel * (comG_pct / 100); 
 
-                if (novoS < (s + d + investidor + gerente + comissaoEsc)) {
-                    showToast('Operação Não Viável: Saldo insuficiente.', 'danger'); document.getElementById("resultadoFinal").innerHTML = ''; document.getElementById("resultadoFinal").style.display = 'none'; return;
-                }
+                liquidoFinal = brutoDisponivel - comissaoInv - comissaoG_valor - comEsc;
 
-                calculoDetalhado = { ...calculoDetalhado, sub, investidorR, investidor, gerente, valorGeral, valorOfertaFinal };
-                resultadoHtml = `
-                    <li class="list-group-item d-flex justify-content-between"><span>Novo Saldo (Gerado):</span> <strong>${formatarMoeda(novoS)}</strong></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>(-) Saldo Devedor:</span> <span class="text-danger">- ${formatarMoeda(s)}</span></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>(=) Valor Bruto Disponível:</span> <strong>${formatarMoeda(sub)}</strong></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>(-) Com. Investidor:</span> <span class="text-danger">- ${formatarMoeda(investidor)}</span></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>(-) Com. Gerente:</span> <span class="text-danger">- ${formatarMoeda(gerente)}</span></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>(-) Com. Escritório:</span> <span class="text-danger">- ${formatarMoeda(comissaoEsc)}</span></li>`;
+                // HTML Detalhado para a TELA
+                htmlDet = `
+                    <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+                        <span>Novo Saldo (Gerado):</span> <strong>${formatarMoeda(novoContrato)}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+                        <span>(-) Saldo Devedor:</span> <span class="text-danger">- ${formatarMoeda(s)}</span>
+                    </li>
+                    ${d > 0 ? `<li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+                        <span>(-) Produto:</span> <span class="text-danger">- ${formatarMoeda(d)}</span>
+                    </li>` : ''}
+                    <li class="list-group-item d-flex justify-content-between bg-light rounded px-2 py-2 my-2">
+                        <span class="fw-bold">(=) Valor Bruto Disponível:</span> <strong class="text-dark">${formatarMoeda(brutoDisponivel)}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+                        <span>(-) Com. Investidor <span class="badge bg-secondary text-white" style="font-size:0.7em">${txtPctInvestidor}</span>:</span> 
+                        <span class="text-danger">- ${formatarMoeda(comissaoInv)}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+                        <span>(-) Com. Gerente <span class="badge bg-secondary text-white" style="font-size:0.7em">${txtPctGerente}</span>:</span> 
+                        <span class="text-danger">- ${formatarMoeda(comissaoG_valor)}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+                        <span>(-) Com. Escritório:</span> <span class="text-danger">- ${formatarMoeda(comEsc)}</span>
+                    </li>`;
 
             } else {
-                const valorBrutoLiberado = novoS - s - d;
-                let sub = valorBrutoLiberado;
-                let valorQuitado = 0; let comissaoQuitado = 0;
+                // Lógica Portabilidade / Refin
+                let quitadoExtra = 0;
+                if (document.getElementById('quitacaoSim').checked) quitadoExtra = moedaParaFloat(document.getElementById('valorQuitado').value);
 
-                if (document.getElementById('quitacaoSim').checked) {
-                    valorQuitado = moedaParaFloat(document.getElementById('valorQuitado').value);
-                    if (valorQuitado > 0) { comissaoQuitado = valorQuitado * 0.10; sub -= (valorQuitado + comissaoQuitado); }
-                }
+                let baseComissao = novoContrato - s - d - quitadoExtra;
+                comissaoG_valor = baseComissao * (comG_pct / 100);
+                liquidoFinal = baseComissao - comissaoG_valor - comEsc;
+                
+                brutoDisponivel = baseComissao; 
 
-                const gerente = sub * (comissaoG / 100);
-                const valorGeral = sub - gerente;
-                valorOfertaFinal = valorGeral - comissaoEsc;
-
-                if (novoS < (s + d + valorQuitado + comissaoQuitado + gerente + comissaoEsc)) {
-                    showToast('Operação Não Viável: Saldo insuficiente.', 'danger'); document.getElementById("resultadoFinal").innerHTML = ''; document.getElementById("resultadoFinal").style.display = 'none'; return;
-                }
-
-                calculoDetalhado = { ...calculoDetalhado, valorBrutoLiberado, gerente, valorQuitado, comissaoQuitado, valorGeral, valorOfertaFinal };
-                resultadoHtml = `
-                    <li class="list-group-item d-flex justify-content-between"><span>Novo Saldo (Gerado):</span> <strong>${formatarMoeda(novoS)}</strong></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>(-) Saldo Devedor:</span> <span class="text-danger">- ${formatarMoeda(s)}</span></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>(=) Valor Bruto Liberado:</span> <strong>${formatarMoeda(valorBrutoLiberado)}</strong></li>
-                    ${valorQuitado > 0 ? `<li class="list-group-item d-flex justify-content-between"><span>(-) Valor Quitado Adicional:</span> <span class="text-danger">- ${formatarMoeda(valorQuitado)}</span></li>` : ''}
-                    <li class="list-group-item d-flex justify-content-between"><span>(-) Com. Gerente:</span> <span class="text-danger">- ${formatarMoeda(gerente)}</span></li>
-                    <li class="list-group-item d-flex justify-content-between"><span>(-) Com. Escritório:</span> <span class="text-danger">- ${formatarMoeda(comissaoEsc)}</span></li>`;
+                htmlDet = `
+                    <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+                        <span>Novo Saldo (Gerado):</span> <strong>${formatarMoeda(novoContrato)}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+                        <span>(-) Saldo Devedor:</span> <span class="text-danger">- ${formatarMoeda(s)}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between bg-light rounded px-2 py-2 my-2">
+                        <span class="fw-bold">(=) Valor Bruto Liberado:</span> <strong class="text-dark">${formatarMoeda(baseComissao)}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+                        <span>(-) Com. Gerente <span class="badge bg-secondary text-white" style="font-size:0.7em">${txtPctGerente}</span>:</span> 
+                        <span class="text-danger">- ${formatarMoeda(comissaoG_valor)}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+                        <span>(-) Com. Escritório:</span> <span class="text-danger">- ${formatarMoeda(comEsc)}</span>
+                    </li>`;
             }
 
-            let coeficienteReal = 0; if ((valorOfertaFinal + s) > 0) { coeficienteReal = p / (valorOfertaFinal + s); }
-            calculoDetalhado.coeficienteReal = coeficienteReal;
-            resultadoHtml += `<li class="list-group-item d-flex justify-content-between bg-light-subtle"><strong>Coeficiente Real:</strong> <strong class="text-primary">${coeficienteReal.toFixed(8)}</strong></li>`;
+            // Coeficiente Real
+            let coeficienteReal = 0;
+            if ((liquidoFinal + s) > 0) { coeficienteReal = p / (liquidoFinal + s); }
 
-            const resultadoDiv = document.getElementById("resultadoFinal");
-            resultadoDiv.innerHTML = `<div class="card"><div class="card-header bg-primary text-white"><h3 class="h5 mb-0">Resultado da Simulação</h3></div><div class="card-body"><div class="text-center mb-4 border-bottom pb-3"><h4 class="text-muted">Valor Líquido para o Cliente</h4><p class="resultado-final-valor text-success">${formatarMoeda(valorOfertaFinal)}</p></div><h5>Detalhamento:</h5><ul class="list-group list-group-flush">${resultadoHtml}</ul></div><div class="card-footer d-grid gap-2 d-sm-flex justify-content-sm-center"><button id="baixarPdfClienteBtn" class="btn btn-success" type="button">Baixar PDF (Cliente)</button><button id="baixarPdfEscritorioBtn" class="btn btn-secondary" type="button">Baixar PDF (Escritório)</button></div></div>`;
-            resultadoDiv.style.display = 'block'; resultadoDiv.scrollIntoView({ behavior: 'smooth' });
+            // Captura robusta de Nome e CPF (Input > Variável Global > Padrão)
+            const nomeFinal = document.getElementById('clienteNome').value || clienteNomePDF || 'Nome Não Informado';
+            const cpfFinal = document.getElementById('clienteCpf').value || clienteCpfPDF || 'CPF Não Informado';
+            
+            // Cálculo do Valor Geral (Líquido Cliente + Escritório)
+            const valorGeralCalculado = liquidoFinal + comEsc;
+
+            // Preencher o Objeto COMPLETAMENTE para o PDF
+            calculoDetalhado = {
+                tipo: op,
+                novoS: novoContrato,
+                s: s,
+                d: d,
+                valorOfertaFinal: liquidoFinal,
+                nome: nomeFinal,
+                cpf: cpfFinal,
+                novoBanco,
+                novoPrazo,
+                novaParcelaValor: p,
+                sub: brutoDisponivel,
+                investidor: comissaoInv,
+                investidorR: pctInv, // Salva a taxa para não dar erro no PDF
+                gerente: comissaoG_valor,
+                comissaoG: comG_pct, // Salva a taxa para não dar erro no PDF
+                comissaoEsc: comEsc,
+                valorGeral: valorGeralCalculado,
+                coef: coef,
+                coeficienteReal: coeficienteReal,
+                valorQuitado: (typeof quitadoExtra !== 'undefined') ? quitadoExtra : 0
+            };
+
+            // Renderizar na Tela
+            const div = document.getElementById('resultadoFinal');
+            div.style.display = 'block';
+            div.innerHTML = `
+                <div class="card border-primary shadow-sm">
+                    <div class="card-header card-resultado-header bg-primary text-white text-center">
+                        <h5 class="mb-0 fw-bold">Resultado da Simulação</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="text-center mb-4">
+                            <small class="text-muted text-uppercase fw-bold" style="letter-spacing: 1px;">VALOR LÍQUIDO (ESTIMADO)</small>
+                            <h1 class="resultado-final-valor text-success mb-0 mt-1">${formatarMoeda(liquidoFinal)}</h1>
+                        </div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-6">
+                                <div class="p-3 border rounded bg-light text-center h-100">
+                                    <small class="d-block text-muted mb-1">Novo Contrato</small>
+                                    <strong class="fs-5 text-dark">${formatarMoeda(novoContrato)}</strong>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 border rounded bg-light text-center h-100">
+                                    <small class="d-block text-muted mb-1">Saldo Quitado</small>
+                                    <strong class="fs-5 text-dark">${formatarMoeda(s)}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card bg-white border-light shadow-sm">
+                            <div class="card-header bg-light border-bottom-0 fw-bold text-primary">
+                                <i class="bi bi-list-ul me-2"></i> Detalhamento Completo
+                            </div>
+                            <div class="card-body pt-0">
+                                <ul class="list-group list-group-flush small">
+                                    ${htmlDet}
+                                </ul>
+                            </div>
+                            <div class="card-footer bg-white border-top pt-2 pb-2">
+                                <div class="d-flex justify-content-between align-items-center small text-muted">
+                                    <span>Coeficiente Real:</span>
+                                    <span class="text-primary fw-bold font-monospace">${coeficienteReal.toFixed(8)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light d-flex justify-content-center gap-2 py-3">
+                         <button id="baixarPdfClienteBtn" class="btn btn-success"><i class="bi bi-file-earmark-pdf"></i> PDF Cliente</button>
+                         <button id="baixarPdfEscritorioBtn" class="btn btn-secondary"><i class="bi bi-file-earmark-text"></i> PDF Escritório</button>
+                    </div>
+                </div>
+            `;
+
+            div.scrollIntoView({ behavior: 'smooth' });
+            
+            // Reatribui os eventos aos botões
             document.getElementById("baixarPdfClienteBtn").addEventListener("click", gerarPDFCliente);
             document.getElementById("baixarPdfEscritorioBtn").addEventListener("click", gerarPDFEscritorio);
         }
@@ -1189,7 +1684,7 @@
 
             y += 10; doc.setFontSize(12); doc.text("Dados do Novo Contrato", 15, y); y += 8; doc.setFontSize(10);
             doc.text(`Banco: ${calculoDetalhado?.novoBanco || '(Não especificado)'}`, 15, y); y += 6;
-            doc.text(`Prazo: ${calculoDetalhado?.novoPrazo || 'Não inf.'}x`, 15, y); y += 6;
+            doc.text(`Prazo: ${calculoDetalhado?.novoPrazo || '96'}x`, 15, y); y += 6;
             doc.text(`Valor da Parcela: ${formatarMoeda(calculoDetalhado?.novaParcelaValor)}`, 15, y); y += 6;
 
             // --- RODAPÉ COM DADOS DA EMPRESA (NEGRITO) ---
@@ -1252,13 +1747,20 @@
 
         function gerarPDFEscritorio() {
             if (!calculoDetalhado || Object.keys(calculoDetalhado).length === 0) { showToast("Nenhum cálculo foi realizado ainda.", "warning"); return; }
-            const { jsPDF } = window.jspdf; const doc = new jsPDF(); let y = gerarPDFBase(doc, "Escritório");
+            const { jsPDF } = window.jspdf; const doc = new jsPDF(); 
+            
+            // Reutiliza a base (que já ajustamos o nome/cpf na lógica anterior)
+            let y = gerarPDFBase(doc, "Escritório");
 
+            // Espaçamento um pouco maior (7 em vez de 6)
+            const gap = 7; 
+
+            // Se for Negativado
             if (dadosNegativado) {
                 y += 10; doc.setFontSize(12); doc.text("Resumo do Cálculo Negativado", 15, y); y += 8; doc.setFontSize(10);
-                doc.text(`Parcelas Originais: ${formatarMoeda(dadosNegativado.totalParcelas)}`, 15, y); y += 6;
-                doc.text(`Valor Negativo Informado: ${formatarMoeda(dadosNegativado.negativo)}`, 15, y); y += 6;
-                doc.text(`Nova Parcela Calculada: ${formatarMoeda(dadosNegativado.novaParcela)}`, 15, y); y += 6;
+                doc.text(`Parcelas Originais: ${formatarMoeda(dadosNegativado.totalParcelas)}`, 15, y); y += gap;
+                doc.text(`Valor Negativo Informado: ${formatarMoeda(dadosNegativado.negativo)}`, 15, y); y += gap;
+                doc.text(`Nova Parcela Calculada: ${formatarMoeda(dadosNegativado.novaParcela)}`, 15, y); y += gap;
             }
 
             y += 10; doc.setFontSize(12);
@@ -1267,39 +1769,55 @@
                 doc.setFontSize(14); doc.setFont('helvetica', 'bold');
                 doc.text(`Valor Liberado (Estimado): ${formatarMoeda(calculoDetalhado.valorLiberado)}`, 15, y); y += 10;
                 doc.setFontSize(10); doc.setFont('helvetica', 'normal');
-                doc.text(`Valor Total do Contrato: ${formatarMoeda(calculoDetalhado.valorTotalContrato)}`, 15, y); y += 6;
+                doc.text(`Valor Total do Contrato: ${formatarMoeda(calculoDetalhado.valorTotalContrato)}`, 15, y); y += gap;
                 doc.text(`Coeficiente Informado: ${calculoDetalhado.coef ? calculoDetalhado.coef.toFixed(8) : 'N/A'}`, 15, y);
             } else {
                 doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
-                doc.text(`Novo Saldo (Gerado pela Parcela): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += 6;
-                doc.text(`Saldo Devedor a Quitar: ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 6;
-                doc.text(`Produto (Opcional): ${formatarMoeda(calculoDetalhado.d)}`, 15, y); y += 6;
-                doc.text("--------------------------------------------------", 15, y); y += 6;
+                doc.text(`Novo Saldo (Gerado pela Parcela): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += gap;
+                doc.text(`Saldo Devedor a Quitar: ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += gap;
+                if(calculoDetalhado.d > 0) {
+                    doc.text(`Produto (Opcional): ${formatarMoeda(calculoDetalhado.d)}`, 15, y); y += gap;
+                }
+                
+                doc.text("--------------------------------------------------", 15, y); y += gap;
 
                 if (calculoDetalhado.tipo.includes('compra')) {
-                    doc.text(`Valor Bruto Disponível: ${formatarMoeda(calculoDetalhado.sub)}`, 15, y); y += 6;
-                    doc.text(`Comissão Investidor (${(calculoDetalhado.investidorR * 100).toFixed(0)}% sobre Saldo): - ${formatarMoeda(calculoDetalhado.investidor)}`, 15, y); y += 6;
-                    doc.text(`Comissão Gerente (${calculoDetalhado.comissaoG}% sobre Bruto): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += 6;
+                    doc.text(`Valor Bruto Disponível: ${formatarMoeda(calculoDetalhado.sub)}`, 15, y); y += gap;
+                    
+                    // CORREÇÃO DOS NAN%
+                    const txInv = calculoDetalhado.investidorR ? (calculoDetalhado.investidorR * 100).toFixed(0) : '0';
+                    doc.text(`Comissão Investidor (${txInv}% sobre Saldo): - ${formatarMoeda(calculoDetalhado.investidor)}`, 15, y); y += gap;
+                    
+                    const txGer = calculoDetalhado.comissaoG || 0;
+                    doc.text(`Comissão Gerente (${txGer}% sobre Bruto): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += gap;
                 } else {
-                    doc.text(`Valor Bruto Liberado (Troco Inicial): ${formatarMoeda(calculoDetalhado.valorBrutoLiberado)}`, 15, y); y += 6;
+                    doc.text(`Valor Bruto Liberado (Troco Inicial): ${formatarMoeda(calculoDetalhado.sub)}`, 15, y); y += gap;
                     if (calculoDetalhado.valorQuitado > 0) {
-                        doc.text(`Valor Quitado Adicional: - ${formatarMoeda(calculoDetalhado.valorQuitado)}`, 15, y); y += 6;
-                        doc.text(`Comissão Quitação Adicional (10%): - ${formatarMoeda(calculoDetalhado.comissaoQuitado)}`, 15, y); y += 6;
+                        doc.text(`Valor Quitado Adicional: - ${formatarMoeda(calculoDetalhado.valorQuitado)}`, 15, y); y += gap;
                     }
-                    doc.text(`Comissão Gerente (${calculoDetalhado.comissaoG}% sobre Líquido): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += 6;
+                    const txGer = calculoDetalhado.comissaoG || 0;
+                    doc.text(`Comissão Gerente (${txGer}% sobre Líquido): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += gap;
                 }
 
                 doc.setFont('helvetica', 'bold');
-                doc.text(`Valor Geral Líquido (antes Escritório): ${formatarMoeda(calculoDetalhado.valorGeral)}`, 15, y); y += 6;
+                // CORREÇÃO DO VALOR GERAL ZERADO
+                const vGeral = calculoDetalhado.valorGeral || 0;
+                doc.text(`Valor Geral Líquido (antes Escritório): ${formatarMoeda(vGeral)}`, 15, y); y += gap;
+                
                 doc.setFont('helvetica', 'normal');
-                doc.text(`Comissão Escritório: - ${formatarMoeda(calculoDetalhado.comissaoEsc)}`, 15, y); y += 8;
+                doc.text(`Comissão Escritório: - ${formatarMoeda(calculoDetalhado.comissaoEsc)}`, 15, y); y += 10; // Espaço extra antes do final
+                
                 doc.setFontSize(14); doc.setFont('helvetica', 'bold');
                 doc.text(`Valor Líquido Cliente (Estimado): ${formatarMoeda(calculoDetalhado.valorOfertaFinal)}`, 15, y);
                 y += 10; doc.setFontSize(10); doc.setFont('helvetica', 'normal');
-                doc.text(`Coeficiente Input (Simulação): ${calculoDetalhado.coef ? calculoDetalhado.coef.toFixed(8) : 'N/A'}`, 15, y); y += 6;
+                
+                doc.text(`Coeficiente Input (Simulação): ${calculoDetalhado.coef ? calculoDetalhado.coef.toFixed(8) : 'N/A'}`, 15, y); y += gap;
                 doc.text(`Coeficiente Real (Calculado): ${calculoDetalhado.coeficienteReal ? calculoDetalhado.coeficienteReal.toFixed(8) : 'N/A'}`, 15, y);
             }
-            y += 15; doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.text("Valores aproximados para análise interna.", 15, y);
+            
+            y += 15; doc.setFontSize(8); doc.setFont('helvetica', 'italic'); 
+            doc.text("Valores aproximados para análise interna.", 15, y);
+            
             doc.save(gerarNomeArquivo('escritorio'));
         }
 
@@ -1370,9 +1888,15 @@
             verificarDadosNegativado();
             // CHAMA ATUALIZAR OPERAÇÕES AO INICIAR PARA GARANTIR SIAPE + COMPRA PADRÃO
             atualizarOperacoes();
+
+            // CARREGA NOME CORRESPONDENTE SE EXISTIR
+            const savedName = localStorage.getItem('nomeCorrespondente');
+            if (savedName) {
+                document.getElementById('nomeCorrespondente').value = savedName;
+                atualizarScript();
+            }
         });
     </script>
-
 </body>
 
 </html>
