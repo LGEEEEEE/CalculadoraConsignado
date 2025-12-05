@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Calculadora Unificada + CRM Rápido</title>
+    <title>Calculadora Unificada - Consignado</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="../icone.ico" type="image/x-icon">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -183,16 +183,6 @@
                                 </button>
                             </div>
 
-                            <div class="row mb-3 p-3 bg-light border rounded">
-                                <div class="col-md-6 mb-2">
-                                    <label for="nomeCorrespondente" class="form-label fw-bold text-success">Seu Nome (Correspondente)</label>
-                                    <input type="text" id="nomeCorrespondente" class="form-control" placeholder="Ex: João Silva">
-                                </div>
-                                <div class="col-md-6 mb-2">
-                                    <label for="clienteTelefone" class="form-label fw-bold text-success">WhatsApp do Cliente</label>
-                                    <input type="tel" id="clienteTelefone" class="form-control" placeholder="(61) 90000-0000">
-                                </div>
-                            </div>
                             <div class="row mb-3">
                                 <div class="col-md-6 mb-2">
                                     <label for="clienteNome" class="form-label">Nome do Cliente</label>
@@ -425,7 +415,7 @@
                 <div class="modal-body">
                     <div class="alert alert-success">
                         <strong>Um botão para todos!</strong> O código abaixo detecta automaticamente se você está no
-                        <em>GConsig/Polo</em> ou no <em>Corban</em> e extrai <strong>Contratos e Telefones</strong>.
+                        <em>GConsig/Polo</em> ou no <em>Corban</em>.
                     </div>
 
                     <p><strong>Passo a passo:</strong></p>
@@ -437,7 +427,7 @@
                     </ol>
 
                     <textarea class="form-control mb-3" rows="6" readonly
-                        id="codeUniversal">javascript:(function(){const limparMoeda=(v)=>parseFloat(String(v).replace("R$","").replace(/\./g,"").replace(",",".").trim())||0;const limparTexto=(t)=>t?t.trim():"";const limparTelefone=(t)=>t?t.replace(/\D/g,''):"";if(document.getElementById("tbodyContratos")){try{console.log("Detectado sistema: POLO/GCONSIG");const nome=document.querySelector('span[data-info="Nome"]')?.innerText?.trim()||"Cliente";const cpf=document.querySelector('span[data-info="CPF"]')?.innerText?.replace(/\D/g,"")||"";let telefone="";const telElement=document.querySelector('a[href^="tel:"]');if(telElement){telefone=telElement.innerText.replace(/\D/g,'')}else{const listaTelefones=document.querySelectorAll('.list-unstyled.list-hover.slimscroll li a');for(let t of listaTelefones){let texto=t.innerText.replace(/\D/g,'');if(texto.length>=10){telefone=texto;break}}}const rows=document.querySelectorAll("#tbodyContratos tr");let contratos=[];rows.forEach(row=>{try{const inputs=row.querySelectorAll("input");let parcela=0,saldo=0,prazo=0;inputs.forEach(i=>{if(i.id.includes("vl_parcela_"))parcela=limparMoeda(i.value);if(i.id.includes("vl_quitacao_"))saldo=limparMoeda(i.value);if(i.id.includes("valida_prazo_"))prazo=parseInt(i.value)||0});let banco="Desconhecido";const copyIcon=row.querySelector(".copy");if(copyIcon)banco=copyIcon.getAttribute("val-banco")||"Banco";if(parcela>0){contratos.push({banco:banco,parcela:parcela,saldoDevedorExato:saldo,prazoRestante:prazo,origem:"POLO"})}}catch(err){console.error("Erro linha Polo",err)}});if(contratos.length>0||telefone!==""){return enviar(nome,cpf,contratos,"POLO (GConsig)",telefone)}}catch(e){console.error("Erro Polo:",e)}}if(document.querySelectorAll('input[name*="[anterior_parcela]"]').length>0||document.getElementById('cliNome2')){try{console.log("Detectado sistema: CORBAN");let nome=document.getElementById('cliNome')?.value||document.querySelector('#cliNome2')?.innerText||"Cliente";let cpf=document.getElementById('cliCpf')?.value||document.querySelector('#cliCpf2 span')?.innerText||"";cpf=cpf.replace(/\D/g,'');let telefone="";const inputTel=document.querySelector('input[name="resultado_telefone"]');const divTels=document.querySelectorAll('#telefonesHot table tr td div.text-secundary__system');if(divTels.length>0){telefone=divTels[0].innerText.replace(/\D/g,'')}else if(inputTel&&inputTel.value){telefone=inputTel.value.replace(/\D/g,'')}const inputs=document.querySelectorAll('input[name*="[anterior_parcela]"]');let contratos=[];inputs.forEach(input=>{try{let match=input.name.match(/contratos\[(\d+)\]/);if(match){let id=match[1];let getVal=(n)=>(document.querySelector(`input[name="contratos[${id}][${n}]"]`)?.value||"0");let banco=document.querySelector(`input[name="contratos[${id}][nome_banco_anterior]"]`)?.value||"Banco";if(banco==="Banco"){let selectBanco=document.querySelector(`select[name="contratos[${id}][banco_novo]"] option:checked`);if(selectBanco)banco=selectBanco.innerText}let valP=parseFloat(input.value);let pagas=parseInt(getVal('anterior_pagas'))||0;let total=parseInt(getVal('anterior_prazo'))||0;let saldo=parseFloat(getVal('saldo_devedor'))||0;if(valP>0){contratos.push({banco:banco,parcela:valP,pagas:pagas,total:total,saldoDevedorExato:saldo,origem:"CORBAN"})}}}catch(e){console.error(e)}});if(contratos.length>0||telefone!==""){return enviar(nome,cpf,contratos,"CORBAN",telefone)}}catch(e){console.error("Erro Corban:",e)}}alert("⚠️ Não foi possível detectar contratos ou dados do cliente nesta página.");function enviar(nome,cpf,contratos,sistema,telefone){if(window.opener){window.opener.postMessage({tipo:'DADOS_CONSIG_COMPLETO',nome:nome,cpf:cpf,contratos:contratos,sistema:sistema,telefone:telefone},'*');alert(`✅ Dados enviados via ${sistema}!\n📞 Telefone: ${telefone||"Não encontrado"}\n📄 Contratos: ${contratos.length}`);}else{alert('⚠️ A Calculadora não foi encontrada! (Você abriu esta página através dela?)');}}})();</textarea>
+                        id="codeUniversal">javascript:(function(){const moeda=(v)=>parseFloat(String(v).replace("R$","").replace(/\./g,"").replace(",", "."))||0;if(document.getElementById("tbodyContratos")){try{console.log("Detectado sistema: POLO/GCONSIG");const nome=document.querySelector('span[data-info="Nome"]')?.innerText?.trim()||"Cliente";const cpf=document.querySelector('span[data-info="CPF"]')?.innerText?.replace(/\D/g,"")||"";const rows=document.querySelectorAll("#tbodyContratos tr");let contratos=[];rows.forEach(row=>{try{const inputs=row.querySelectorAll("input");let parcela=0,saldo=0,prazo=0;inputs.forEach(i=>{if(i.id.includes("vl_parcela_"))parcela=moeda(i.value);if(i.id.includes("vl_quitacao_"))saldo=moeda(i.value);if(i.id.includes("valida_prazo_"))prazo=parseInt(i.value)||0});let banco="Desconhecido";const copyIcon=row.querySelector(".copy");if(copyIcon)banco=copyIcon.getAttribute("val-banco")||"Banco";if(parcela>0){contratos.push({banco:banco,parcela:parcela,saldoDevedorExato:saldo,prazoRestante:prazo,origem:"POLO"})}}catch(err){console.error("Erro linha Polo",err)}});if(contratos.length>0)return enviar(nome,cpf,contratos,"POLO (GConsig)")}catch(e){console.error("Erro Polo:",e)}}if(document.querySelectorAll('input[name*="[anterior_parcela]"]').length>0){try{console.log("Detectado sistema: CORBAN");let nome=document.getElementById('cliNome')?.value||document.querySelector('#cliNome2')?.innerText||"Cliente";let cpf=document.getElementById('cliCpf')?.value||document.querySelector('#cliCpf2')?.innerText||"";cpf=cpf.replace(/\D/g,'');const inputs=document.querySelectorAll('input[name*="[anterior_parcela]"]');let contratos=[];inputs.forEach(input=>{try{let match=input.name.match(/contratos\[(\d+)\]/);if(match){let id=match[1];let getVal=(n)=>(document.querySelector(`input[name="contratos[${id}][${n}]"]`)?.value||"0");let banco=document.querySelector(`input[name="contratos[${id}][nome_banco_anterior]"]`)?.value||"Banco";let valP=parseFloat(input.value);let pagas=parseInt(getVal('anterior_pagas'))||0;let total=parseInt(getVal('anterior_prazo'))||0;if(valP>0){contratos.push({banco:banco,parcela:valP,pagas:pagas,total:total,origem:"CORBAN"})}}}catch(e){console.error(e)}});if(contratos.length>0)return enviar(nome,cpf,contratos,"CORBAN")}catch(e){console.error("Erro Corban:",e)}}alert("⚠️ Não foi possível detectar contratos do Polo ou Corban nesta página.");function enviar(nome,cpf,contratos,sistema){if(window.opener){window.opener.postMessage({tipo:'DADOS_CONSIG_COMPLETO',nome:nome,cpf:cpf,contratos:contratos,sistema:sistema},'*');alert(`✅ ${contratos.length} contratos enviados via ${sistema}!`);}else{alert('⚠️ A Calculadora não foi encontrada! (Você abriu esta página através dela?)');}}})();</textarea>
                     <button class="btn btn-dark w-100"
                         onclick="navigator.clipboard.writeText(document.getElementById('codeUniversal').value); alert('Código copiado!')">COPIAR
                         CÓDIGO INTELIGENTE</button>
@@ -565,7 +555,6 @@
             if (dados && dados.tipo === 'DADOS_CONSIG_COMPLETO') {
                 if (dados.nome) document.getElementById('clienteNome').value = dados.nome;
                 if (dados.cpf) document.getElementById('clienteCpf').value = dados.cpf;
-                if (dados.telefone) document.getElementById('clienteTelefone').value = dados.telefone;
 
                 if (dados.contratos && dados.contratos.length > 0) {
                     parcelasManuais = [];
@@ -759,13 +748,6 @@
             const listaDiv = document.getElementById("listaEmprestimos"); listaDiv.innerHTML = ''; let loansFound = 0;
             const isOcrText = cleanText.includes('O74-SABEMI-') || cleanText.includes('R$834/12');
 
-            // Tenta achar padrões de celular: (XX) 9XXXX-XXXX ou XX 9XXXX-XXXX
-            const telefoneMatch = text.match(/(?:\(?\d{2}\)?\s*)?9\d{4}[-\s]?\d{4}/);
-            if (telefoneMatch) {
-                document.getElementById('clienteTelefone').value = telefoneMatch[0].replace(/\D/g, '');
-                showToast("Possível telefone encontrado no PDF!", "info");
-            }
-
             if (isOcrText) {
                 const cpfMatch = text.match(/(\d{3}\.\d{3}\.\d{3}-\d{2})/);
                 const nomeMatch = text.match(/(\d{9,12})\s*-\s*([\d.-]+)\s*-\s*([A-ZÀ-Ú ]+)(?:\n([A-ZÀ-Ú ]+))?/);
@@ -835,13 +817,6 @@
             else if (headerMatchAntigo) { cpfExtraido = headerMatchAntigo[1].trim(); nomeExtraido = headerMatchAntigo[2].trim(); }
             else { const cpfSimples = text.match(/\d{3}\.\d{3}\.\d{3}-\d{2}/); if (cpfSimples) cpfExtraido = cpfSimples[0]; }
             clienteCpfPDF = cpfExtraido; clienteNomePDF = nomeExtraido;
-
-            // Tenta achar padrões de celular
-            const telefoneMatch = text.match(/(?:\(?\d{2}\)?\s*)?9\d{4}[-\s]?\d{4}/);
-            if (telefoneMatch) {
-                document.getElementById('clienteTelefone').value = telefoneMatch[0].replace(/\D/g, '');
-                showToast("Possível telefone encontrado no PDF!", "info");
-            }
 
             const blocoValoresRegex = /Total\s+Cartão([\s\S]+?)(?:Extrato\s+de\s+Consignações|Demonstrativo\s+de\s+uso)/i;
             const matchBloco = text.match(blocoValoresRegex);
@@ -1071,7 +1046,7 @@
             calculoDetalhado = { tipo: operacao, nome: nome, cpf: cpf, novoBanco: banco, novaParcelaValor: parcela, coef: coeficiente, novoPrazo: prazo, valorLiberado: valorLiberado, valorTotalContrato: valorTotalContrato };
 
             const resultadoDiv = document.getElementById("resultadoFinal");
-            resultadoDiv.innerHTML = `<div class="card"><div class="card-header bg-primary text-white"><h3 class="h5 mb-0">Resultado da Simulação de Margem Nova</h3></div><div class="card-body"><div class="text-center mb-4 border-bottom pb-3"><h4 class="text-muted">Valor Liberado (Estimado)</h4><p class="resultado-final-valor text-success">${formatarMoeda(valorLiberado)}</p></div><h5>Detalhamento:</h5><ul class="list-group list-group-flush"><li class="list-group-item d-flex justify-content-between"><span>Valor da Parcela:</span> <strong>${formatarMoeda(parcela)}</strong></li><li class="list-group-item d-flex justify-content-between"><span>Prazo:</span> <strong>${prazo} meses</strong></li><li class="list-group-item d-flex justify-content-between"><span>Coeficiente Usado:</span> <strong>${coeficiente.toFixed(8)}</strong></li><li class="list-group-item d-flex justify-content-between bg-light-subtle"><strong>Valor Total do Contrato:</strong> <strong class="text-primary">${formatarMoeda(valorTotalContrato)}</strong></li></ul></div><div class="card-footer d-grid gap-2 d-sm-flex justify-content-sm-center"><button onclick="enviarWhatsApp()" class="btn btn-success fw-bold">📱 Abordar no WhatsApp</button><button id="baixarPdfClienteBtn" class="btn btn-secondary" type="button">Baixar PDF (Cliente)</button><button id="baixarPdfEscritorioBtn" class="btn btn-dark" type="button">Baixar PDF (Escritório)</button></div></div>`;
+            resultadoDiv.innerHTML = `<div class="card"><div class="card-header bg-primary text-white"><h3 class="h5 mb-0">Resultado da Simulação de Margem Nova</h3></div><div class="card-body"><div class="text-center mb-4 border-bottom pb-3"><h4 class="text-muted">Valor Liberado (Estimado)</h4><p class="resultado-final-valor text-success">${formatarMoeda(valorLiberado)}</p></div><h5>Detalhamento:</h5><ul class="list-group list-group-flush"><li class="list-group-item d-flex justify-content-between"><span>Valor da Parcela:</span> <strong>${formatarMoeda(parcela)}</strong></li><li class="list-group-item d-flex justify-content-between"><span>Prazo:</span> <strong>${prazo} meses</strong></li><li class="list-group-item d-flex justify-content-between"><span>Coeficiente Usado:</span> <strong>${coeficiente.toFixed(8)}</strong></li><li class="list-group-item d-flex justify-content-between bg-light-subtle"><strong>Valor Total do Contrato:</strong> <strong class="text-primary">${formatarMoeda(valorTotalContrato)}</strong></li></ul></div><div class="card-footer d-grid gap-2 d-sm-flex justify-content-sm-center"><button id="baixarPdfClienteBtn" class="btn btn-success" type="button">Baixar PDF (Cliente)</button><button id="baixarPdfEscritorioBtn" class="btn btn-secondary" type="button">Baixar PDF (Escritório)</button></div></div>`;
             resultadoDiv.style.display = 'block'; resultadoDiv.scrollIntoView({ behavior: 'smooth' });
             document.getElementById("baixarPdfClienteBtn").addEventListener("click", gerarPDFCliente);
             document.getElementById("baixarPdfEscritorioBtn").addEventListener("click", gerarPDFEscritorio);
@@ -1157,7 +1132,7 @@
             resultadoHtml += `<li class="list-group-item d-flex justify-content-between bg-light-subtle"><strong>Coeficiente Real:</strong> <strong class="text-primary">${coeficienteReal.toFixed(8)}</strong></li>`;
 
             const resultadoDiv = document.getElementById("resultadoFinal");
-            resultadoDiv.innerHTML = `<div class="card"><div class="card-header bg-primary text-white"><h3 class="h5 mb-0">Resultado da Simulação</h3></div><div class="card-body"><div class="text-center mb-4 border-bottom pb-3"><h4 class="text-muted">Valor Líquido para o Cliente</h4><p class="resultado-final-valor text-success">${formatarMoeda(valorOfertaFinal)}</p></div><h5>Detalhamento:</h5><ul class="list-group list-group-flush">${resultadoHtml}</ul></div><div class="card-footer d-grid gap-2 d-sm-flex justify-content-sm-center"><button onclick="enviarWhatsApp()" class="btn btn-success fw-bold">📱 Abordar no WhatsApp</button><button id="baixarPdfClienteBtn" class="btn btn-secondary" type="button">Baixar PDF (Cliente)</button><button id="baixarPdfEscritorioBtn" class="btn btn-dark" type="button">Baixar PDF (Escritório)</button></div></div>`;
+            resultadoDiv.innerHTML = `<div class="card"><div class="card-header bg-primary text-white"><h3 class="h5 mb-0">Resultado da Simulação</h3></div><div class="card-body"><div class="text-center mb-4 border-bottom pb-3"><h4 class="text-muted">Valor Líquido para o Cliente</h4><p class="resultado-final-valor text-success">${formatarMoeda(valorOfertaFinal)}</p></div><h5>Detalhamento:</h5><ul class="list-group list-group-flush">${resultadoHtml}</ul></div><div class="card-footer d-grid gap-2 d-sm-flex justify-content-sm-center"><button id="baixarPdfClienteBtn" class="btn btn-success" type="button">Baixar PDF (Cliente)</button><button id="baixarPdfEscritorioBtn" class="btn btn-secondary" type="button">Baixar PDF (Escritório)</button></div></div>`;
             resultadoDiv.style.display = 'block'; resultadoDiv.scrollIntoView({ behavior: 'smooth' });
             document.getElementById("baixarPdfClienteBtn").addEventListener("click", gerarPDFCliente);
             document.getElementById("baixarPdfEscritorioBtn").addEventListener("click", gerarPDFEscritorio);
@@ -1396,98 +1371,6 @@
             // CHAMA ATUALIZAR OPERAÇÕES AO INICIAR PARA GARANTIR SIAPE + COMPRA PADRÃO
             atualizarOperacoes();
         });
-
-        // --- FUNÇÕES DE INTELIGÊNCIA DO WHATSAPP ---
-
-        // 1. Carregar nome do correspondente salvo anteriormente
-        document.addEventListener("DOMContentLoaded", () => {
-            const salvo = localStorage.getItem("nomeCorrespondenteCalc");
-            if (salvo) document.getElementById("nomeCorrespondente").value = salvo;
-        });
-
-        document.getElementById("nomeCorrespondente").addEventListener("change", function() {
-            localStorage.setItem("nomeCorrespondenteCalc", this.value);
-        });
-
-        // 2. Sensor de Horário (Bom dia até 12:29 / Boa tarde a partir das 12:30)
-        function getSaudacao() {
-            const agora = new Date();
-            const hora = agora.getHours();
-            const min = agora.getMinutes();
-            
-            // Se for antes de 12h, é bom dia.
-            // Se for 12h, verifica os minutos. Se for menor que 30, bom dia.
-            if (hora < 12 || (hora === 12 && min < 30)) {
-                return "Bom dia";
-            } else {
-                return "Boa tarde";
-            }
-        }
-
-        // 3. Detector de Gênero (Heurística para PT-BR)
-        function getTratamento(nomeCompleto) {
-            if (!nomeCompleto) return "Sr./Sra.";
-            
-            const primeiroNome = nomeCompleto.trim().split(" ")[0].toLowerCase();
-            
-            // Exceções comuns de nomes masculinos que terminam em 'a' ou parecem femininos
-            const excecoesMasculinas = ['luca', 'jean', 'ryan', 'nathan', 'luan', 'cauã', 'lucas', 'jonas', 'elias', 'matheus', 'tomas'];
-            // Exceções comuns de nomes femininos que não terminam em 'a'
-            const excecoesFemininas = ['liz', 'isis', 'beatriz', 'luz', 'rachel', 'raquel', 'simone', 'ingrid', 'ester'];
-
-            if (excecoesMasculinas.includes(primeiroNome)) return "Sr.";
-            if (excecoesFemininas.includes(primeiroNome)) return "Dona";
-
-            // Regra geral: Termina em 'a' é feminino
-            if (primeiroNome.endsWith('a')) {
-                return "Dona";
-            }
-            return "Sr.";
-        }
-
-        // 4. Função Principal de Envio
-        function enviarWhatsApp() {
-            const telefoneInput = document.getElementById('clienteTelefone');
-            let telefone = telefoneInput.value.replace(/\D/g, '');
-            
-            if (telefone.length < 10) {
-                showToast("Por favor, insira um WhatsApp válido para o cliente.", "warning");
-                telefoneInput.focus();
-                return;
-            }
-
-            // Dados para o script
-            const saudacao = getSaudacao();
-            const nomeCliente = document.getElementById('clienteNome').value.trim() || calculoDetalhado.nome || "Cliente";
-            const tratamento = getTratamento(nomeCliente);
-            const nomeCorrespondente = document.getElementById('nomeCorrespondente').value.trim() || "Consultor";
-            
-            // Obter o nome da empresa selecionada no topo
-            const empresaSelect = document.getElementById('empresaSelect');
-            const nomeEmpresa = empresaSelect.options[empresaSelect.selectedIndex].text;
-
-            // Formatação do nome do cliente (Primeira letra maiúscula)
-            const nomeClienteFormatado = nomeCliente.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-
-            // --- SEU SCRIPT PERSONALIZADO ---
-            let texto = `Olá, *${saudacao}*! Tudo bem?%0A`;
-            texto += `Nesse número eu falo com o *${tratamento} ${nomeClienteFormatado}*?%0A%0A`;
-            
-            texto += `Meu nome é *${nomeCorrespondente}*, sou correspondente autorizado do Banco Bradesco pela *${nomeEmpresa}*.%0A%0A`;
-            
-            texto += `O motivo do meu contato é uma oportunidade que abriu hoje para o ${tratamento === 'Sr.' ? 'senhor' : 'senhora'}. `;
-            texto += `Nós sabemos que, devido a algumas regras bancárias atuais, está mais difícil conseguir crédito novo. `;
-            texto += `Porém, o Bradesco liberou uma campanha especial de *Compra de Dívida*.%0A%0A`;
-            
-            texto += `*Como funciona?* A Aliança Consig quita seus contratos antigos (aqueles com juros altos) e traz para o Bradesco com uma taxa menor. `;
-            texto += `Isso gera um ótimo valor de troco para o ${tratamento === 'Sr.' ? 'senhor' : 'senhora'}, *sem mexer no seu salário e sem aumentar o valor que o ${tratamento === 'Sr.' ? 'senhor' : 'senhora'} já paga hoje*.%0A%0A`;
-            
-            texto += `Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para o ${tratamento === 'Sr.' ? 'senhor' : 'senhora'} ver quanto libera de valor. Podemos verificar?`;
-
-            // Abrir WhatsApp
-            // Usa 'wa.me' que funciona tanto no PC quanto no Mobile
-            window.open(`https://wa.me/55${telefone}?text=${texto}`, '_blank');
-        }
     </script>
 
 </body>
