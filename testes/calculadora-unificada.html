@@ -850,16 +850,24 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
         }
 
         function abrirWhatsApp() {
-            const tel = document.getElementById('telefoneCliente').value.replace(/\D/g, '');
-            const text = encodeURIComponent(document.getElementById('scriptOutput').value);
-            
-            if (tel.length < 10) return showToast("Preencha um telefone válido.", "warning");
-            
-            // A MUDANÇA ESTÁ AQUI: Trocamos '_blank' por 'janelaWhatsapp'
-            // Isso força o navegador a usar sempre a mesma aba
-            window.open(`https://wa.me/55${tel}?text=${text}`, 'janelaWhatsapp');
-        }
-        
+    const tel = document.getElementById('telefoneCliente').value.replace(/\D/g, '');
+    const text = encodeURIComponent(document.getElementById('scriptOutput').value);
+    
+    if (tel.length < 10) return alert("Telefone inválido");
+
+    const url = `https://web.whatsapp.com/send?phone=55${tel}&text=${text}`;
+    
+    // O TRUQUE: Definir dimensões força o navegador a tratar como "Popup" e não "Aba"
+    // Isso aumenta MUITO a chance dele reutilizar a janela existente.
+    const params = 'width=1000,height=800,left=100,top=100,resizable=yes,scrollbars=yes,status=yes';
+    
+    // Tenta abrir/focar na janela com nome FIXO
+    const win = window.open(url, 'WhatsAppPopup', params);
+    
+    if (win) {
+        win.focus();
+    }
+}
 
         // NOVO: --- INTEGRAÇÃO E MENSAGENS (COM TELEFONE) ---
         window.addEventListener("message", (event) => {
@@ -1449,7 +1457,7 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             // Tratamento de valores para evitar NaN
             const p = moedaParaFloat(document.getElementById("parcela").value);
             const s = moedaParaFloat(document.getElementById("saldodevedor").value);
-            const d = moedaParaFloat(document.getElementById("desconto").value); 
+            const d = moedaParaFloat(document.getElementById("desconto").value);
             const coef = parseFloat(document.getElementById("coeficiente").value.replace(',', '.')) || 0.02;
             const comG_pct = parseFloat(document.getElementById('comissaoGerente').value.replace(',', '.')) || 0;
             const comEsc = moedaParaFloat(document.getElementById('comissaoesc').value);
@@ -1467,8 +1475,8 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             let comissaoInv = 0;
             let comissaoG_valor = 0;
             let liquidoFinal = 0;
-            let pctInv = 0; 
-            
+            let pctInv = 0;
+
             // Textos para exibição na tela (HTML)
             let txtPctInvestidor = "0%";
             let txtPctGerente = `${comG_pct}%`;
@@ -1480,8 +1488,8 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                 txtPctInvestidor = (pctInv * 100).toFixed(0) + "%";
 
                 brutoDisponivel = novoContrato - s - d;
-                comissaoInv = s * pctInv; 
-                comissaoG_valor = brutoDisponivel * (comG_pct / 100); 
+                comissaoInv = s * pctInv;
+                comissaoG_valor = brutoDisponivel * (comG_pct / 100);
 
                 liquidoFinal = brutoDisponivel - comissaoInv - comissaoG_valor - comEsc;
 
@@ -1519,8 +1527,8 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                 let baseComissao = novoContrato - s - d - quitadoExtra;
                 comissaoG_valor = baseComissao * (comG_pct / 100);
                 liquidoFinal = baseComissao - comissaoG_valor - comEsc;
-                
-                brutoDisponivel = baseComissao; 
+
+                brutoDisponivel = baseComissao;
 
                 htmlDet = `
                     <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
@@ -1548,7 +1556,7 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             // Captura robusta de Nome e CPF (Input > Variável Global > Padrão)
             const nomeFinal = document.getElementById('clienteNome').value || clienteNomePDF || 'Nome Não Informado';
             const cpfFinal = document.getElementById('clienteCpf').value || clienteCpfPDF || 'CPF Não Informado';
-            
+
             // Cálculo do Valor Geral (Líquido Cliente + Escritório)
             const valorGeralCalculado = liquidoFinal + comEsc;
 
@@ -1628,7 +1636,7 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             `;
 
             div.scrollIntoView({ behavior: 'smooth' });
-            
+
             // Reatribui os eventos aos botões
             document.getElementById("baixarPdfClienteBtn").addEventListener("click", gerarPDFCliente);
             document.getElementById("baixarPdfEscritorioBtn").addEventListener("click", gerarPDFEscritorio);
@@ -1748,13 +1756,13 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
 
         function gerarPDFEscritorio() {
             if (!calculoDetalhado || Object.keys(calculoDetalhado).length === 0) { showToast("Nenhum cálculo foi realizado ainda.", "warning"); return; }
-            const { jsPDF } = window.jspdf; const doc = new jsPDF(); 
-            
+            const { jsPDF } = window.jspdf; const doc = new jsPDF();
+
             // Reutiliza a base (que já ajustamos o nome/cpf na lógica anterior)
             let y = gerarPDFBase(doc, "Escritório");
 
             // Espaçamento um pouco maior (7 em vez de 6)
-            const gap = 7; 
+            const gap = 7;
 
             // Se for Negativado
             if (dadosNegativado) {
@@ -1776,19 +1784,19 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                 doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
                 doc.text(`Novo Saldo (Gerado pela Parcela): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += gap;
                 doc.text(`Saldo Devedor a Quitar: ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += gap;
-                if(calculoDetalhado.d > 0) {
+                if (calculoDetalhado.d > 0) {
                     doc.text(`Produto (Opcional): ${formatarMoeda(calculoDetalhado.d)}`, 15, y); y += gap;
                 }
-                
+
                 doc.text("--------------------------------------------------", 15, y); y += gap;
 
                 if (calculoDetalhado.tipo.includes('compra')) {
                     doc.text(`Valor Bruto Disponível: ${formatarMoeda(calculoDetalhado.sub)}`, 15, y); y += gap;
-                    
+
                     // CORREÇÃO DOS NAN%
                     const txInv = calculoDetalhado.investidorR ? (calculoDetalhado.investidorR * 100).toFixed(0) : '0';
                     doc.text(`Comissão Investidor (${txInv}% sobre Saldo): - ${formatarMoeda(calculoDetalhado.investidor)}`, 15, y); y += gap;
-                    
+
                     const txGer = calculoDetalhado.comissaoG || 0;
                     doc.text(`Comissão Gerente (${txGer}% sobre Bruto): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += gap;
                 } else {
@@ -1804,21 +1812,21 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                 // CORREÇÃO DO VALOR GERAL ZERADO
                 const vGeral = calculoDetalhado.valorGeral || 0;
                 doc.text(`Valor Geral Líquido (antes Escritório): ${formatarMoeda(vGeral)}`, 15, y); y += gap;
-                
+
                 doc.setFont('helvetica', 'normal');
                 doc.text(`Comissão Escritório: - ${formatarMoeda(calculoDetalhado.comissaoEsc)}`, 15, y); y += 10; // Espaço extra antes do final
-                
+
                 doc.setFontSize(14); doc.setFont('helvetica', 'bold');
                 doc.text(`Valor Líquido Cliente (Estimado): ${formatarMoeda(calculoDetalhado.valorOfertaFinal)}`, 15, y);
                 y += 10; doc.setFontSize(10); doc.setFont('helvetica', 'normal');
-                
+
                 doc.text(`Coeficiente Input (Simulação): ${calculoDetalhado.coef ? calculoDetalhado.coef.toFixed(8) : 'N/A'}`, 15, y); y += gap;
                 doc.text(`Coeficiente Real (Calculado): ${calculoDetalhado.coeficienteReal ? calculoDetalhado.coeficienteReal.toFixed(8) : 'N/A'}`, 15, y);
             }
-            
-            y += 15; doc.setFontSize(8); doc.setFont('helvetica', 'italic'); 
+
+            y += 15; doc.setFontSize(8); doc.setFont('helvetica', 'italic');
             doc.text("Valores aproximados para análise interna.", 15, y);
-            
+
             doc.save(gerarNomeArquivo('escritorio'));
         }
 
