@@ -1684,7 +1684,7 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                     y += 16; doc.setFontSize(12); doc.text("Contratos Unificados (Originais)", 15, y); y += 8; doc.setFontSize(9);
                     listaDeParcelas.forEach(p => {
                         // ORDEM ALTERADA AQUI: Parcela - Prazo (Status) - Saldo
-                        const linhaContrato = `- Banco: ${p.banco} | Parcela: ${p.parcela} | Prazo: ${p.status} | Saldo Aprox.: ${p.saldo}`;
+                        const linhaContrato = `- Banco: ${p.banco} | Parcela: ${p.parcela} | Prazo: ${p.status}`;
                         const linhas = doc.splitTextToSize(linhaContrato, pageWidth - 30);
                         doc.text(linhas, 15, y); y += (linhas.length * 4);
                     });
