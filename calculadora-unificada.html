@@ -1683,8 +1683,18 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                 if (listaDeParcelas && listaDeParcelas.length > 0) {
                     y += 16; doc.setFontSize(12); doc.text("Contratos Unificados (Originais)", 15, y); y += 8; doc.setFontSize(9);
                     listaDeParcelas.forEach(p => {
-                        // ORDEM ALTERADA AQUI: Parcela - Prazo (Status) - Saldo
-                        const linhaContrato = `- Banco: ${p.banco} | Parcela: ${p.parcela} | Prazo: ${p.status} | Saldo Aprox.: ${p.saldo}`;
+                        let linhaContrato = "";
+
+                        // --- ALTERAÇÃO SOLICITADA ---
+                        if (tipo === "Cliente") {
+                            // Se for Cliente, mostra só Banco e Parcela
+                            linhaContrato = `- Banco: ${p.banco} | Parcela: ${p.parcela}`;
+                        } else {
+                            // Se for Escritório, mostra tudo (Prazo e Saldo)
+                            linhaContrato = `- Banco: ${p.banco} | Parcela: ${p.parcela} | Prazo: ${p.status} | Saldo Aprox.: ${p.saldo}`;
+                        }
+                        // -----------------------------
+
                         const linhas = doc.splitTextToSize(linhaContrato, pageWidth - 30);
                         doc.text(linhas, 15, y); y += (linhas.length * 4);
                     });
@@ -1705,12 +1715,12 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                 doc.setDrawColor(200);
                 doc.line(15, footerY - 5, pageWidth - 15, footerY - 5);
 
-                doc.setFont('helvetica', 'bold'); // TUDO NEGRITO AQUI
+                doc.setFont('helvetica', 'bold');
                 doc.text(empresaInfo.razao, 15, footerY);
                 doc.text(`CNPJ: ${empresaInfo.cnpj}`, 15, footerY + 4);
                 doc.text(empresaInfo.endereco, 15, footerY + 8);
 
-                doc.setFont('helvetica', 'normal'); // Reseta
+                doc.setFont('helvetica', 'normal');
             }
 
             return y;
