@@ -850,24 +850,18 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
         }
 
         function abrirWhatsApp() {
-    const tel = document.getElementById('telefoneCliente').value.replace(/\D/g, '');
-    const text = encodeURIComponent(document.getElementById('scriptOutput').value);
-    
-    if (tel.length < 10) return alert("Telefone inválido");
+            const tel = document.getElementById('telefoneCliente').value.replace(/\D/g, '');
+            const text = encodeURIComponent(document.getElementById('scriptOutput').value);
 
-    const url = `https://web.whatsapp.com/send?phone=55${tel}&text=${text}`;
-    
-    // O TRUQUE: Definir dimensões força o navegador a tratar como "Popup" e não "Aba"
-    // Isso aumenta MUITO a chance dele reutilizar a janela existente.
-    const params = 'width=1000,height=800,left=100,top=100,resizable=yes,scrollbars=yes,status=yes';
-    
-    // Tenta abrir/focar na janela com nome FIXO
-    const win = window.open(url, 'WhatsAppPopup', params);
-    
-    if (win) {
-        win.focus();
-    }
-}
+            if (tel.length < 10) return alert("Telefone inválido");
+
+            const url = `https://web.whatsapp.com/send?phone=55${tel}&text=${text}`;
+            const params = 'width=1000,height=800,left=100,top=100,resizable=yes,scrollbars=yes,status=yes';
+            const win = window.open(url, 'WhatsAppPopup', params);
+            if (win) {
+                win.focus();
+            }
+        }
 
         // NOVO: --- INTEGRAÇÃO E MENSAGENS (COM TELEFONE) ---
         window.addEventListener("message", (event) => {
@@ -1642,6 +1636,49 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             document.getElementById("baixarPdfEscritorioBtn").addEventListener("click", gerarPDFEscritorio);
         }
 
+        // --- FUNÇÕES DE PDF (ATUALIZADAS COM PAGINAÇÃO CORRETA) ---
+
+        // 1. Função isolada para desenhar o rodapé
+        function desenharRodape(doc) {
+            const selectedEmpresa = document.getElementById('empresaSelect').value;
+            const empresaInfo = dadosEmpresas[selectedEmpresa] || {};
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const pageWidth = doc.internal.pageSize.getWidth();
+
+            if (empresaInfo.razao) {
+                let footerY = pageHeight - 20; // Posição fixa
+
+                // Retângulo branco para limpar o fundo (caso o texto tenha descido demais)
+                doc.setFillColor(255, 255, 255);
+                doc.rect(0, footerY - 10, pageWidth, 30, 'F');
+
+                doc.setFontSize(8);
+                doc.setTextColor(0);
+                doc.setDrawColor(200);
+                doc.line(15, footerY - 5, pageWidth - 15, footerY - 5);
+
+                doc.setFont('helvetica', 'bold');
+                doc.text(empresaInfo.razao, 15, footerY);
+                doc.text(`CNPJ: ${empresaInfo.cnpj}`, 15, footerY + 4);
+                doc.text(empresaInfo.endereco, 15, footerY + 8);
+                doc.setFont('helvetica', 'normal');
+            }
+        }
+
+        // 2. Verifica se precisa criar nova página
+        function verificarQuebraPagina(doc, y) {
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const limiteInferior = pageHeight - 35; // Margem de segurança para o rodapé
+
+            if (y > limiteInferior) {
+                desenharRodape(doc); // Fecha a página atual
+                doc.addPage(); // Cria nova
+                return 20; // Reseta o Y para o topo
+            }
+            return y;
+        }
+
+        // 3. Base do PDF (Cabeçalho e Listas)
         function gerarPDFBase(doc, tipo) {
             const getBase64Image = (img) => { if (!img) return null; try { const c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight; c.getContext("2d").drawImage(img, 0, 0); return c.toDataURL("image/png"); } catch (e) { return null; } };
 
@@ -1654,7 +1691,10 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
 
             const logoPrincipalBase64 = getBase64Image(logoPrincipalImg);
             const convenioBase64 = getBase64Image(convenioImgElem);
-            let y = 15; const pageWidth = doc.internal.pageSize.getWidth(); const pageHeight = doc.internal.pageSize.getHeight();
+
+            let y = 15;
+            const pageWidth = doc.internal.pageSize.getWidth();
+
             const logoPrincipalWidth = 40, logoConvenioWidth = 30;
             const logoPrincipalHeight = (logoPrincipalImg && logoPrincipalImg.naturalWidth > 0) ? logoPrincipalImg.naturalHeight * (logoPrincipalWidth / logoPrincipalImg.naturalWidth) : 0;
             const logoConvenioHeight = (convenioImgElem && convenioImgElem.naturalWidth > 0) ? convenioImgElem.naturalHeight * (logoConvenioWidth / convenioImgElem.naturalWidth) : 0;
@@ -1664,6 +1704,7 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             if (convenioBase64) doc.addImage(convenioBase64, 'PNG', pageWidth - logoConvenioWidth - 15, y + (maxHeight - logoConvenioHeight) / 2, logoConvenioWidth, logoConvenioHeight);
 
             y += maxHeight > 0 ? maxHeight + 10 : 25;
+
             const operacaoSelectElement = document.getElementById('operacaoSelect');
             const operacaoText = operacaoSelectElement.options[operacaoSelectElement.selectedIndex]?.text || 'Operação Desconhecida';
             doc.setFontSize(18); doc.text(`Simulação de ${operacaoText} (${tipo})`, pageWidth / 2, y, { align: 'center' }); y += 20;
@@ -1672,6 +1713,7 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             doc.setFontSize(12); doc.text("Dados do Cliente", 15, y); y += 8;
             doc.setFontSize(10); doc.text(`Nome: ${nomeFinal}`, 15, y); y += 6; doc.text(`CPF: ${cpfFinal}`, 15, y);
 
+            // LOGICA DOS CONTRATOS COM QUEBRA DE PÁGINA
             if (calculoDetalhado && !calculoDetalhado.tipo.includes('margem_nova')) {
                 const isManualTabActive = document.getElementById('manual-tab').classList.contains('active');
                 const listaDeParcelas = isManualTabActive ? parcelasManuais.map(p => {
@@ -1681,51 +1723,38 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                 }) : parcelasSelecionadasPDF;
 
                 if (listaDeParcelas && listaDeParcelas.length > 0) {
-                    y += 16; doc.setFontSize(12); doc.text("Contratos Unificados (Originais)", 15, y); y += 8; doc.setFontSize(9);
-                    listaDeParcelas.forEach(p => {
-                        let linhaContrato = "";
+                    y += 16;
+                    y = verificarQuebraPagina(doc, y);
 
-                        // --- ALTERAÇÃO SOLICITADA ---
+                    doc.setFontSize(12); doc.text("Contratos Unificados (Originais)", 15, y); y += 8; doc.setFontSize(9);
+
+                    listaDeParcelas.forEach(p => {
+                        y = verificarQuebraPagina(doc, y); // Verifica a cada linha
+
+                        let linhaContrato = "";
                         if (tipo === "Cliente") {
-                            // Se for Cliente, mostra só Banco e Parcela
                             linhaContrato = `- Banco: ${p.banco} | Parcela: ${p.parcela}`;
                         } else {
-                            // Se for Escritório, mostra tudo (Prazo e Saldo)
                             linhaContrato = `- Banco: ${p.banco} | Parcela: ${p.parcela} | Prazo: ${p.status} | Saldo Aprox.: ${p.saldo}`;
                         }
-                        // -----------------------------
 
                         const linhas = doc.splitTextToSize(linhaContrato, pageWidth - 30);
-                        doc.text(linhas, 15, y); y += (linhas.length * 4);
+                        doc.text(linhas, 15, y);
+                        y += (linhas.length * 5);
                     });
                 } else { y += 10; }
             } else { y += 10; }
 
+            y = verificarQuebraPagina(doc, y);
             y += 10; doc.setFontSize(12); doc.text("Dados do Novo Contrato", 15, y); y += 8; doc.setFontSize(10);
             doc.text(`Banco: ${calculoDetalhado?.novoBanco || '(Não especificado)'}`, 15, y); y += 6;
             doc.text(`Prazo: ${calculoDetalhado?.novoPrazo || '96'}x`, 15, y); y += 6;
             doc.text(`Valor da Parcela: ${formatarMoeda(calculoDetalhado?.novaParcelaValor)}`, 15, y); y += 6;
 
-            // --- RODAPÉ COM DADOS DA EMPRESA (NEGRITO) ---
-            const empresaInfo = dadosEmpresas[selectedEmpresa] || {};
-            if (empresaInfo.razao) {
-                let footerY = pageHeight - 25;
-                doc.setFontSize(8);
-                doc.setTextColor(0); // Preto
-                doc.setDrawColor(200);
-                doc.line(15, footerY - 5, pageWidth - 15, footerY - 5);
-
-                doc.setFont('helvetica', 'bold');
-                doc.text(empresaInfo.razao, 15, footerY);
-                doc.text(`CNPJ: ${empresaInfo.cnpj}`, 15, footerY + 4);
-                doc.text(empresaInfo.endereco, 15, footerY + 8);
-
-                doc.setFont('helvetica', 'normal');
-            }
-
             return y;
         }
 
+        // 4. Gera nome do arquivo (Mantido igual)
         function gerarNomeArquivo(tipoPdf) {
             const dataFormatada = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
             let nomeCliente = (calculoDetalhado?.nome || 'cliente').trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
@@ -1734,18 +1763,24 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             return `${operacao}_${nomeCliente}_${tipoPdf}_${dataFormatada}.pdf`;
         }
 
+        // 5. PDF Cliente
         function gerarPDFCliente() {
             if (!calculoDetalhado || Object.keys(calculoDetalhado).length === 0) { showToast("Nenhum cálculo foi realizado ainda.", "warning"); return; }
-            const { jsPDF } = window.jspdf; const doc = new jsPDF(); let y = gerarPDFBase(doc, "Cliente");
+            const { jsPDF } = window.jspdf; const doc = new jsPDF();
+            let y = gerarPDFBase(doc, "Cliente");
 
             if (dadosNegativado) {
-                y += 10; doc.setFontSize(12); doc.text("Resumo do Cálculo Negativado", 15, y); y += 8; doc.setFontSize(10);
+                y += 10;
+                y = verificarQuebraPagina(doc, y);
+                doc.setFontSize(12); doc.text("Resumo do Cálculo Negativado", 15, y); y += 8; doc.setFontSize(10);
                 doc.text(`Parcelas Originais: ${formatarMoeda(dadosNegativado.totalParcelas)}`, 15, y); y += 6;
                 doc.text(`Valor Negativo Informado: ${formatarMoeda(dadosNegativado.negativo)}`, 15, y); y += 6;
                 doc.text(`Nova Parcela Calculada: ${formatarMoeda(dadosNegativado.novaParcela)}`, 15, y); y += 6;
             }
 
-            y += 10; doc.setFontSize(12);
+            y += 10;
+            y = verificarQuebraPagina(doc, y);
+            doc.setFontSize(12);
             if (calculoDetalhado.tipo.includes('margem_nova')) {
                 doc.text("Resumo da Simulação de Margem Nova", 15, y); y += 8;
                 doc.setFontSize(14); doc.setFont('helvetica', 'bold');
@@ -1761,28 +1796,33 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                 doc.text(`Coeficiente Real (para conferência): ${calculoDetalhado.coeficienteReal ? calculoDetalhado.coeficienteReal.toFixed(8) : 'N/A'}`, 15, y);
             }
             y += 15; doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.text("Valores aproximados. A proposta final pode variar.", 15, y);
+
+            desenharRodape(doc); // Rodapé final
             doc.save(gerarNomeArquivo('cliente'));
         }
 
+        // 6. PDF Escritório
         function gerarPDFEscritorio() {
             if (!calculoDetalhado || Object.keys(calculoDetalhado).length === 0) { showToast("Nenhum cálculo foi realizado ainda.", "warning"); return; }
             const { jsPDF } = window.jspdf; const doc = new jsPDF();
 
-            // Reutiliza a base (que já ajustamos o nome/cpf na lógica anterior)
             let y = gerarPDFBase(doc, "Escritório");
-
-            // Espaçamento um pouco maior (7 em vez de 6)
             const gap = 7;
 
             // Se for Negativado
             if (dadosNegativado) {
-                y += 10; doc.setFontSize(12); doc.text("Resumo do Cálculo Negativado", 15, y); y += 8; doc.setFontSize(10);
+                y += 10;
+                y = verificarQuebraPagina(doc, y);
+                doc.setFontSize(12); doc.text("Resumo do Cálculo Negativado", 15, y); y += 8; doc.setFontSize(10);
                 doc.text(`Parcelas Originais: ${formatarMoeda(dadosNegativado.totalParcelas)}`, 15, y); y += gap;
                 doc.text(`Valor Negativo Informado: ${formatarMoeda(dadosNegativado.negativo)}`, 15, y); y += gap;
                 doc.text(`Nova Parcela Calculada: ${formatarMoeda(dadosNegativado.novaParcela)}`, 15, y); y += gap;
             }
 
-            y += 10; doc.setFontSize(12);
+            y += 10;
+            y = verificarQuebraPagina(doc, y);
+
+            doc.setFontSize(12);
             if (calculoDetalhado.tipo.includes('margem_nova')) {
                 doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
                 doc.setFontSize(14); doc.setFont('helvetica', 'bold');
@@ -1792,6 +1832,13 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                 doc.text(`Coeficiente Informado: ${calculoDetalhado.coef ? calculoDetalhado.coef.toFixed(8) : 'N/A'}`, 15, y);
             } else {
                 doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
+
+                // Verifica bloco grande
+                y = verificarQuebraPagina(doc, y + 60);
+                if (y === 20) {
+                    doc.setFontSize(12); doc.text("Detalhes da Operação (Continuação)", 15, y); y += 8; doc.setFontSize(10);
+                }
+
                 doc.text(`Novo Saldo (Gerado pela Parcela): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += gap;
                 doc.text(`Saldo Devedor a Quitar: ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += gap;
                 if (calculoDetalhado.d > 0) {
@@ -1802,11 +1849,8 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
 
                 if (calculoDetalhado.tipo.includes('compra')) {
                     doc.text(`Valor Bruto Disponível: ${formatarMoeda(calculoDetalhado.sub)}`, 15, y); y += gap;
-
-                    // CORREÇÃO DOS NAN%
                     const txInv = calculoDetalhado.investidorR ? (calculoDetalhado.investidorR * 100).toFixed(0) : '0';
                     doc.text(`Comissão Investidor (${txInv}% sobre Saldo): - ${formatarMoeda(calculoDetalhado.investidor)}`, 15, y); y += gap;
-
                     const txGer = calculoDetalhado.comissaoG || 0;
                     doc.text(`Comissão Gerente (${txGer}% sobre Bruto): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += gap;
                 } else {
@@ -1818,13 +1862,14 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                     doc.text(`Comissão Gerente (${txGer}% sobre Líquido): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += gap;
                 }
 
+                y = verificarQuebraPagina(doc, y);
+
                 doc.setFont('helvetica', 'bold');
-                // CORREÇÃO DO VALOR GERAL ZERADO
                 const vGeral = calculoDetalhado.valorGeral || 0;
                 doc.text(`Valor Geral Líquido (antes Escritório): ${formatarMoeda(vGeral)}`, 15, y); y += gap;
 
                 doc.setFont('helvetica', 'normal');
-                doc.text(`Comissão Escritório: - ${formatarMoeda(calculoDetalhado.comissaoEsc)}`, 15, y); y += 10; // Espaço extra antes do final
+                doc.text(`Comissão Escritório: - ${formatarMoeda(calculoDetalhado.comissaoEsc)}`, 15, y); y += 10;
 
                 doc.setFontSize(14); doc.setFont('helvetica', 'bold');
                 doc.text(`Valor Líquido Cliente (Estimado): ${formatarMoeda(calculoDetalhado.valorOfertaFinal)}`, 15, y);
@@ -1837,6 +1882,7 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             y += 15; doc.setFontSize(8); doc.setFont('helvetica', 'italic');
             doc.text("Valores aproximados para análise interna.", 15, y);
 
+            desenharRodape(doc); // Rodapé final
             doc.save(gerarNomeArquivo('escritorio'));
         }
 
