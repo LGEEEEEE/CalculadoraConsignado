@@ -5,81 +5,150 @@
     <meta charset="UTF-8">
     <title>Calculadora de Simulação - Clientes</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <link rel="shortcut icon" href="/images/icone.ico" type="image/x-icon">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: bisque;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 20px 0;
         }
 
-        a {
-            font-size: 50;
+        .logo-container img {
+            max-width: 250px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.1));
         }
 
-        .btn-primary {
-            font-size: 1.5rem;
-            padding: 15px 30px;
-            width: 300px;
+        .header-title {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 10px;
         }
 
-        @media (max-width: 480px) {
-            body {
-                margin: 10px;
+        .header-subtitle {
+            color: #555;
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+        }
+
+        /* Estilo dos Cards */
+        .menu-card {
+            background: white;
+            border: none;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            color: #0d6efd; /* Cor primária do Bootstrap ao passar o mouse */
+        }
+
+        .menu-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #0d6efd;
+        }
+
+        .menu-card h5 {
+            font-weight: 600;
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        /* Ajuste para mobile */
+        @media (max-width: 576px) {
+            .menu-card {
+                padding: 20px;
             }
-
-            input,
-            button {
-                font-size: 0.9rem;
-                padding: 6px;
+            .menu-card i {
+                font-size: 2rem;
             }
         }
     </style>
-
 </head>
 
 <body>
 
-    <h1 class="text-center">Olá, seja bem vindo a Calculadora de Simulação da:<br>
-    </h1>
+    <div class="container">
+        <div class="text-center mb-4">
+            <div class="logo-container">
+                <img src="/images/logoheader.png" alt="Logo da Empresa" class="img-fluid">
+            </div>
+            <h1 class="header-title h3">Bem-vindo à Central de Cálculos</h1>
+            <p class="header-subtitle">Selecione a ferramenta que deseja utilizar:</p>
+        </div>
 
-    <div class="text-center">
-        <img src="/images/logoheader.png" class="mx-auto">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 justify-content-center">
+            
+            <div class="col">
+                <a href="calculadora-unificada.html" class="menu-card">
+                    <i class="fa-solid fa-calculator"></i>
+                    <h5>SIAPE / Exército</h5>
+                </a>
+            </div>
+
+            <div class="col">
+                <a href="calculadora-cidadao.html" class="menu-card">
+                    <i class="fa-solid fa-users"></i>
+                    <h5>Calculadora do Cidadão</h5>
+                </a>
+            </div>
+
+            <div class="col">
+                <a href="aviso.html" class="menu-card">
+                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                    <h5>Aviso de Débito</h5>
+                </a>
+            </div>
+
+            <div class="col">
+                <a href="coeficiente.html" class="menu-card">
+                    <i class="fa-solid fa-percent"></i>
+                    <h5>Coeficiente</h5>
+                </a>
+            </div>
+
+            <div class="col">
+                <a href="depurador.html" class="menu-card">
+                    <i class="fa-solid fa-file-pdf"></i>
+                    <h5>Transcrever PDF</h5>
+                </a>
+            </div>
+
+            <div class="col">
+                <a href="depurador_imagem.html" class="menu-card">
+                    <i class="fa-solid fa-image"></i>
+                    <h5>Transcrever Imagens</h5>
+                </a>
+            </div>
+
+        </div>
     </div>
 
-    <h2 class="text-center">O que deseja calcular hoje ?</h2>
-
-    <div class="buttons text-center">
-        <a class="btn btn-primary" href="calculadora-unificada.html" role="button">SIAPE/EXERCITO</a>
-    </div>
-    <br>
-    <div class="buttons text-center">
-        <a class="btn btn-primary" href="calculadora-cidadao.html" role="button">Calculadora do Cidadão</a>
-    </div>
-    
-    <br>
-    <div class="buttons text-center">
-        <a class="btn btn-primary" href="aviso.html" role="button">Aviso de Débito</a>
-    </div>
-    <br>
-    <div class="buttons text-center">
-        <a class="btn btn-primary" href="coeficiente.html" role="button">Coeficiente</a>
-    </div>
-    <br>
-    <div class="buttons text-center">
-        <a class="btn btn-primary" href="depurador.html" role="button">Transcrever PDF</a>
-    </div>
-    <br>
-    <div class="buttons text-center">
-        <a class="btn btn-primary" href="depurador_imagem.html" role="button">Transcrever Imagens</a>
-    </div>
-
-
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
