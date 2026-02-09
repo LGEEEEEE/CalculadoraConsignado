@@ -434,32 +434,98 @@
             const listaDiv = document.getElementById("listaEmprestimos");
             let html = '';
             let loansFound = 0;
-            // Regex ROBUSTO do SIAPE (Captura Banco, Valor e Prazo x/y)
-            const regex = /(?:EMPREST|BANCO)(?:[^\n]+)\n(?:.|\n)*?(R\$\s*[\d\.,]+)\n(\d{2,3})\/(\d{2,3})/g;
 
-            let match;
-            // Loop manual para garantir captura correta
-            while ((match = regex.exec(text)) !== null) {
-                const valor = moedaParaFloat(match[1]);
-                const pagas = parseInt(match[2]);
-                const total = parseInt(match[3]);
+            // 1. Quebra o texto em linhas limpas (remove espaços vazios)
+            const linhas = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
-                // Filtra cartões (prazo 999) ou erros
-                if (total < 900) {
-                    const restantes = total - pagas;
-                    // Tenta pegar o nome do banco voltando alguns caracteres
-                    const blocoAnterior = text.substring(match.index - 60, match.index);
-                    let nomeBanco = blocoAnterior.split('\n').pop().replace(/[0-9-]/g, '').trim();
-                    if (nomeBanco.length < 3) nomeBanco = "Empréstimo SIAPE";
+            // Regex para identificar o prazo (Ex: 03/93 ou 10/96)
+            // Aceita formato d/dd, dd/dd, dd/ddd
+            const regexPrazo = /^(\d{1,3})\/(\d{2,3})$/;
 
-                    if (restantes >= 0) {
-                        loansFound++;
-                        html += criarCardEmprestimo(nomeBanco, valor, restantes, total, loansFound);
+            // 2. Itera linha por linha
+            for (let i = 0; i < linhas.length; i++) {
+                const linhaAtual = linhas[i];
+                
+                // A "Âncora" é o Prazo (geralmente a última informação do bloco)
+                const matchPrazo = linhaAtual.match(regexPrazo);
+
+                if (matchPrazo) {
+                    const pagas = parseInt(matchPrazo[1]);
+                    const total = parseInt(matchPrazo[2]);
+
+                    // Validação básica para não pegar datas (01/2025) confundidas com prazos
+                    // Prazos geralmente o total é < 120 (10 anos) ou < 960 (se for muito longo) 
+                    // e pagas <= total
+                    if (total > 0 && total < 999 && pagas <= total) {
+                        
+                        // --- BUSCA O VALOR (R$) ---
+                        // Olha para as 1 ou 2 linhas IMEDIATAMENTE ANTERIORES
+                        let valor = 0;
+                        let linhaValorIndex = -1;
+
+                        // Tenta linha i-1 (imediatamente acima) e i-2
+                        for (let j = 1; j <= 2; j++) {
+                            if (linhas[i-j] && linhas[i-j].includes('R$')) {
+                                valor = moedaParaFloat(linhas[i-j]);
+                                linhaValorIndex = i - j;
+                                break;
+                            }
+                        }
+
+                        // --- BUSCA O NOME DO BANCO ---
+                        // Se achou valor, procura o banco nas 10 linhas acima do valor
+                        let nomeBanco = "SIAPE (Banco não detectado)";
+                        
+                        if (valor > 0) {
+                            for (let k = 1; k <= 12; k++) { // Olha até 12 linhas pra cima
+                                const linhaCandidata = linhas[linhaValorIndex - k];
+                                if (!linhaCandidata) continue;
+
+                                const texto = linhaCandidata.toUpperCase();
+
+                                // Sinais de que é uma linha de Banco/Rubrica
+                                // Ex: "34113 - EMPREST BCO OFICIAL - CEF"
+                                if (
+                                    (texto.includes("EMPREST") || texto.includes("CONSIG") || texto.includes("BCO") || texto.includes("BANCO")) &&
+                                    !texto.includes("DATA/HORA") // Evita cabeçalhos
+                                ) {
+                                    nomeBanco = limparNomeBancoSiape(linhaCandidata);
+                                    break;
+                                }
+                                // Lista de bancos conhecidos (caso não tenha a palavra EMPREST)
+                                if (["BRADESCO", "ITAU", "SANTANDER", "CAIXA", "CEF", "BRASIL", "SAFRA", "PAN", "C6", "DAYCOVAL", "FACTA"].some(b => texto.includes(b))) {
+                                    nomeBanco = limparNomeBancoSiape(linhaCandidata);
+                                    break;
+                                }
+                            }
+
+                            // --- GERA O CARD ---
+                            loansFound++;
+                            const restantes = total - pagas;
+                            html += criarCardEmprestimo(nomeBanco, valor, restantes, total, loansFound);
+                        }
                     }
                 }
             }
-            if (loansFound === 0) html = '<div class="alert alert-warning">Nenhum contrato legível encontrado.</div>';
-            listaDiv.innerHTML = `<h6 class="mb-3 border-bottom pb-2">Contratos Encontrados:</h6>` + html;
+
+            if (loansFound === 0) html = '<div class="alert alert-warning">Nenhum contrato encontrado. Verifique se o PDF é um extrato válido do SIAPE.</div>';
+            listaDiv.innerHTML = `<h6 class="mb-3 border-bottom pb-2">Contratos SIAPE Encontrados (${loansFound}):</h6>` + html;
+        }
+
+        // Função auxiliar para deixar o nome do banco bonito
+        function limparNomeBancoSiape(textoCru) {
+            // Remove números do início (código da rubrica) ex: "34113 - "
+            let limpo = textoCru.replace(/^\d+\s*[-–]\s*/, '');
+            
+            // Remove palavras comuns inúteis
+            limpo = limpo.replace("EMPREST", "").replace("CONSIG", "").replace("BCO", "BANCO").replace("FOLHA", "").trim();
+            
+            // Mapeia siglas comuns
+            if (limpo.includes("CEF")) return "CAIXA ECONÔMICA";
+            if (limpo.includes("BB")) return "BANCO DO BRASIL";
+            
+            // Se ficou muito curto ou vazio, retorna o original
+            return limpo.length > 2 ? limpo : textoCru;
         }
 
         function processarPdfExercicio(text) {
@@ -550,52 +616,179 @@
             document.getElementById('calcForm').dispatchEvent(new Event('submit'));
         }
 
-        // --- 5. MOTOR DE CÁLCULO (PRICE) ---
+        // --- 5. MOTOR DE CÁLCULO (PRICE) E UTILITÁRIOS ---
 
+        // Função para limpar (agora funciona corretamente)
+        function limparCalculadora() {
+            // Lista de IDs dos campos
+            const campos = ['meses', 'taxa', 'prestacao', 'valorFinanciado'];
+
+            campos.forEach(id => {
+                const element = document.getElementById(id);
+                element.value = ''; // Zera o valor
+                element.classList.remove('calculated-field', 'is-invalid'); // Remove cores
+            });
+
+            // Limpa e esconde o resultado em texto
+            const divResultado = document.getElementById('resultadoTexto');
+            divResultado.style.display = 'none';
+            divResultado.innerHTML = '';
+
+            // Coloca o foco no primeiro campo
+            document.getElementById('meses').focus();
+        }
+
+        // Listener do Formulário (O Cérebro da Calculadora)
         document.getElementById('calcForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            document.querySelectorAll('.form-control').forEach(el => el.classList.remove('calculated-field'));
+            e.preventDefault(); // Impede a página de recarregar
 
-            const n = parseInt(document.getElementById('meses').value);
-            const i_percent = parseFloat(document.getElementById('taxa').value.replace(',', '.'));
-            const pmt = moedaParaFloat(document.getElementById('prestacao').value);
-            const pv_input = document.getElementById('valorFinanciado').value;
-            const pv = pv_input ? moedaParaFloat(pv_input) : 0;
+            // 1. Limpeza visual antes de começar
+            document.querySelectorAll('.form-control').forEach(el => {
+                el.classList.remove('calculated-field', 'is-invalid');
+            });
+            document.getElementById('resultadoTexto').style.display = 'none';
+
+            // 2. Coleta e tratamento dos valores
+            // Função auxiliar interna para pegar valor limpo
+            const getVal = (id) => {
+                const val = document.getElementById(id).value;
+                if (!val) return null;
+                // Se for taxa, aceita vírgula. Se for moeda, limpa R$
+                if (id === 'taxa') return parseFloat(val.replace(',', '.'));
+                return moedaParaFloat(val);
+            };
+
+            const n = document.getElementById('meses').value ? parseInt(document.getElementById('meses').value) : null;
+            const i_val = getVal('taxa');
+            const pmt = getVal('prestacao');
+            const pv = getVal('valorFinanciado');
+
+            // 3. Lógica de decisão: Quem devemos calcular?
+            // Contamos quantos campos estão preenchidos
+            let preenchidos = 0;
+            if (n !== null) preenchidos++;
+            if (i_val !== null) preenchidos++;
+            if (pmt !== null && pmt !== 0) preenchidos++;
+            if (pv !== null && pv !== 0) preenchidos++;
+
+            // Regras de validação
+            if (preenchidos === 4) {
+                showToast("Atenção: Limpe o campo que você deseja descobrir (deixe vazio).", "warning");
+                return;
+            }
+            if (preenchidos < 3) {
+                showToast("Preencha pelo menos 3 campos para calcular o que falta.", "warning");
+                return;
+            }
+
+            // Identifica o alvo (o campo que está null ou zero)
+            let target = '';
+            if (n === null) target = 'meses';
+            else if (i_val === null) target = 'taxa';
+            else if (pmt === null || pmt === 0) target = 'prestacao';
+            else if (pv === null || pv === 0) target = 'valorFinanciado';
 
             let resultado = 0;
-            let campoAlvo = '';
 
-            // Prioridade: Se falta valor financiado, calcula Saldo Devedor (Regra de Ouro da Portabilidade)
-            if (!pv_input) {
-                const i = i_percent / 100;
-                resultado = pmt * ((1 - Math.pow(1 + i, -n)) / i);
-                campoAlvo = 'valorFinanciado';
-            }
-            else if (isNaN(i_percent)) {
-                // Newton-Raphson para achar taxa (caso usuário limpe a taxa)
-                let chute = 0.01;
-                for (let k = 0; k < 100; k++) {
-                    let f = (pmt / chute) * (1 - Math.pow(1 + chute, -n)) - pv;
-                    let df = (pmt / chute) * (n * Math.pow(1 + chute, -n - 1) - (1 - Math.pow(1 + chute, -n)) / chute);
-                    chute = chute - f / df;
+            try {
+                // --- CÁLCULOS MATEMÁTICOS (SISTEMA PRICE) ---
+
+                // CASO 1: Calcular SALDO DEVEDOR (PV)
+                if (target === 'valorFinanciado') {
+                    const i = i_val / 100;
+                    resultado = pmt * ((1 - Math.pow(1 + i, -n)) / i);
                 }
-                resultado = chute * 100;
-                campoAlvo = 'taxa';
-            }
 
-            if (campoAlvo) {
-                const el = document.getElementById(campoAlvo);
-                el.value = (campoAlvo === 'taxa') ? formatarDecimal(resultado) : formatarMoeda(resultado);
-                el.classList.add('calculated-field');
-
-                if (campoAlvo === 'valorFinanciado') {
-                    // Adiciona o Saldo Devedor ao texto de resultado
-                    const textoAtual = document.getElementById('resultadoTexto').innerHTML;
-                    document.getElementById('resultadoTexto').innerHTML =
-                        `${textoAtual}<div class="mt-2 pt-2 border-top"><strong>SALDO PARA QUITAÇÃO HOJE:</strong> <span class="fs-4 text-primary">${formatarMoeda(resultado)}</span></div>`;
+                // CASO 2: Calcular PRESTAÇÃO (PMT)
+                else if (target === 'prestacao') {
+                    const i = i_val / 100;
+                    resultado = pv * (i / (1 - Math.pow(1 + i, -n)));
                 }
+
+                // CASO 3: Calcular TAXA (i) - O mais complexo
+                else if (target === 'taxa') {
+                    // TRAVA DE SEGURANÇA 1: Valor Financiado inválido
+                    if (pv <= 0) {
+                        showToast("Para calcular a taxa, o Valor Financiado deve ser maior que zero.", "danger");
+                        document.getElementById('valorFinanciado').focus();
+                        return;
+                    }
+
+                    // TRAVA DE SEGURANÇA 2: Juro Zero
+                    const totalPago = pmt * n;
+                    // Se o total pago for muito próximo do valor financiado (diferença de centavos)
+                    if (Math.abs(totalPago - pv) < 1.00) {
+                        resultado = 0;
+                    } else {
+                        // Algoritmo de Newton-Raphson para encontrar a taxa
+                        let chute = 0.01; // Começa chutando 1%
+                        let erro = 1.0;
+                        let iteracoes = 0;
+
+                        while (Math.abs(erro) > 0.000001 && iteracoes < 100) {
+                            // Função Price
+                            let f = (pmt * (1 - Math.pow(1 + chute, -n)) / chute) - pv;
+                            // Derivada da Função Price
+                            let df = pmt * ((1 - Math.pow(1 + chute, -n)) / (-chute * chute) + (n * Math.pow(1 + chute, -n - 1)) / chute);
+
+                            let novoChute = chute - (f / df);
+                            erro = novoChute - chute;
+                            chute = novoChute;
+                            iteracoes++;
+                        }
+                        resultado = chute * 100; // Converte para porcentagem
+                    }
+                }
+
+                // CASO 4: Calcular PRAZO (n)
+                else if (target === 'meses') {
+                    const i = i_val / 100;
+                    // Fórmula Logarítmica para achar N
+                    // n = -ln(1 - (PV * i / PMT)) / ln(1 + i)
+                    const argumentoLog = 1 - (pv * i) / pmt;
+
+                    if (argumentoLog <= 0) {
+                        showToast("Cálculo impossível com estes valores (parcela muito baixa para pagar os juros).", "danger");
+                        return;
+                    }
+                    resultado = -Math.log(argumentoLog) / Math.log(1 + i);
+                }
+
+                // --- EXIBIÇÃO DOS RESULTADOS ---
+
+                const campoInput = document.getElementById(target);
+                campoInput.classList.add('calculated-field');
+
+                // Formatação específica para cada tipo
+                if (target === 'taxa') {
+                    campoInput.value = formatarDecimal(resultado);
+                } else if (target === 'meses') {
+                    campoInput.value = Math.round(resultado); // Meses são inteiros
+                } else {
+                    campoInput.value = formatarMoeda(resultado);
+                }
+
+                // Monta o texto bonito abaixo
+                const divTexto = document.getElementById('resultadoTexto');
+                divTexto.style.display = 'block';
+
+                let htmlMsg = '';
+                if (target === 'taxa') htmlMsg = `Taxa Real Encontrada: <span class="text-primary fs-5">${formatarDecimal(resultado)}% a.m.</span>`;
+                if (target === 'valorFinanciado') htmlMsg = `Saldo Devedor (Quitação): <span class="text-success fs-5">${formatarMoeda(resultado)}</span>`;
+                if (target === 'prestacao') htmlMsg = `Valor da Parcela: <span class="text-danger fs-5">${formatarMoeda(resultado)}</span>`;
+                if (target === 'meses') htmlMsg = `Prazo Restante: <span class="text-dark fs-5">${Math.round(resultado)} meses</span>`;
+
+                divTexto.innerHTML = htmlMsg;
+
+            } catch (err) {
+                console.error(err);
+                showToast("Erro matemático. Verifique se os valores fazem sentido.", "danger");
             }
         });
+
+        // Utilitário para formatar decimais (caso não tenha no seu código acima)
+        // Se já tiver lá em cima, pode apagar esta linha
+        // const formatarDecimal = (v) => (v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
         // Eventos Drag & Drop
         const uploadArea = document.getElementById('upload-label');
