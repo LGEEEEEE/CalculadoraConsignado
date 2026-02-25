@@ -738,6 +738,9 @@
         const formatarMoeda = (v) => (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
         const formatarInputMoeda = (v) => (v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\s/g, '');
 
+        const formatarCPFStr = (v) => { v = String(v).replace(/\D/g, ""); if (v.length > 11) v = v.substring(0, 11); return v.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2"); };
+        const aplicarMascaraCPF = (e) => { e.target.value = formatarCPFStr(e.target.value); };
+
         const showToast = (message, type = 'success') => {
             const toastContainer = document.getElementById('toast-container');
             const toastId = 'toast-' + Date.now();
@@ -1949,6 +1952,9 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                     el.addEventListener('focus', function () { if (this.value.trim() !== "") { const valorNum = moedaParaFloat(this.value); this.value = (valorNum === 0) ? '' : valorNum.toString().replace('.', ','); } });
                 }
             });
+
+            document.getElementById('clienteCpf').addEventListener('input', aplicarMascaraCPF);
+            document.getElementById('mn-clienteCpf').addEventListener('input', aplicarMascaraCPF);
 
             verificarDadosNegativado();
             // CHAMA ATUALIZAR OPERAÇÕES AO INICIAR PARA GARANTIR SIAPE + COMPRA PADRÃO
