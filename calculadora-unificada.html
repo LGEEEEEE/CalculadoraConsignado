@@ -834,7 +834,29 @@
             const partes = nomeCliente.split(" ");
             const nomeFormatado = (partes.length > 1 && partes[1].length <= 3) ? partes[0] + " " + partes[1] : partes[0];
 
-            const script = `Olá, ${saudacao}! Tudo bem? 
+            // Pega a operação atual selecionada
+            const operacao = document.getElementById('operacaoSelect').value || '';
+            let script = '';
+
+            // Verifica se a operação é de Margem Nova
+            if (operacao.includes('margem_nova')) {
+                script = `Olá, ${saudacao}! Tudo bem?
+Nesse número eu falo com ${genero === 'M' ? 'o' : 'a'} ${tratamento} ${nomeFormatado}?
+
+Meu nome é ${nomeCorrespondente}, sou correspondente autorizado do Banco Bradesco pela ${nomeEmpresa}.
+
+O motivo do meu contato é que identificamos uma excelente oportunidade disponível para ${pronomeObliquo} hoje. O Bradesco liberou uma campanha especial para utilização da sua margem consignada.
+
+Como funciona?
+Diferente de outros créditos, aqui ${pronomeObliquo} já possui um limite pré-aprovado disponível. Isso significa que conseguimos liberar um valor em dinheiro direto na sua conta com as menores taxas do mercado, sem precisar quitar dívidas atuais e com parcelas que se ajustam perfeitamente ao seu salário.
+
+É uma forma rápida e segura de organizar a vida financeira ou realizar um projeto pessoal sem burocracia.
+
+Eu consigo fazer uma simulação rápida aqui, sem compromisso, para ${pronomeObliquo} verificar o valor exato que está liberado. Podemos verificar agora?`;
+
+            } else {
+                // Script Padrão (Compra de Dívida / Portabilidade)
+                script = `Olá, ${saudacao}! Tudo bem? 
 Nesse número eu falo com ${genero === 'M' ? 'o' : 'a'} ${tratamento} ${nomeFormatado}? 
 
 Meu nome é ${nomeCorrespondente}, sou correspondente autorizado do Banco Bradesco pela ${nomeEmpresa}.
@@ -844,6 +866,7 @@ O motivo do meu contato é uma oportunidade que abriu hoje para ${pronomeObliquo
 Como funciona? A ${nomeEmpresa} quita seus contratos antigos (aqueles com juros altos) e traz para o Bradesco com uma taxa menor. Isso gera um ótimo valor de troco para ${pronomeObliquo}, *sem mexer no seu salário e sem aumentar o valor que ${pronomeObliquo} já paga hoje*.
 
 Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${pronomeObliquo} ver quanto libera de valor. Podemos verificar?`;
+            }
 
             document.getElementById('scriptOutput').value = script;
         }
@@ -1789,14 +1812,14 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                 doc.setFontSize(14); doc.setFont('helvetica', 'bold');
                 doc.text(`Valor Liberado (Estimado): ${formatarMoeda(calculoDetalhado.valorLiberado)}`, 15, y); y += 10;
                 doc.setFontSize(10); doc.setFont('helvetica', 'normal');
-                
+
             } else {
                 doc.text("Resumo da Operação Simulada", 15, y); y += 8; doc.setFontSize(10);
                 doc.text(`Saldo Devedor Total a Quitar (Aprox.): ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 10;
                 doc.setFontSize(14); doc.setFont('helvetica', 'bold');
                 doc.text(`Valor Líquido Estimado para o Cliente: ${formatarMoeda(calculoDetalhado.valorOfertaFinal)}`, 15, y);
                 y += 10; doc.setFontSize(10); doc.setFont('helvetica', 'normal');
-                
+
             }
             y += 15; doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.text("Valores aproximados. A proposta final pode variar.", 15, y);
 
@@ -1903,8 +1926,10 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             document.getElementById("unificarBtnPdf").addEventListener("click", () => unificarContratos(false));
             document.getElementById('addManualBtn').addEventListener('click', adicionarContratoManual);
             document.getElementById('convenioSelect').addEventListener('change', atualizarOperacoes);
-            document.getElementById('operacaoSelect').addEventListener('change', atualizarVisibilidadeUI);
-
+            document.getElementById('operacaoSelect').addEventListener('change', () => {
+                atualizarVisibilidadeUI();
+                atualizarScript(); // Chama o script para atualizar o texto imediatamente
+            });
             document.getElementById("calcForm").addEventListener("submit", function (e) {
                 e.preventDefault();
                 const operacao = document.getElementById('operacaoSelect').value;
