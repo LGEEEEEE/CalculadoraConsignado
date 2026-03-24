@@ -1692,94 +1692,149 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
         }
 
         // 2. Verifica se precisa criar nova página
-        function verificarQuebraPagina(doc, y) {
-            const pageHeight = doc.internal.pageSize.getHeight();
-            const limiteInferior = pageHeight - 35; // Margem de segurança para o rodapé
+        // 2. Verifica se precisa criar nova página (Melhorado com margem de segurança)
+function verificarQuebraPagina(doc, y, proximoSalto = 10) {
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const limiteInferior = pageHeight - 35; // Área reservada para o rodapé
 
-            if (y > limiteInferior) {
-                desenharRodape(doc); // Fecha a página atual
-                doc.addPage(); // Cria nova
-                return 20; // Reseta o Y para o topo
-            }
-            return y;
+    if (y + proximoSalto > limiteInferior) {
+        desenharRodape(doc); // Desenha o rodapé na página que está acabando
+        doc.addPage();
+        return 25; // Retorna o novo Y (topo da nova página)
+    }
+    return y;
+}
+
+// 3. Base do PDF (Ajustada para lidar com quebras de página dinâmicas)
+function gerarPDFBase(doc, tipo) {
+    const getBase64Image = (img) => { if (!img) return null; try { const c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight; c.getContext("2d").drawImage(img, 0, 0); return c.toDataURL("image/png"); } catch (e) { return null; } };
+
+    const selectedEmpresa = document.getElementById('empresaSelect').value;
+    const logoId = (selectedEmpresa === 'polo') ? 'logo-polo' : (selectedEmpresa === 'estilo' ? 'logo-estilo' : 'logo-alianca');
+    const logoPrincipalImg = document.getElementById(logoId);
+    const convenio = document.getElementById('convenioSelect').value;
+    const convenioLogoId = (convenio === 'exercito') ? 'convenio-logo-exercito' : 'convenio-logo-siape';
+    const convenioImgElem = document.getElementById(convenioLogoId);
+
+    const logoPrincipalBase64 = getBase64Image(logoPrincipalImg);
+    const convenioBase64 = getBase64Image(convenioImgElem);
+
+    let y = 15;
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    const logoPrincipalWidth = 40, logoConvenioWidth = 30;
+    const logoPrincipalHeight = (logoPrincipalImg && logoPrincipalImg.naturalWidth > 0) ? logoPrincipalImg.naturalHeight * (logoPrincipalWidth / logoPrincipalImg.naturalWidth) : 0;
+    const logoConvenioHeight = (convenioImgElem && convenioImgElem.naturalWidth > 0) ? convenioImgElem.naturalHeight * (logoConvenioWidth / convenioImgElem.naturalWidth) : 0;
+    const maxHeight = Math.max(logoPrincipalHeight, logoConvenioHeight);
+
+    if (logoPrincipalBase64) doc.addImage(logoPrincipalBase64, 'PNG', 15, y + (maxHeight - logoPrincipalHeight) / 2, logoPrincipalWidth, logoPrincipalHeight);
+    if (convenioBase64) doc.addImage(convenioBase64, 'PNG', pageWidth - logoConvenioWidth - 15, y + (maxHeight - logoConvenioHeight) / 2, logoConvenioWidth, logoConvenioHeight);
+
+    y += maxHeight > 0 ? maxHeight + 10 : 25;
+
+    const operacaoSelectElement = document.getElementById('operacaoSelect');
+    const operacaoText = operacaoSelectElement.options[operacaoSelectElement.selectedIndex]?.text || 'Operação';
+    doc.setFontSize(18); doc.text(`Simulação de ${operacaoText} (${tipo})`, pageWidth / 2, y, { align: 'center' }); 
+    y += 15;
+
+    const nomeFinal = calculoDetalhado?.nome || 'Não informado'; 
+    const cpfFinal = calculoDetalhado?.cpf || 'Não informado';
+    doc.setFontSize(12); doc.text("Dados do Cliente", 15, y); y += 8;
+    doc.setFontSize(10); doc.text(`Nome: ${nomeFinal}`, 15, y); y += 6; doc.text(`CPF: ${cpfFinal}`, 15, y);
+
+    // Renderização de Contratos com Verificação de Espaço
+    if (calculoDetalhado && !calculoDetalhado.tipo.includes('margem_nova')) {
+        const isManualTabActive = document.getElementById('manual-tab').classList.contains('active');
+        const listaDeParcelas = isManualTabActive ? parcelasManuais.map(p => {
+            const restantes = (p.totalParcelas || 0) - (p.parcelasPagas || 0);
+            const saldo = (restantes > 0) ? p.parcela * restantes * 0.70 : 0;
+            return { banco: p.banco, parcela: formatarMoeda(p.parcela), saldo: formatarMoeda(saldo), status: `${p.parcelasPagas || 0} de ${p.totalParcelas || 0}` };
+        }) : parcelasSelecionadasPDF;
+
+        if (listaDeParcelas && listaDeParcelas.length > 0) {
+            y += 10;
+            y = verificarQuebraPagina(doc, y, 10);
+            doc.setFontSize(12); doc.text("Contratos Unificados (Originais)", 15, y); y += 8; doc.setFontSize(9);
+
+            listaDeParcelas.forEach(p => {
+                let textoLinha = (tipo === "Cliente") 
+                    ? `- Banco: ${p.banco} | Parcela: ${p.parcela}`
+                    : `- Banco: ${p.banco} | Parcela: ${p.parcela} | Prazo: ${p.status} | Saldo Aprox.: ${p.saldo}`;
+                
+                const linhasSplit = doc.splitTextToSize(textoLinha, pageWidth - 30);
+                y = verificarQuebraPagina(doc, y, linhasSplit.length * 5);
+                doc.text(linhasSplit, 15, y);
+                y += (linhasSplit.length * 5);
+            });
+        }
+    }
+    
+    y = verificarQuebraPagina(doc, y, 25);
+    y += 10; doc.setFontSize(12); doc.text("Dados do Novo Contrato", 15, y); y += 8; doc.setFontSize(10);
+    doc.text(`Banco: ${calculoDetalhado?.novoBanco || 'Bradesco'}`, 15, y); y += 6;
+    doc.text(`Prazo: ${calculoDetalhado?.novoPrazo || '96'}x`, 15, y); y += 6;
+    doc.text(`Valor da Parcela: ${formatarMoeda(calculoDetalhado?.novaParcelaValor)}`, 15, y); y += 6;
+
+    return y;
+}
+
+// 6. PDF Escritório (Corrigido para evitar sobreposição)
+function gerarPDFEscritorio() {
+    if (!calculoDetalhado || Object.keys(calculoDetalhado).length === 0) { showToast("Realize o cálculo primeiro.", "warning"); return; }
+    const { jsPDF } = window.jspdf; const doc = new jsPDF();
+    const gap = 6;
+    let y = gerarPDFBase(doc, "Escritório");
+
+    if (dadosNegativado) {
+        y = verificarQuebraPagina(doc, y, 30);
+        y += 10; doc.setFontSize(12); doc.text("Resumo do Cálculo Negativado", 15, y); y += 8; doc.setFontSize(10);
+        doc.text(`Parcelas Originais: ${formatarMoeda(dadosNegativado.totalParcelas)}`, 15, y); y += gap;
+        doc.text(`Valor Negativo Informado: ${formatarMoeda(dadosNegativado.negativo)}`, 15, y); y += gap;
+        doc.text(`Nova Parcela Calculada: ${formatarMoeda(dadosNegativado.novaParcela)}`, 15, y); y += gap;
+    }
+
+    y = verificarQuebraPagina(doc, y, 50);
+    y += 10; doc.setFontSize(12); doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
+
+    if (calculoDetalhado.tipo.includes('margem_nova')) {
+        doc.setFontSize(13); doc.setFont('helvetica', 'bold');
+        doc.text(`Valor Liberado (Estimado): ${formatarMoeda(calculoDetalhado.valorLiberado)}`, 15, y); y += 10;
+        doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+        doc.text(`Valor Total do Contrato: ${formatarMoeda(calculoDetalhado.valorTotalContrato)}`, 15, y); y += gap;
+        doc.text(`Coeficiente Informado: ${calculoDetalhado.coef ? calculoDetalhado.coef.toFixed(8) : 'N/A'}`, 15, y);
+    } else {
+        doc.text(`Novo Saldo (Gerado): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += gap;
+        doc.text(`Saldo Devedor a Quitar: ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += gap;
+        if (calculoDetalhado.d > 0) { doc.text(`Produto (Opcional): ${formatarMoeda(calculoDetalhado.d)}`, 15, y); y += gap; }
+        
+        doc.text("--------------------------------------------------", 15, y); y += gap;
+
+        if (calculoDetalhado.tipo.includes('compra')) {
+            doc.text(`Valor Bruto Disponível: ${formatarMoeda(calculoDetalhado.sub)}`, 15, y); y += gap;
+            const txInv = calculoDetalhado.investidorR ? (calculoDetalhado.investidorR * 100).toFixed(0) : '0';
+            doc.text(`Comissão Investidor (${txInv}% sobre Saldo): - ${formatarMoeda(calculoDetalhado.investidor)}`, 15, y); y += gap;
+            doc.text(`Comissão Gerente (${calculoDetalhado.comissaoG}% sobre Bruto): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += gap;
+        } else {
+            doc.text(`Valor Bruto Liberado (Troco): ${formatarMoeda(calculoDetalhado.sub)}`, 15, y); y += gap;
+            if (calculoDetalhado.valorQuitado > 0) { doc.text(`Valor Quitado Extra: - ${formatarMoeda(calculoDetalhado.valorQuitado)}`, 15, y); y += gap; }
+            doc.text(`Comissão Gerente (${calculoDetalhado.comissaoG}%): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += gap;
         }
 
-        // 3. Base do PDF (Cabeçalho e Listas)
-        function gerarPDFBase(doc, tipo) {
-            const getBase64Image = (img) => { if (!img) return null; try { const c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight; c.getContext("2d").drawImage(img, 0, 0); return c.toDataURL("image/png"); } catch (e) { return null; } };
+        y = verificarQuebraPagina(doc, y, 20);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Valor Geral Líquido (antes Escritório): ${formatarMoeda(calculoDetalhado.valorGeral)}`, 15, y); y += gap;
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Comissão Escritório: - ${formatarMoeda(calculoDetalhado.comissaoEsc)}`, 15, y); y += 10;
 
-            const selectedEmpresa = document.getElementById('empresaSelect').value;
-            const logoId = (selectedEmpresa === 'polo') ? 'logo-polo' : (selectedEmpresa === 'estilo' ? 'logo-estilo' : 'logo-alianca');
-            const logoPrincipalImg = document.getElementById(logoId);
-            const convenio = document.getElementById('convenioSelect').value;
-            const convenioLogoId = (convenio === 'exercito') ? 'convenio-logo-exercito' : 'convenio-logo-siape';
-            const convenioImgElem = document.getElementById(convenioLogoId);
+        doc.setFontSize(13); doc.setFont('helvetica', 'bold');
+        doc.text(`Valor Líquido Cliente (Estimado): ${formatarMoeda(calculoDetalhado.valorOfertaFinal)}`, 15, y);
+        y += 10; doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+        doc.text(`Coeficiente Real (Calculado): ${calculoDetalhado.coeficienteReal ? calculoDetalhado.coeficienteReal.toFixed(8) : 'N/A'}`, 15, y);
+    }
 
-            const logoPrincipalBase64 = getBase64Image(logoPrincipalImg);
-            const convenioBase64 = getBase64Image(convenioImgElem);
-
-            let y = 15;
-            const pageWidth = doc.internal.pageSize.getWidth();
-
-            const logoPrincipalWidth = 40, logoConvenioWidth = 30;
-            const logoPrincipalHeight = (logoPrincipalImg && logoPrincipalImg.naturalWidth > 0) ? logoPrincipalImg.naturalHeight * (logoPrincipalWidth / logoPrincipalImg.naturalWidth) : 0;
-            const logoConvenioHeight = (convenioImgElem && convenioImgElem.naturalWidth > 0) ? convenioImgElem.naturalHeight * (logoConvenioWidth / convenioImgElem.naturalWidth) : 0;
-            const maxHeight = Math.max(logoPrincipalHeight, logoConvenioHeight);
-
-            if (logoPrincipalBase64) doc.addImage(logoPrincipalBase64, 'PNG', 15, y + (maxHeight - logoPrincipalHeight) / 2, logoPrincipalWidth, logoPrincipalHeight);
-            if (convenioBase64) doc.addImage(convenioBase64, 'PNG', pageWidth - logoConvenioWidth - 15, y + (maxHeight - logoConvenioHeight) / 2, logoConvenioWidth, logoConvenioHeight);
-
-            y += maxHeight > 0 ? maxHeight + 10 : 25;
-
-            const operacaoSelectElement = document.getElementById('operacaoSelect');
-            const operacaoText = operacaoSelectElement.options[operacaoSelectElement.selectedIndex]?.text || 'Operação Desconhecida';
-            doc.setFontSize(18); doc.text(`Simulação de ${operacaoText} (${tipo})`, pageWidth / 2, y, { align: 'center' }); y += 20;
-
-            const nomeFinal = calculoDetalhado?.nome || 'Não informado'; const cpfFinal = calculoDetalhado?.cpf || 'Não informado';
-            doc.setFontSize(12); doc.text("Dados do Cliente", 15, y); y += 8;
-            doc.setFontSize(10); doc.text(`Nome: ${nomeFinal}`, 15, y); y += 6; doc.text(`CPF: ${cpfFinal}`, 15, y);
-
-            // LOGICA DOS CONTRATOS COM QUEBRA DE PÁGINA
-            if (calculoDetalhado && !calculoDetalhado.tipo.includes('margem_nova')) {
-                const isManualTabActive = document.getElementById('manual-tab').classList.contains('active');
-                const listaDeParcelas = isManualTabActive ? parcelasManuais.map(p => {
-                    const parcelasRestantes = (p.totalParcelas || 0) - (p.parcelasPagas || 0);
-                    const saldoManual = (parcelasRestantes > 0) ? p.parcela * parcelasRestantes * 0.70 : 0;
-                    return { banco: p.banco, parcela: formatarMoeda(p.parcela), saldo: formatarMoeda(saldoManual), status: `${p.parcelasPagas || 0} de ${p.totalParcelas || 0}` };
-                }) : parcelasSelecionadasPDF;
-
-                if (listaDeParcelas && listaDeParcelas.length > 0) {
-                    y += 16;
-                    y = verificarQuebraPagina(doc, y);
-
-                    doc.setFontSize(12); doc.text("Contratos Unificados (Originais)", 15, y); y += 8; doc.setFontSize(9);
-
-                    listaDeParcelas.forEach(p => {
-                        y = verificarQuebraPagina(doc, y); // Verifica a cada linha
-
-                        let linhaContrato = "";
-                        if (tipo === "Cliente") {
-                            linhaContrato = `- Banco: ${p.banco} | Parcela: ${p.parcela}`;
-                        } else {
-                            linhaContrato = `- Banco: ${p.banco} | Parcela: ${p.parcela} | Prazo: ${p.status} | Saldo Aprox.: ${p.saldo}`;
-                        }
-
-                        const linhas = doc.splitTextToSize(linhaContrato, pageWidth - 30);
-                        doc.text(linhas, 15, y);
-                        y += (linhas.length * 5);
-                    });
-                } else { y += 10; }
-            } else { y += 10; }
-
-            y = verificarQuebraPagina(doc, y);
-            y += 10; doc.setFontSize(12); doc.text("Dados do Novo Contrato", 15, y); y += 8; doc.setFontSize(10);
-            doc.text(`Banco: ${calculoDetalhado?.novoBanco || '(Não especificado)'}`, 15, y); y += 6;
-            doc.text(`Prazo: ${calculoDetalhado?.novoPrazo || '96'}x`, 15, y); y += 6;
-            doc.text(`Valor da Parcela: ${formatarMoeda(calculoDetalhado?.novaParcelaValor)}`, 15, y); y += 6;
-
-            return y;
-        }
-
+    desenharRodape(doc);
+    doc.save(gerarNomeArquivo('escritorio'));
+}
         // 4. Gera nome do arquivo (Mantido igual)
         function gerarNomeArquivo(tipoPdf) {
             const dataFormatada = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
