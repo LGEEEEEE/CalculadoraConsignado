@@ -1841,7 +1841,7 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             return y;
         }
 
-        // 3. Base do PDF (Ajustada para lidar com quebras de página dinâmicas)
+        // 3. Base do PDF (Ajustada para lidar com quebras de página dinâmicas e Margem Integrada)
         function gerarPDFBase(doc, tipo) {
             const getBase64Image = (img) => { if (!img) return null; try { const c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight; c.getContext("2d").drawImage(img, 0, 0); return c.toDataURL("image/png"); } catch (e) { return null; } };
 
@@ -1878,7 +1878,6 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             doc.setFontSize(12); doc.text("Dados do Cliente", 15, y); y += 8;
             doc.setFontSize(10); doc.text(`Nome: ${nomeFinal}`, 15, y); y += 6; doc.text(`CPF: ${cpfFinal}`, 15, y);
 
-            // Renderização de Contratos com Verificação de Espaço
             if (calculoDetalhado && !calculoDetalhado.tipo.includes('margem_nova')) {
                 const isManualTabActive = document.getElementById('manual-tab').classList.contains('active');
                 const listaDeParcelas = isManualTabActive ? parcelasManuais.map(p => {
@@ -1909,7 +1908,22 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             y += 10; doc.setFontSize(12); doc.text("Dados do Novo Contrato", 15, y); y += 8; doc.setFontSize(10);
             doc.text(`Banco: ${calculoDetalhado?.novoBanco || 'Bradesco'}`, 15, y); y += 6;
             doc.text(`Prazo: ${calculoDetalhado?.novoPrazo || '96'}x`, 15, y); y += 6;
-            doc.text(`Valor da Parcela Unificada: ${formatarMoeda(calculoDetalhado?.novaParcelaValor)}`, 15, y); y += 6;
+            
+            // LÓGICA NOVA: Soma das Parcelas
+            let parcelaTotal = calculoDetalhado?.novaParcelaValor || 0;
+            let parcelaMI = calculoDetalhado?.parcelaMargemIntegrada || 0;
+            
+            if (parcelaMI > 0) {
+                doc.text(`Valor da Parcela (Contratos Anteriores): ${formatarMoeda(parcelaTotal)}`, 15, y); y += 6;
+                doc.setTextColor(25, 135, 84); // Deixa verdinho para destacar
+                doc.text(`(+) Parcela da Nova Margem: ${formatarMoeda(parcelaMI)}`, 15, y); y += 6;
+                doc.setTextColor(0, 0, 0);
+                doc.setFont('helvetica', 'bold');
+                doc.text(`Valor da Parcela Total Unificada: ${formatarMoeda(parcelaTotal + parcelaMI)}`, 15, y); y += 6;
+                doc.setFont('helvetica', 'normal');
+            } else {
+                doc.text(`Valor da Parcela Unificada: ${formatarMoeda(parcelaTotal)}`, 15, y); y += 6;
+            }
 
             return y;
         }
@@ -2017,33 +2031,27 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             y += 10;
             y = verificarQuebraPagina(doc, y);
             doc.setFontSize(12);
-
+            
             if (calculoDetalhado.tipo.includes('margem_nova')) {
                 doc.text("Resumo da Simulação de Margem Nova", 15, y); y += 8;
                 doc.setFontSize(14); doc.setFont('helvetica', 'bold');
                 doc.text(`Valor Líquido (Estimado): ${formatarMoeda(calculoDetalhado.valorLiquidoCliente)}`, 15, y); y += 10;
                 doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+
             } else {
                 doc.text("Resumo da Operação Simulada", 15, y); y += 8; doc.setFontSize(10);
-
-                // Se houver margem integrada, detalha para o cliente
-                if (calculoDetalhado.valorMargemIntegrada > 0) {
-                    doc.text(`Valor da Operação Principal: ${formatarMoeda(calculoDetalhado.valorOfertaFinal - calculoDetalhado.valorMargemIntegrada)}`, 15, y); y += 6;
-                    doc.setTextColor(25, 135, 84); // Verde para a margem nova
-                    doc.text(`(+) Valor da Margem Nova: ${formatarMoeda(calculoDetalhado.valorMargemIntegrada)}`, 15, y); y += 8;
-                    doc.setTextColor(0, 0, 0); // Volta para preto
-                }
-
+                
+                // Exibe apenas o saldo devedor e o líquido final, sem poluir a tela do cliente
                 doc.text(`Saldo Devedor Total a Quitar (Aprox.): ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 10;
-
+                
                 doc.setFontSize(14); doc.setFont('helvetica', 'bold');
                 doc.text(`Valor Líquido Total para o Cliente: ${formatarMoeda(calculoDetalhado.valorOfertaFinal)}`, 15, y);
                 y += 10; doc.setFontSize(10); doc.setFont('helvetica', 'normal');
             }
-
+            
             y += 15; doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.text("Valores aproximados. A proposta final pode variar.", 15, y);
 
-            desenharRodape(doc);
+            desenharRodape(doc); // Rodapé final
             doc.save(gerarNomeArquivo('cliente'));
         }
 
