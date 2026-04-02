@@ -1916,7 +1916,7 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             if (parcelaMI > 0) {
                 doc.text(`Valor da Parcela (Contratos Anteriores): ${formatarMoeda(parcelaTotal)}`, 15, y); y += 6;
                 doc.setTextColor(25, 135, 84); // Deixa verdinho para destacar
-                doc.text(`(+) Parcela da Nova Margem: ${formatarMoeda(parcelaMI)}`, 15, y); y += 6;
+                doc.text(`(+) Parcela da Nova Margem Utilizada: ${formatarMoeda(parcelaMI)}`, 15, y); y += 6;
                 doc.setTextColor(0, 0, 0);
                 doc.setFont('helvetica', 'bold');
                 doc.text(`Valor da Parcela Total Unificada: ${formatarMoeda(parcelaTotal + parcelaMI)}`, 15, y); y += 6;
