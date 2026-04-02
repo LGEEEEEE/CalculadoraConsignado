@@ -362,6 +362,31 @@
                                     <input type="text" id="desconto" class="form-control" placeholder="Ex: 1.000,00">
                                 </div>
                             </div>
+                            <div class="p-3 mb-3 border rounded bg-light">
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="usarMargemIntegrada"
+                                        onchange="toggleMargemIntegrada()">
+                                    <label class="form-check-label fw-bold text-primary" for="usarMargemIntegrada">
+                                        <i class="bi bi-plus-circle-dotted"></i> Integrar Margem Nova?
+                                    </label>
+                                </div>
+                                <div id="margem-integrada-inputs" style="display:none;">
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <label for="mi-parcela" class="form-label small">Parcela Margem
+                                                Extra</label>
+                                            <input type="text" id="mi-parcela" class="form-control form-control-sm"
+                                                placeholder="R$ 0,00">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="mi-coeficiente" class="form-label small">Coeficiente
+                                                Margem</label>
+                                            <input type="text" id="mi-coeficiente" class="form-control form-control-sm"
+                                                value="0.023">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
                             <div id="port-refin-fields" style="display:none;">
                                 <div class="col-md-12 mb-3">
@@ -1541,6 +1566,10 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             document.getElementById("baixarPdfClienteBtn").addEventListener("click", gerarPDFCliente);
             document.getElementById("baixarPdfEscritorioBtn").addEventListener("click", gerarPDFEscritorio);
         }
+        function toggleMargemIntegrada() {
+            const check = document.getElementById('usarMargemIntegrada').checked;
+            document.getElementById('margem-integrada-inputs').style.display = check ? 'block' : 'none';
+        }
 
         function calcularSimulacaoCompleta() {
             const op = document.getElementById('operacaoSelect').value;
@@ -1556,17 +1585,25 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             const novoBanco = document.getElementById("novoBanco").value || 'Bradesco';
             const novoPrazo = parseInt(document.getElementById("novoPrazo").value, 10) || 96;
 
+            // Captura da Margem Integrada
+            const usarMI = document.getElementById('usarMargemIntegrada').checked;
+            const parcelaMI = usarMI ? moedaParaFloat(document.getElementById('mi-parcela').value) : 0;
+            const coefMI = usarMI ? parseFloat(document.getElementById('mi-coeficiente').value.replace(',', '.')) : 0;
+            const valorLiberadoMI = (usarMI && parcelaMI > 0 && coefMI > 0) ? (parcelaMI / coefMI) : 0;
+
             // Validação básica
             if (p <= 0 || coef <= 0) return showToast("Dados inválidos (Parcela ou Coeficiente zerados)", 'danger');
 
             const novoContrato = p / coef;
 
             // Variáveis de cálculo
-            let brutoDisponivel = 0;
+            let brutoDisponivel = 0; // Bruto apenas da operação principal
+            let brutoTotalParaComissao = 0; // Bruto Operação + Bruto Margem
             let comissaoInv = 0;
             let comissaoG_valor = 0;
             let liquidoFinal = 0;
             let pctInv = 0;
+            let quitadoExtra = 0;
 
             // Textos para exibição na tela (HTML)
             let txtPctInvestidor = "0%";
@@ -1575,76 +1612,102 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
 
             if (op.includes('compra')) {
                 const tipoC = document.getElementById('tipoCompra').value;
-                pctInv = (tipoC === 'bradesco') ? 0.10 : 0.08; // Define a taxa (10% ou 8%)
+                pctInv = (tipoC === 'bradesco') ? 0.10 : 0.08;
                 txtPctInvestidor = (pctInv * 100).toFixed(0) + "%";
 
                 brutoDisponivel = novoContrato - s - d;
                 comissaoInv = s * pctInv;
-                comissaoG_valor = brutoDisponivel * (comG_pct / 100);
 
-                liquidoFinal = brutoDisponivel - comissaoInv - comissaoG_valor - comEsc;
+                // NOVO: A Base da comissão agora é a soma dos Brutos
+                brutoTotalParaComissao = brutoDisponivel + valorLiberadoMI;
+                comissaoG_valor = brutoTotalParaComissao * (comG_pct / 100);
+
+                liquidoFinal = brutoTotalParaComissao - comissaoInv - comissaoG_valor - comEsc;
 
                 // HTML Detalhado para a TELA
                 htmlDet = `
-                    <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
-                        <span>Novo Saldo (Gerado):</span> <strong>${formatarMoeda(novoContrato)}</strong>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
-                        <span>(-) Saldo Devedor:</span> <span class="text-danger">- ${formatarMoeda(s)}</span>
-                    </li>
-                    ${d > 0 ? `<li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
-                        <span>(-) Produto:</span> <span class="text-danger">- ${formatarMoeda(d)}</span>
-                    </li>` : ''}
-                    <li class="list-group-item d-flex justify-content-between bg-light rounded px-2 py-2 my-2">
-                        <span class="fw-bold">(=) Valor Bruto Disponível:</span> <strong class="text-dark">${formatarMoeda(brutoDisponivel)}</strong>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
-                        <span>(-) Com. Investidor <span class="badge bg-secondary text-white" style="font-size:0.7em">${txtPctInvestidor}</span>:</span> 
-                        <span class="text-danger">- ${formatarMoeda(comissaoInv)}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
-                        <span>(-) Com. Gerente <span class="badge bg-secondary text-white" style="font-size:0.7em">${txtPctGerente}</span>:</span> 
-                        <span class="text-danger">- ${formatarMoeda(comissaoG_valor)}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
-                        <span>(-) Com. Escritório:</span> <span class="text-danger">- ${formatarMoeda(comEsc)}</span>
-                    </li>`;
+            <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+                <span>Novo Saldo (Gerado):</span> <strong>${formatarMoeda(novoContrato)}</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+                <span>(-) Saldo Devedor:</span> <span class="text-danger">- ${formatarMoeda(s)}</span>
+            </li>
+            ${d > 0 ? `<li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+                <span>(-) Produto:</span> <span class="text-danger">- ${formatarMoeda(d)}</span>
+            </li>` : ''}
+            <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1 text-primary">
+                <span>(=) Bruto da Compra:</span> <strong>${formatarMoeda(brutoDisponivel)}</strong>
+            </li>`;
 
             } else {
                 // Lógica Portabilidade / Refin
-                let quitadoExtra = 0;
-                if (document.getElementById('quitacaoSim').checked) quitadoExtra = moedaParaFloat(document.getElementById('valorQuitado').value);
+                if (document.getElementById('quitacaoSim') && document.getElementById('quitacaoSim').checked) {
+                    quitadoExtra = moedaParaFloat(document.getElementById('valorQuitado').value);
+                }
 
-                let baseComissao = novoContrato - s - d - quitadoExtra;
-                comissaoG_valor = baseComissao * (comG_pct / 100);
-                liquidoFinal = baseComissao - comissaoG_valor - comEsc;
+                brutoDisponivel = novoContrato - s - d - quitadoExtra;
 
-                brutoDisponivel = baseComissao;
+                // NOVO: A Base da comissão agora é a soma dos Brutos
+                brutoTotalParaComissao = brutoDisponivel + valorLiberadoMI;
+                comissaoG_valor = brutoTotalParaComissao * (comG_pct / 100);
+
+                liquidoFinal = brutoTotalParaComissao - comissaoG_valor - comEsc;
 
                 htmlDet = `
-                    <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
-                        <span>Novo Saldo (Gerado):</span> <strong>${formatarMoeda(novoContrato)}</strong>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
-                        <span>(-) Saldo Devedor:</span> <span class="text-danger">- ${formatarMoeda(s)}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between bg-light rounded px-2 py-2 my-2">
-                        <span class="fw-bold">(=) Valor Bruto Liberado:</span> <strong class="text-dark">${formatarMoeda(baseComissao)}</strong>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
-                        <span>(-) Com. Gerente <span class="badge bg-secondary text-white" style="font-size:0.7em">${txtPctGerente}</span>:</span> 
-                        <span class="text-danger">- ${formatarMoeda(comissaoG_valor)}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
-                        <span>(-) Com. Escritório:</span> <span class="text-danger">- ${formatarMoeda(comEsc)}</span>
-                    </li>`;
+            <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+                <span>Novo Saldo (Gerado):</span> <strong>${formatarMoeda(novoContrato)}</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+                <span>(-) Saldo Devedor:</span> <span class="text-danger">- ${formatarMoeda(s)}</span>
+            </li>
+            ${d > 0 ? `<li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+                <span>(-) Produto:</span> <span class="text-danger">- ${formatarMoeda(d)}</span>
+            </li>` : ''}
+            ${quitadoExtra > 0 ? `<li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+                <span>(-) Valor Quitado:</span> <span class="text-danger">- ${formatarMoeda(quitadoExtra)}</span>
+            </li>` : ''}
+            <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1 text-primary">
+                <span>(=) Bruto Portabilidade/Refin:</span> <strong>${formatarMoeda(brutoDisponivel)}</strong>
+            </li>`;
             }
+
+            // Se houver Margem Integrada, mostra a soma para compor a Base
+            if (valorLiberadoMI > 0) {
+                htmlDet += `
+        <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1 text-success">
+            <span>(+) Bruto Margem Integrada:</span> <strong>+ ${formatarMoeda(valorLiberadoMI)}</strong>
+        </li>`;
+            }
+
+            // Mostra a Base de Cálculo Real
+            htmlDet += `
+        <li class="list-group-item d-flex justify-content-between bg-light rounded px-2 py-2 my-2 border border-secondary-subtle">
+            <span class="fw-bold">(=) Base de Cálculo (Bruto Total):</span> <strong class="text-dark">${formatarMoeda(brutoTotalParaComissao)}</strong>
+        </li>`;
+
+            // Deduz Comissões e Investidor
+            if (op.includes('compra')) {
+                htmlDet += `
+        <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+            <span>(-) Com. Investidor <span class="badge bg-secondary text-white" style="font-size:0.7em">${txtPctInvestidor}</span>:</span> 
+            <span class="text-danger">- ${formatarMoeda(comissaoInv)}</span>
+        </li>`;
+            }
+
+            htmlDet += `
+        <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+            <span>(-) Com. Gerente <span class="badge bg-secondary text-white" style="font-size:0.7em">${txtPctGerente}</span>:</span> 
+            <span class="text-danger">- ${formatarMoeda(comissaoG_valor)}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+            <span>(-) Com. Escritório:</span> <span class="text-danger">- ${formatarMoeda(comEsc)}</span>
+        </li>`;
 
             // Coeficiente Real
             let coeficienteReal = 0;
             if ((liquidoFinal + s) > 0) { coeficienteReal = p / (liquidoFinal + s); }
 
-            // Captura robusta de Nome e CPF (Input > Variável Global > Padrão)
+            // Captura robusta de Nome e CPF
             const nomeFinal = document.getElementById('clienteNome').value || clienteNomePDF || 'Nome Não Informado';
             const cpfFinal = document.getElementById('clienteCpf').value || clienteCpfPDF || 'CPF Não Informado';
 
@@ -1665,66 +1728,68 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                 novaParcelaValor: p,
                 sub: brutoDisponivel,
                 investidor: comissaoInv,
-                investidorR: pctInv, // Salva a taxa para não dar erro no PDF
+                investidorR: pctInv,
                 gerente: comissaoG_valor,
-                comissaoG: comG_pct, // Salva a taxa para não dar erro no PDF
+                comissaoG: comG_pct,
                 comissaoEsc: comEsc,
                 valorGeral: valorGeralCalculado,
                 coef: coef,
                 coeficienteReal: coeficienteReal,
-                valorQuitado: (typeof quitadoExtra !== 'undefined') ? quitadoExtra : 0
+                valorQuitado: quitadoExtra,
+                valorMargemIntegrada: valorLiberadoMI,
+                parcelaMargemIntegrada: parcelaMI
             };
 
             // Renderizar na Tela
             const div = document.getElementById('resultadoFinal');
             div.style.display = 'block';
             div.innerHTML = `
-                <div class="card border-primary shadow-sm">
-                    <div class="card-header card-resultado-header bg-primary text-white text-center">
-                        <h5 class="mb-0 fw-bold">Resultado da Simulação</h5>
-                    </div>
-                    <div class="card-body p-4">
-                        <div class="text-center mb-4">
-                            <small class="text-muted text-uppercase fw-bold" style="letter-spacing: 1px;">VALOR LÍQUIDO (ESTIMADO)</small>
-                            <h1 class="resultado-final-valor text-success mb-0 mt-1">${formatarMoeda(liquidoFinal)}</h1>
-                        </div>
-                        <div class="row g-3 mb-4">
-                            <div class="col-6">
-                                <div class="p-3 border rounded bg-light text-center h-100">
-                                    <small class="d-block text-muted mb-1">Novo Contrato</small>
-                                    <strong class="fs-5 text-dark">${formatarMoeda(novoContrato)}</strong>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="p-3 border rounded bg-light text-center h-100">
-                                    <small class="d-block text-muted mb-1">Saldo Quitado</small>
-                                    <strong class="fs-5 text-dark">${formatarMoeda(s)}</strong>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card bg-white border-light shadow-sm">
-                            <div class="card-header bg-light border-bottom-0 fw-bold text-primary">
-                                <i class="bi bi-list-ul me-2"></i> Detalhamento Completo
-                            </div>
-                            <div class="card-body pt-0">
-                                <ul class="list-group list-group-flush small">
-                                    ${htmlDet}
-                                </ul>
-                            </div>
-                            <div class="card-footer bg-white border-top pt-2 pb-2">
-                                <div class="d-flex justify-content-between align-items-center small text-muted">
-                                    <span>Coeficiente Real:</span>
-                                    <span class="text-primary fw-bold font-monospace">${coeficienteReal.toFixed(8)}</span>
-                                </div>
-                            </div>
+        <div class="card border-primary shadow-sm">
+            <div class="card-header card-resultado-header bg-primary text-white text-center">
+                <h5 class="mb-0 fw-bold">Resultado da Simulação</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <small class="text-muted text-uppercase fw-bold" style="letter-spacing: 1px;">VALOR LÍQUIDO (ESTIMADO)</small>
+                    <h1 class="resultado-final-valor text-success mb-0 mt-1">${formatarMoeda(liquidoFinal)}</h1>
+                </div>
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        <div class="p-3 border rounded bg-light text-center h-100">
+                            <small class="d-block text-muted mb-1">Novo Contrato (Operação)</small>
+                            <strong class="fs-5 text-dark">${formatarMoeda(novoContrato)}</strong>
                         </div>
                     </div>
-                    <div class="card-footer bg-light d-flex justify-content-center gap-2 py-3">
-                         <button id="baixarPdfClienteBtn" class="btn btn-success"><i class="bi bi-file-earmark-pdf"></i> PDF Cliente</button>
-                         <button id="baixarPdfEscritorioBtn" class="btn btn-secondary"><i class="bi bi-file-earmark-text"></i> PDF Escritório</button>
+                    <div class="col-6">
+                        <div class="p-3 border rounded bg-light text-center h-100">
+                            <small class="d-block text-muted mb-1">Saldo Quitado</small>
+                            <strong class="fs-5 text-dark">${formatarMoeda(s)}</strong>
+                        </div>
                     </div>
                 </div>
-            `;
+                <div class="card bg-white border-light shadow-sm">
+                    <div class="card-header bg-light border-bottom-0 fw-bold text-primary">
+                        <i class="bi bi-list-ul me-2"></i> Detalhamento Completo
+                    </div>
+                    <div class="card-body pt-0">
+                        <ul class="list-group list-group-flush small">
+                            ${htmlDet}
+                        </ul>
+                    </div>
+                    <div class="card-footer bg-white border-top pt-2 pb-2">
+                        <div class="d-flex justify-content-between align-items-center small text-muted">
+                            <span>Coeficiente Real:</span>
+                            <span class="text-primary fw-bold font-monospace">${coeficienteReal.toFixed(8)}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-light d-flex justify-content-center gap-2 py-3">
+                 <button id="baixarPdfClienteBtn" class="btn btn-success"><i class="bi bi-file-earmark-pdf"></i> PDF Cliente</button>
+                 <button id="baixarPdfEscritorioBtn" class="btn btn-secondary"><i class="bi bi-file-earmark-text"></i> PDF Escritório</button>
+            </div>
+        </div>
+    `;
 
             div.scrollIntoView({ behavior: 'smooth' });
 
@@ -1851,56 +1916,75 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
 
         // 6. PDF Escritório (Corrigido para evitar sobreposição)
         function gerarPDFEscritorio() {
-            if (!calculoDetalhado || Object.keys(calculoDetalhado).length === 0) { showToast("Realize o cálculo primeiro.", "warning"); return; }
+            if (!calculoDetalhado || Object.keys(calculoDetalhado).length === 0) { showToast("Nenhum cálculo foi realizado ainda.", "warning"); return; }
             const { jsPDF } = window.jspdf; const doc = new jsPDF();
-            const gap = 6;
+
             let y = gerarPDFBase(doc, "Escritório");
+            const gap = 7;
 
             if (dadosNegativado) {
-                y = verificarQuebraPagina(doc, y, 30);
-                y += 10; doc.setFontSize(12); doc.text("Resumo do Cálculo Negativado", 15, y); y += 8; doc.setFontSize(10);
+                y += 10;
+                y = verificarQuebraPagina(doc, y);
+                doc.setFontSize(12); doc.text("Resumo do Cálculo Negativado", 15, y); y += 8; doc.setFontSize(10);
                 doc.text(`Parcelas Originais: ${formatarMoeda(dadosNegativado.totalParcelas)}`, 15, y); y += gap;
                 doc.text(`Valor Negativo Informado: ${formatarMoeda(dadosNegativado.negativo)}`, 15, y); y += gap;
                 doc.text(`Nova Parcela Calculada: ${formatarMoeda(dadosNegativado.novaParcela)}`, 15, y); y += gap;
             }
 
-            y = verificarQuebraPagina(doc, y, 50);
-            y += 10; doc.setFontSize(12); doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
+            y += 10;
+            y = verificarQuebraPagina(doc, y);
+            doc.setFontSize(12);
 
             if (calculoDetalhado.tipo.includes('margem_nova')) {
+                doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
+                doc.text(`Valor Bruto Liberado: ${formatarMoeda(calculoDetalhado.valorLiberadoBruto)}`, 15, y); y += gap;
+                const strGer = calculoDetalhado.tipoComGerente === 'porcentagem' ? `(${calculoDetalhado.inputComGerente}%)` : '(Fixo)';
+                doc.text(`Comissão Gerente ${strGer}: - ${formatarMoeda(calculoDetalhado.comissaoGerenteReais)}`, 15, y); y += gap;
+                doc.text(`Comissão Escritório: - ${formatarMoeda(calculoDetalhado.comEscritorio)}`, 15, y); y += gap;
+                doc.text("--------------------------------------------------", 15, y); y += gap;
                 doc.setFontSize(13); doc.setFont('helvetica', 'bold');
-                doc.text(`Valor Liberado (Estimado): ${formatarMoeda(calculoDetalhado.valorLiberado)}`, 15, y); y += 10;
-                doc.setFontSize(10); doc.setFont('helvetica', 'normal');
-                doc.text(`Valor Total do Contrato: ${formatarMoeda(calculoDetalhado.valorTotalContrato)}`, 15, y); y += gap;
-                doc.text(`Coeficiente Informado: ${calculoDetalhado.coef ? calculoDetalhado.coef.toFixed(8) : 'N/A'}`, 15, y);
+                doc.text(`Valor Líquido Cliente: ${formatarMoeda(calculoDetalhado.valorLiquidoCliente)}`, 15, y);
             } else {
-                doc.text(`Novo Saldo (Gerado): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += gap;
+                doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
+                y = verificarQuebraPagina(doc, y + 60);
+
+                doc.text(`Novo Saldo (Operação Principal): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += gap;
                 doc.text(`Saldo Devedor a Quitar: ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += gap;
-                if (calculoDetalhado.d > 0) { doc.text(`Produto (Opcional): ${formatarMoeda(calculoDetalhado.d)}`, 15, y); y += gap; }
 
                 doc.text("--------------------------------------------------", 15, y); y += gap;
 
+                // Calcula a base total para exibir
+                const baseCalculoTotal = calculoDetalhado.sub + (calculoDetalhado.valorMargemIntegrada || 0);
+
                 if (calculoDetalhado.tipo.includes('compra')) {
-                    doc.text(`Valor Bruto Disponível: ${formatarMoeda(calculoDetalhado.sub)}`, 15, y); y += gap;
+                    doc.text(`Bruto da Compra: ${formatarMoeda(calculoDetalhado.sub)}`, 15, y); y += gap;
+                    if (calculoDetalhado.valorMargemIntegrada > 0) {
+                        doc.text(`(+) Bruto Margem Integrada: ${formatarMoeda(calculoDetalhado.valorMargemIntegrada)}`, 15, y); y += gap;
+                        doc.setFont('helvetica', 'bold');
+                        doc.text(`(=) Base de Cálculo (Total): ${formatarMoeda(baseCalculoTotal)}`, 15, y); y += gap;
+                        doc.setFont('helvetica', 'normal');
+                    }
                     const txInv = calculoDetalhado.investidorR ? (calculoDetalhado.investidorR * 100).toFixed(0) : '0';
-                    doc.text(`Comissão Investidor (${txInv}% sobre Saldo): - ${formatarMoeda(calculoDetalhado.investidor)}`, 15, y); y += gap;
-                    doc.text(`Comissão Gerente (${calculoDetalhado.comissaoG}% sobre Bruto): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += gap;
+                    doc.text(`Com. Investidor (${txInv}% sobre Saldo): - ${formatarMoeda(calculoDetalhado.investidor)}`, 15, y); y += gap;
+                    doc.text(`Com. Gerente (${calculoDetalhado.comissaoG}% sobre Base): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += gap;
                 } else {
-                    doc.text(`Valor Bruto Liberado (Troco): ${formatarMoeda(calculoDetalhado.sub)}`, 15, y); y += gap;
-                    if (calculoDetalhado.valorQuitado > 0) { doc.text(`Valor Quitado Extra: - ${formatarMoeda(calculoDetalhado.valorQuitado)}`, 15, y); y += gap; }
-                    doc.text(`Comissão Gerente (${calculoDetalhado.comissaoG}%): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += gap;
+                    doc.text(`Bruto da Portabilidade/Refin: ${formatarMoeda(calculoDetalhado.sub)}`, 15, y); y += gap;
+                    if (calculoDetalhado.valorMargemIntegrada > 0) {
+                        doc.text(`(+) Bruto Margem Integrada: ${formatarMoeda(calculoDetalhado.valorMargemIntegrada)}`, 15, y); y += gap;
+                        doc.setFont('helvetica', 'bold');
+                        doc.text(`(=) Base de Cálculo (Total): ${formatarMoeda(baseCalculoTotal)}`, 15, y); y += gap;
+                        doc.setFont('helvetica', 'normal');
+                    }
+                    doc.text(`Com. Gerente (${calculoDetalhado.comissaoG}% sobre Base): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += gap;
                 }
 
-                y = verificarQuebraPagina(doc, y, 20);
                 doc.setFont('helvetica', 'bold');
-                doc.text(`Valor Geral Líquido (antes Escritório): ${formatarMoeda(calculoDetalhado.valorGeral)}`, 15, y); y += gap;
+                doc.text(`Valor Geral Líquido (antes Escritório): ${formatarMoeda(calculoDetalhado.valorGeral + (calculoDetalhado.valorMargemIntegrada || 0))}`, 15, y); y += gap;
                 doc.setFont('helvetica', 'normal');
                 doc.text(`Comissão Escritório: - ${formatarMoeda(calculoDetalhado.comissaoEsc)}`, 15, y); y += 10;
 
-                doc.setFontSize(13); doc.setFont('helvetica', 'bold');
-                doc.text(`Valor Líquido Cliente (Estimado): ${formatarMoeda(calculoDetalhado.valorOfertaFinal)}`, 15, y);
-                y += 10; doc.setFontSize(10); doc.setFont('helvetica', 'normal');
-                doc.text(`Coeficiente Real (Calculado): ${calculoDetalhado.coeficienteReal ? calculoDetalhado.coeficienteReal.toFixed(8) : 'N/A'}`, 15, y);
+                doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+                doc.text(`Valor Líquido Final Cliente: ${formatarMoeda(calculoDetalhado.valorOfertaFinal)}`, 15, y);
             }
 
             desenharRodape(doc);
@@ -1933,121 +2017,34 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             y += 10;
             y = verificarQuebraPagina(doc, y);
             doc.setFontSize(12);
+
             if (calculoDetalhado.tipo.includes('margem_nova')) {
                 doc.text("Resumo da Simulação de Margem Nova", 15, y); y += 8;
                 doc.setFontSize(14); doc.setFont('helvetica', 'bold');
-                // Alterado para mostrar apenas o valor Líquido
                 doc.text(`Valor Líquido (Estimado): ${formatarMoeda(calculoDetalhado.valorLiquidoCliente)}`, 15, y); y += 10;
                 doc.setFontSize(10); doc.setFont('helvetica', 'normal');
-
             } else {
                 doc.text("Resumo da Operação Simulada", 15, y); y += 8; doc.setFontSize(10);
-                doc.text(`Saldo Devedor Total a Quitar (Aprox.): ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 10;
-                doc.setFontSize(14); doc.setFont('helvetica', 'bold');
-                doc.text(`Valor Líquido Estimado para o Cliente: ${formatarMoeda(calculoDetalhado.valorOfertaFinal)}`, 15, y);
-                y += 10; doc.setFontSize(10); doc.setFont('helvetica', 'normal');
 
+                // Se houver margem integrada, detalha para o cliente
+                if (calculoDetalhado.valorMargemIntegrada > 0) {
+                    doc.text(`Valor da Operação Principal: ${formatarMoeda(calculoDetalhado.valorOfertaFinal - calculoDetalhado.valorMargemIntegrada)}`, 15, y); y += 6;
+                    doc.setTextColor(25, 135, 84); // Verde para a margem nova
+                    doc.text(`(+) Valor da Margem Nova: ${formatarMoeda(calculoDetalhado.valorMargemIntegrada)}`, 15, y); y += 8;
+                    doc.setTextColor(0, 0, 0); // Volta para preto
+                }
+
+                doc.text(`Saldo Devedor Total a Quitar (Aprox.): ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 10;
+
+                doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+                doc.text(`Valor Líquido Total para o Cliente: ${formatarMoeda(calculoDetalhado.valorOfertaFinal)}`, 15, y);
+                y += 10; doc.setFontSize(10); doc.setFont('helvetica', 'normal');
             }
+
             y += 15; doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.text("Valores aproximados. A proposta final pode variar.", 15, y);
 
-            desenharRodape(doc); // Rodapé final
+            desenharRodape(doc);
             doc.save(gerarNomeArquivo('cliente'));
-        }
-
-        // 6. PDF Escritório
-        function gerarPDFEscritorio() {
-            if (!calculoDetalhado || Object.keys(calculoDetalhado).length === 0) { showToast("Nenhum cálculo foi realizado ainda.", "warning"); return; }
-            const { jsPDF } = window.jspdf; const doc = new jsPDF();
-
-            let y = gerarPDFBase(doc, "Escritório");
-            const gap = 7;
-
-            // Se for Negativado
-            if (dadosNegativado) {
-                y += 10;
-                y = verificarQuebraPagina(doc, y);
-                doc.setFontSize(12); doc.text("Resumo do Cálculo Negativado", 15, y); y += 8; doc.setFontSize(10);
-                doc.text(`Parcelas Originais: ${formatarMoeda(dadosNegativado.totalParcelas)}`, 15, y); y += gap;
-                doc.text(`Valor Negativo Informado: ${formatarMoeda(dadosNegativado.negativo)}`, 15, y); y += gap;
-                doc.text(`Nova Parcela Calculada: ${formatarMoeda(dadosNegativado.novaParcela)}`, 15, y); y += gap;
-            }
-
-            y += 10;
-            y = verificarQuebraPagina(doc, y);
-
-            doc.setFontSize(12);
-            if (calculoDetalhado.tipo.includes('margem_nova')) {
-                doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
-
-                doc.text(`Valor Bruto Liberado: ${formatarMoeda(calculoDetalhado.valorLiberadoBruto)}`, 15, y); y += gap;
-
-                const strGer = calculoDetalhado.tipoComGerente === 'porcentagem' ? `(${calculoDetalhado.inputComGerente}%)` : '(Fixo)';
-                doc.text(`Comissão Gerente ${strGer}: - ${formatarMoeda(calculoDetalhado.comissaoGerenteReais)}`, 15, y); y += gap;
-                doc.text(`Comissão Escritório: - ${formatarMoeda(calculoDetalhado.comEscritorio)}`, 15, y); y += gap;
-
-                doc.text("--------------------------------------------------", 15, y); y += gap;
-
-                doc.setFontSize(13); doc.setFont('helvetica', 'bold');
-                doc.text(`Valor Líquido Cliente: ${formatarMoeda(calculoDetalhado.valorLiquidoCliente)}`, 15, y); y += 10;
-
-                doc.setFontSize(10); doc.setFont('helvetica', 'normal');
-                doc.text(`Valor Total do Contrato: ${formatarMoeda(calculoDetalhado.valorTotalContrato)}`, 15, y); y += gap;
-                doc.text(`Coeficiente Informado: ${calculoDetalhado.coef ? calculoDetalhado.coef.toFixed(8) : 'N/A'}`, 15, y);
-            } else {
-                // ... RESTANTE DO CÓDIGO DO PDF ESCRITÓRIO CONTINUA IGUAL ...
-                doc.text("Detalhes da Operação (Uso Interno)", 15, y); y += 8; doc.setFontSize(10);
-
-                // Verifica bloco grande
-                y = verificarQuebraPagina(doc, y + 60);
-                if (y === 20) {
-                    doc.setFontSize(12); doc.text("Detalhes da Operação (Continuação)", 15, y); y += 8; doc.setFontSize(10);
-                }
-
-                doc.text(`Novo Saldo (Gerado pela Parcela): ${formatarMoeda(calculoDetalhado.novoS)}`, 15, y); y += gap;
-                doc.text(`Saldo Devedor a Quitar: ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += gap;
-                if (calculoDetalhado.d > 0) {
-                    doc.text(`Produto (Opcional): ${formatarMoeda(calculoDetalhado.d)}`, 15, y); y += gap;
-                }
-
-                doc.text("--------------------------------------------------", 15, y); y += gap;
-
-                if (calculoDetalhado.tipo.includes('compra')) {
-                    doc.text(`Valor Bruto Disponível: ${formatarMoeda(calculoDetalhado.sub)}`, 15, y); y += gap;
-                    const txInv = calculoDetalhado.investidorR ? (calculoDetalhado.investidorR * 100).toFixed(0) : '0';
-                    doc.text(`Comissão Investidor (${txInv}% sobre Saldo): - ${formatarMoeda(calculoDetalhado.investidor)}`, 15, y); y += gap;
-                    const txGer = calculoDetalhado.comissaoG || 0;
-                    doc.text(`Comissão Gerente (${txGer}% sobre Bruto): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += gap;
-                } else {
-                    doc.text(`Valor Bruto Liberado (Troco Inicial): ${formatarMoeda(calculoDetalhado.sub)}`, 15, y); y += gap;
-                    if (calculoDetalhado.valorQuitado > 0) {
-                        doc.text(`Valor Quitado Adicional: - ${formatarMoeda(calculoDetalhado.valorQuitado)}`, 15, y); y += gap;
-                    }
-                    const txGer = calculoDetalhado.comissaoG || 0;
-                    doc.text(`Comissão Gerente (${txGer}% sobre Líquido): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += gap;
-                }
-
-                y = verificarQuebraPagina(doc, y);
-
-                doc.setFont('helvetica', 'bold');
-                const vGeral = calculoDetalhado.valorGeral || 0;
-                doc.text(`Valor Geral Líquido (antes Escritório): ${formatarMoeda(vGeral)}`, 15, y); y += gap;
-
-                doc.setFont('helvetica', 'normal');
-                doc.text(`Comissão Escritório: - ${formatarMoeda(calculoDetalhado.comissaoEsc)}`, 15, y); y += 10;
-
-                doc.setFontSize(14); doc.setFont('helvetica', 'bold');
-                doc.text(`Valor Líquido Cliente (Estimado): ${formatarMoeda(calculoDetalhado.valorOfertaFinal)}`, 15, y);
-                y += 10; doc.setFontSize(10); doc.setFont('helvetica', 'normal');
-
-                doc.text(`Coeficiente Input (Simulação): ${calculoDetalhado.coef ? calculoDetalhado.coef.toFixed(8) : 'N/A'}`, 15, y); y += gap;
-                doc.text(`Coeficiente Real (Calculado): ${calculoDetalhado.coeficienteReal ? calculoDetalhado.coeficienteReal.toFixed(8) : 'N/A'}`, 15, y);
-            }
-
-            y += 15; doc.setFontSize(8); doc.setFont('helvetica', 'italic');
-            doc.text("Valores aproximados para análise interna.", 15, y);
-
-            desenharRodape(doc); // Rodapé final
-            doc.save(gerarNomeArquivo('escritorio'));
         }
 
         document.addEventListener('DOMContentLoaded', () => {
