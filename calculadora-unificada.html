@@ -141,6 +141,28 @@
             border-top-left-radius: 8px;
             border-top-right-radius: 8px;
         }
+
+        #curiosidadeCoef {
+            border-color: #0b5ed7;
+            border-radius: 50%;
+            background-color: white;
+        }
+
+        .bi-question {
+            color: #0b5ed7;
+        }
+        .curiosidade{
+            z-index: 1000;
+            text-align: center;
+
+        }
+        #closeCuriosidade{
+            background-color: white;
+            color: red;
+            border: none;
+            height: 10px;
+            width: 10px;
+        }
     </style>
 </head>
 
@@ -351,7 +373,7 @@
                                     </div>
                                     <div class="col-md-4 mb-2">
                                         <label for="novoPrazo" class="form-label">Prazo (meses)</label>
-                                        <input type="number" id="novoPrazo" class="form-control" value="96">
+                                        <input type="number" id="novoPrazo" class="form-control" value="120">
                                     </div>
                                 </div>
                             </div>
@@ -425,8 +447,15 @@
                             <div class="row">
                                 <div class="col-md-4 mb-3">
                                     <label for="coeficiente" class="form-label">Coeficiente</label>
-                                    <input type="text" id="coeficiente" class="form-control" value="0.02" required>
+                                    <input type="text" id="coeficiente" class="form-control" value="0.01750" required>
+                                    <br>
+                                    <button type="button" id="curiosidadeCoef" onclick="showCuriosidade()">
+                                        <i class="bi bi-question" alt="Saiba sobre os novos coeficientes"></i>
+                                    </button>
+
+                                    <div id="curiosidade" class="mt-2"></div>
                                 </div>
+                                <br>
                                 <div class="col-md-4 mb-3">
                                     <label for="comissaoGerente" class="form-label">Comissão Gerente (%)</label>
                                     <input type="text" id="comissaoGerente" class="form-control" value="15" required>
@@ -717,7 +746,9 @@
                             </button>
                         </div>
                     </div>
+
                 </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
                 </div>
@@ -731,6 +762,29 @@
     <script src='https://cdn.jsdelivr.net/npm/tesseract.js@latest/dist/tesseract.min.js'></script>
 
     <script>
+        function showCuriosidade() {
+    const div = document.getElementById("curiosidade");
+
+    // Se a div já tiver conteúdo, a gente limpa (esconde)
+    if (div.innerHTML !== "") {
+        div.innerHTML = "";
+    } else {
+        // Se estiver vazia, a gente coloca o card
+        div.innerHTML = `<div class="card mt-2">
+            <div class="card-body">
+                <button id="closeCuriosidade" type="button" class="btn btn-sm btn-secondary" onclick="showCuriosidade()"><i class="bi bi-x-circle"></i></button> <br> <br>
+                Os coeficientes mudaram! E os prazos também, confira abaixo os novos coeficientes:
+                <pre class="bg-light p-2 my-2 rounded">
+Novo prazo: 120 Meses
+Bradesco: 0,01750
+BRB: 0,02100
+Banese: Sem confirmação
+Digio: Sem confirmação
+                </pre>
+            </div>
+        </div>`;
+    }
+}
         pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js`;
 
         let clienteNomePDF = '', clienteCpfPDF = '', parcelasSelecionadasPDF = [], calculoDetalhado = {};
@@ -765,17 +819,17 @@
         // Configurações das Operações
         const operacoes = {
             exercito: [
-                { value: 'compra_exercito', text: 'Compra de Dívida', coef: '0.02' },
-                { value: 'portabilidade_exercito', text: 'Portabilidade', coef: '0.01930' },
-                { value: 'margem_refin_exercito', text: 'Margem + Refin Bradesco', coef: '0.02' },
-                { value: 'margem_nova_exercito', text: 'Margem Nova', coef: '0.023' },
-                { value: 'negativado_exercito', text: 'Análise de Negativado', coef: '' }
+                { value: 'compra_exercito', text: 'Compra de Dívida' },
+                { value: 'portabilidade_exercito', text: 'Portabilidade' },
+                { value: 'margem_refin_exercito', text: 'Margem + Refin Bradesco' },
+                { value: 'margem_nova_exercito', text: 'Margem Nova' },
+                { value: 'negativado_exercito', text: 'Análise de Negativado' }
             ],
             siape: [
-                { value: 'compra_siape', text: 'Compra de Dívida', coef: '0.02' },
-                { value: 'portabilidade_siape', text: 'Portabilidade', coef: '0.01930' },
-                { value: 'margem_nova_siape', text: 'Margem Nova', coef: '0.023' },
-                { value: 'negativado_siape', text: 'Análise de Negativado', coef: '' }
+                { value: 'compra_siape', text: 'Compra de Dívida' },
+                { value: 'portabilidade_siape', text: 'Portabilidade' },
+                { value: 'margem_nova_siape', text: 'Margem Nova' },
+                { value: 'negativado_siape', text: 'Análise de Negativado' }
             ]
         };
 
@@ -1279,7 +1333,7 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                     valBrutaFacultativa = moedaParaFloat(valoresCabecalho[2]);  // Bruta Facult. Global (*)
                     valTotalFacultativas = moedaParaFloat(valoresCabecalho[6]); // Utilizada Facultativa
                     const liquidaFacultativa = moedaParaFloat(valoresCabecalho[3]); // Líquida Facult. Global (*)
-                    
+
                     margemDisponivel = valBrutaFacultativa - valTotalFacultativas;
                     if (Math.abs(margemDisponivel - liquidaFacultativa) > 5) {
                         margemDisponivel = liquidaFacultativa;
@@ -1290,7 +1344,7 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                     valBrutaFacultativa = moedaParaFloat(valoresCabecalho[2]);  // Bruta Facultativa
                     valTotalFacultativas = moedaParaFloat(valoresCabecalho[8]); // Total Facultativas (fica mais abaixo no array)
                     const liquidaFacultativa = moedaParaFloat(valoresCabecalho[3]); // Liquida Facultativa
-                    
+
                     margemDisponivel = valBrutaFacultativa - valTotalFacultativas;
                     if (Math.abs(margemDisponivel - liquidaFacultativa) > 5) {
                         margemDisponivel = liquidaFacultativa;
@@ -1342,37 +1396,37 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                     .replace('CONTRIB PREV ABERTA - ', '');
 
                 // Limpeza profunda de datas (Padrões do Antigo e Novo)
-                let blocoLimpo = bloco.replace(/\d{2}\/\d{2}\/\d{4}(?:\s+\d{2}:\d{2}:\d{2})?/g, ''); 
-                blocoLimpo = blocoLimpo.replace(/\d{2}\/\d{4}/g, ''); 
-                
+                let blocoLimpo = bloco.replace(/\d{2}\/\d{2}\/\d{4}(?:\s+\d{2}:\d{2}:\d{2})?/g, '');
+                blocoLimpo = blocoLimpo.replace(/\d{2}\/\d{4}/g, '');
+
                 const valorMatch = bloco.match(/R\$\s*([\d\.,]+)/);
                 const parcelasMatch = blocoLimpo.match(/(\d{1,3})\/(\d{1,3})/);
-                
+
                 if (valorMatch && parcelasMatch) {
                     const valorParcelaNum = moedaParaFloat(valorMatch[1]);
                     const pagas = parseInt(parcelasMatch[1], 10);
                     const total = parseInt(parcelasMatch[2], 10);
-                    
+
                     if (total > 900 && !nomeBanco.toUpperCase().includes('CARTAO')) return;
-                    
+
                     const parcelasRestantes = total - pagas;
                     const saldoAproximado = (parcelasRestantes >= 0) ? valorParcelaNum * parcelasRestantes * 0.70 : 0;
-                    
-                    contratosEncontrados.push({ 
-                        id: index, 
-                        banco: nomeBanco, 
-                        valorParcela: valorParcelaNum, 
-                        saldo: saldoAproximado, 
-                        pagas: pagas, 
-                        total: total 
+
+                    contratosEncontrados.push({
+                        id: index,
+                        banco: nomeBanco,
+                        valorParcela: valorParcelaNum,
+                        saldo: saldoAproximado,
+                        pagas: pagas,
+                        total: total
                     });
                 }
             });
 
             contratosEncontrados.sort((a, b) => b.valorParcela - a.valorParcela);
 
-            if (contratosEncontrados.length === 0) { 
-                showToast("AVISO: Nenhum contrato de empréstimo válido foi encontrado.", 'warning'); 
+            if (contratosEncontrados.length === 0) {
+                showToast("AVISO: Nenhum contrato de empréstimo válido foi encontrado.", 'warning');
             } else {
                 contratosEncontrados.forEach((c, i) => {
                     const itemDiv = document.createElement('div');
@@ -1383,7 +1437,7 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             }
 
             document.getElementById('selectAllCheckbox').addEventListener('change', (e) => document.querySelectorAll('.loan-checkbox').forEach(cb => cb.checked = e.target.checked));
-            listaDiv.style.display = "block"; 
+            listaDiv.style.display = "block";
             document.getElementById("unificarBtnPdf").style.display = "block";
         }
 
