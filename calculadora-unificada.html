@@ -1237,31 +1237,79 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
         }
 
         async function processarPdfSiape(text) {
-            console.log("PDF SIAPE Iniciado..."); // DEPURAÇÃO
+            console.log("PDF SIAPE Iniciado (Modo Universal)...");
+
+            // 1. Extração de CPF e Nome (Compatível com ambos)
             const infoRegexNovo = /CPF\nMatrícula\nNome\n([^\n]+)\n(?:[^\n]*\n)?([^\n]+)/;
             const headerRegexAntigo = /Órgão\nCPF\nMatrícula\nNome\n[^\n]+\n([^\n]+)\n[^\n]+\n([^\n]+)/;
-            let infoMatchNovo = text.match(infoRegexNovo); let headerMatchAntigo = text.match(headerRegexAntigo);
+            let infoMatchNovo = text.match(infoRegexNovo);
+            let headerMatchAntigo = text.match(headerRegexAntigo);
             let cpfExtraido = 'Não lido', nomeExtraido = 'Não lido';
-            if (infoMatchNovo && (/\d{3}\.\d{3}\.\d{3}-\d{2}/.test(infoMatchNovo[1].trim()) || /\d{11}/.test(infoMatchNovo[1].replace(/[.-]/g, '')))) { cpfExtraido = infoMatchNovo[1].trim(); nomeExtraido = infoMatchNovo[2].trim(); }
-            else if (headerMatchAntigo) { cpfExtraido = headerMatchAntigo[1].trim(); nomeExtraido = headerMatchAntigo[2].trim(); }
-            else { const cpfSimples = text.match(/\d{3}\.\d{3}\.\d{3}-\d{2}/); if (cpfSimples) cpfExtraido = cpfSimples[0]; }
+
+            if (infoMatchNovo && (/\d{3}\.\d{3}\.\d{3}-\d{2}/.test(infoMatchNovo[1].trim()) || /\d{11}/.test(infoMatchNovo[1].replace(/[.-]/g, '')))) {
+                cpfExtraido = infoMatchNovo[1].trim(); nomeExtraido = infoMatchNovo[2].trim();
+            }
+            else if (headerMatchAntigo) {
+                cpfExtraido = headerMatchAntigo[1].trim(); nomeExtraido = headerMatchAntigo[2].trim();
+            }
+            else {
+                const cpfSimples = text.match(/\d{3}\.\d{3}\.\d{3}-\d{2}/);
+                if (cpfSimples) cpfExtraido = cpfSimples[0];
+                const nomeSimples = text.match(/Nome\n([\s\S]{10,40}?)\n/);
+                if (nomeSimples && !nomeSimples[1].includes("R$")) nomeExtraido = nomeSimples[1].trim();
+            }
             clienteCpfPDF = cpfExtraido; clienteNomePDF = nomeExtraido;
 
-            const blocoValoresRegex = /Total\s+Cartão([\s\S]+?)(?:Extrato\s+de\s+Consignações|Demonstrativo\s+de\s+uso)/i;
-            const matchBloco = text.match(blocoValoresRegex);
+            // 2. Isolamento do Cabeçalho de Margens
+            const limiteInferior = text.indexOf('Extrato de Consignações Vigentes');
+            const limiteInferior2 = text.indexOf('Demonstrativo de uso');
+            const endPos = Math.min(
+                limiteInferior > 0 ? limiteInferior : 2500,
+                limiteInferior2 > 0 ? limiteInferior2 : 2500
+            );
+            const cabecalhoText = text.substring(0, endPos);
+            const valoresCabecalho = cabecalhoText.match(/R\$\s*[\d\.,]+/g);
+
             let valBrutaFacultativa = 0, valTotalFacultativas = 0, margemDisponivel = 0, calculoRealizado = false;
-            if (matchBloco) {
-                const valoresEncontrados = matchBloco[1].match(/R\$\s*([\d.,]+)/g);
-                if (valoresEncontrados && valoresEncontrados.length >= 7) {
-                    valBrutaFacultativa = moedaParaFloat(valoresEncontrados[2]); valTotalFacultativas = moedaParaFloat(valoresEncontrados[6]);
-                    margemDisponivel = valBrutaFacultativa - valTotalFacultativas; calculoRealizado = true;
+
+            if (valoresCabecalho && valoresCabecalho.length >= 7) {
+                // DETECÇÃO AUTOMÁTICA DE LAYOUT
+                if (text.includes("Utilizada Facultativa")) {
+                    // --- REGRAS DO MODELO NOVO ---
+                    valBrutaFacultativa = moedaParaFloat(valoresCabecalho[2]);  // Bruta Facult. Global (*)
+                    valTotalFacultativas = moedaParaFloat(valoresCabecalho[6]); // Utilizada Facultativa
+                    const liquidaFacultativa = moedaParaFloat(valoresCabecalho[3]); // Líquida Facult. Global (*)
+                    
+                    margemDisponivel = valBrutaFacultativa - valTotalFacultativas;
+                    if (Math.abs(margemDisponivel - liquidaFacultativa) > 5) {
+                        margemDisponivel = liquidaFacultativa;
+                    }
+                    calculoRealizado = true;
+                } else if (text.includes("Total Facultativas")) {
+                    // --- REGRAS DO MODELO ANTIGO ---
+                    valBrutaFacultativa = moedaParaFloat(valoresCabecalho[2]);  // Bruta Facultativa
+                    valTotalFacultativas = moedaParaFloat(valoresCabecalho[8]); // Total Facultativas (fica mais abaixo no array)
+                    const liquidaFacultativa = moedaParaFloat(valoresCabecalho[3]); // Liquida Facultativa
+                    
+                    margemDisponivel = valBrutaFacultativa - valTotalFacultativas;
+                    if (Math.abs(margemDisponivel - liquidaFacultativa) > 5) {
+                        margemDisponivel = liquidaFacultativa;
+                    }
+                    calculoRealizado = true;
                 }
             }
-            const infoDiv = document.getElementById("infoNegativado"); const negativoInput = document.getElementById("negativo"); const operacaoSelect = document.getElementById("operacaoSelect");
+
+            // --- Renderização Visual do Painel de Margens ---
+            const infoDiv = document.getElementById("infoNegativado");
+            const negativoInput = document.getElementById("negativo");
+            const operacaoSelect = document.getElementById("operacaoSelect");
+
             if (calculoRealizado) {
-                const cpfParaLink = clienteCpfPDF || ''; const cpfLimpo = cpfParaLink.replace(/\D/g, ''); const urlPolloDireta = `https://sistema.gconsig.com/admin/consultor/${cpfParaLink}/procurarcliente.html?tipo=cpf`;
+                const cpfParaLink = clienteCpfPDF || ''; const cpfLimpo = cpfParaLink.replace(/\D/g, '');
+                const urlPolloDireta = `https://sistema.gconsig.com/admin/consultor/${cpfParaLink}/procurarcliente.html?tipo=cpf`;
                 let htmlAnalise = `<h5 class="alert-heading">Análise de Margem (SIAPE)</h5><div class="row"><div class="col-6"><strong>Bruta Facultativa:</strong><br>${formatarMoeda(valBrutaFacultativa)}</div><div class="col-6"><strong>Total Utilizado:</strong><br>${formatarMoeda(valTotalFacultativas)}</div></div><hr class="my-2">`;
-                const botaoLinkPollo = (classeCor) => `<div class="mt-3"><a href="${urlPolloDireta}" target="_blank" class="btn btn-sm ${classeCor} w-100" onclick="navigator.clipboard.writeText('${cpfLimpo}'); showToast('Abrindo sistema... CPF copiado por segurança!', 'info');"><strong>🔗 Abrir Cliente no Pollo</strong></a><small class="text-muted d-block mt-1" style="font-size: 0.75rem;">(Vai direto para o cadastro. Se falhar, o CPF já foi copiado)</small></div>`;
+                const botaoLinkPollo = (classeCor) => `<div class="mt-3"><a href="${urlPolloDireta}" target="_blank" class="btn btn-sm ${classeCor} w-100" onclick="navigator.clipboard.writeText('${cpfLimpo}'); showToast('Abrindo sistema... CPF copiado por segurança!', 'info');"><strong>🔗 Abrir Cliente no CRM</strong></a></div>`;
+
                 if (margemDisponivel < -0.01) {
                     const valorNegativo = Math.abs(margemDisponivel);
                     htmlAnalise += `<div class="alert alert-danger mb-0 text-center"><strong>⚠️ CLIENTE NEGATIVO</strong><br>Valor Excedente: <strong>${formatarMoeda(valorNegativo)}</strong>${botaoLinkPollo('btn-outline-dark')}<p class="mt-2 mb-0"><small>Ou consulte no <a href="https://c6.c6consig.com.br/WebAutorizador/Login" target="_blank">Banco C6</a></small></p></div>`;
@@ -1272,32 +1320,71 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                     negativoInput.value = '';
                 }
                 infoDiv.innerHTML = htmlAnalise; infoDiv.style.display = 'block';
-            } else { infoDiv.style.display = 'none'; }
+            } else {
+                infoDiv.style.display = 'none';
+            }
 
+            // 3. Extração Unificada dos Contratos (Independente do Layout)
             const listaDiv = document.getElementById("listaEmprestimos");
             listaDiv.innerHTML = `<div id="infoCliente" class="mb-3 p-2 border rounded"><p class="mb-1"><strong>Nome:</strong> ${clienteNomePDF}</p><p class="mb-0"><strong>CPF:</strong> ${clienteCpfPDF}</p></div><div class="form-check mb-2 border-bottom pb-2"><input class="form-check-input" type="checkbox" id="selectAllCheckbox"><label class="form-check-label fw-bold" for="selectAllCheckbox">Selecionar Todos</label></div>`;
-            const rgxEmprestimos = /(EMPREST[^\n]+)\n(?:.|\n)*?(R\$\s*[\d\.,]+)\n(\d{2,3}\/\d{2,3})/g; let matches = [...text.matchAll(rgxEmprestimos)]; let contratosEncontrados = [];
-            matches.forEach((match, index) => {
-                const [_, nomeBanco, valor, parcelasStr] = match;
-                let cleanNomeBanco = nomeBanco.replace(/^\d+\s*-\s*/, '').trim().replace('EMPREST BCO PRIVADOS - ', '').replace('EMPREST BCO OFICIAL - ', '');
-                const [pagas, total] = parcelasStr.split('/'); const valorParcelaNum = moedaParaFloat(valor);
-                if (parseInt(total, 10) > 900) return;
-                const parcelasRestantes = parseInt(total, 10) - parseInt(pagas, 10); const saldoAproximado = (parcelasRestantes >= 0) ? valorParcelaNum * parcelasRestantes * 0.70 : 0;
-                contratosEncontrados.push({ id: index, banco: cleanNomeBanco, valorParcela: valorParcelaNum, saldo: saldoAproximado, pagas: pagas, total: total });
+
+            const contratosEncontrados = [];
+            const blocos = text.split(/(?=EMPREST|AMORT CART[AÃ]O|CARTAO BENEF|CONTRIB PREV)/i);
+
+            blocos.forEach((bloco, index) => {
+                if (!/^(EMPREST|AMORT CART[AÃ]O|CARTAO BENEF|CONTRIB PREV)/i.test(bloco)) return;
+
+                let linhas = bloco.split('\n');
+                let nomeBanco = linhas[0].trim()
+                    .replace('EMPREST BCO PRIVADOS - ', '')
+                    .replace('EMPREST BCO OFICIAL - ', '')
+                    .replace('AMORT CARTAO CREDITO - ', '')
+                    .replace('CONTRIB PREV ABERTA - ', '');
+
+                // Limpeza profunda de datas (Padrões do Antigo e Novo)
+                let blocoLimpo = bloco.replace(/\d{2}\/\d{2}\/\d{4}(?:\s+\d{2}:\d{2}:\d{2})?/g, ''); 
+                blocoLimpo = blocoLimpo.replace(/\d{2}\/\d{4}/g, ''); 
+                
+                const valorMatch = bloco.match(/R\$\s*([\d\.,]+)/);
+                const parcelasMatch = blocoLimpo.match(/(\d{1,3})\/(\d{1,3})/);
+                
+                if (valorMatch && parcelasMatch) {
+                    const valorParcelaNum = moedaParaFloat(valorMatch[1]);
+                    const pagas = parseInt(parcelasMatch[1], 10);
+                    const total = parseInt(parcelasMatch[2], 10);
+                    
+                    if (total > 900 && !nomeBanco.toUpperCase().includes('CARTAO')) return;
+                    
+                    const parcelasRestantes = total - pagas;
+                    const saldoAproximado = (parcelasRestantes >= 0) ? valorParcelaNum * parcelasRestantes * 0.70 : 0;
+                    
+                    contratosEncontrados.push({ 
+                        id: index, 
+                        banco: nomeBanco, 
+                        valorParcela: valorParcelaNum, 
+                        saldo: saldoAproximado, 
+                        pagas: pagas, 
+                        total: total 
+                    });
+                }
             });
+
             contratosEncontrados.sort((a, b) => b.valorParcela - a.valorParcela);
-            if (contratosEncontrados.length === 0) { showToast("AVISO: Nenhum contrato de empréstimo válido foi encontrado.", 'warning'); }
-            else {
+
+            if (contratosEncontrados.length === 0) { 
+                showToast("AVISO: Nenhum contrato de empréstimo válido foi encontrado.", 'warning'); 
+            } else {
                 contratosEncontrados.forEach((c, i) => {
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'form-check border-bottom py-2';
-                    // ORDEM ALTERADA AQUI: Parcela - Prazo (Pagas de Total) - Saldo
                     itemDiv.innerHTML = `<input class="form-check-input loan-checkbox" type="checkbox" data-saldo="${c.saldo}" data-parcela="${c.valorParcela}" data-banco="${c.banco}" data-status="${c.pagas} de ${c.total}" id="loan-sorted-${i}"><label class="form-check-label" for="loan-sorted-${i}"><strong>${c.banco}</strong><br><small>Parcela: ${formatarMoeda(c.valorParcela)} | Prazo: ${c.pagas} de ${c.total} | Saldo Aprox.: ${formatarMoeda(c.saldo)}</small></label>`;
                     listaDiv.appendChild(itemDiv);
                 });
             }
+
             document.getElementById('selectAllCheckbox').addEventListener('change', (e) => document.querySelectorAll('.loan-checkbox').forEach(cb => cb.checked = e.target.checked));
-            listaDiv.style.display = "block"; document.getElementById("unificarBtnPdf").style.display = "block";
+            listaDiv.style.display = "block"; 
+            document.getElementById("unificarBtnPdf").style.display = "block";
         }
 
         function parsearPdf(event) {
@@ -1908,11 +1995,11 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             y += 10; doc.setFontSize(12); doc.text("Dados do Novo Contrato", 15, y); y += 8; doc.setFontSize(10);
             doc.text(`Banco: ${calculoDetalhado?.novoBanco || 'Bradesco'}`, 15, y); y += 6;
             doc.text(`Prazo: ${calculoDetalhado?.novoPrazo || '96'}x`, 15, y); y += 6;
-            
+
             // LÓGICA NOVA: Soma das Parcelas
             let parcelaTotal = calculoDetalhado?.novaParcelaValor || 0;
             let parcelaMI = calculoDetalhado?.parcelaMargemIntegrada || 0;
-            
+
             if (parcelaMI > 0) {
                 doc.text(`Valor da Parcela (Contratos Anteriores): ${formatarMoeda(parcelaTotal)}`, 15, y); y += 6;
                 doc.setTextColor(25, 135, 84); // Deixa verdinho para destacar
@@ -2031,7 +2118,7 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             y += 10;
             y = verificarQuebraPagina(doc, y);
             doc.setFontSize(12);
-            
+
             if (calculoDetalhado.tipo.includes('margem_nova')) {
                 doc.text("Resumo da Simulação de Margem Nova", 15, y); y += 8;
                 doc.setFontSize(14); doc.setFont('helvetica', 'bold');
@@ -2040,15 +2127,15 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
 
             } else {
                 doc.text("Resumo da Operação Simulada", 15, y); y += 8; doc.setFontSize(10);
-                
+
                 // Exibe apenas o saldo devedor e o líquido final, sem poluir a tela do cliente
                 doc.text(`Saldo Devedor Total a Quitar (Aprox.): ${formatarMoeda(calculoDetalhado.s)}`, 15, y); y += 10;
-                
+
                 doc.setFontSize(14); doc.setFont('helvetica', 'bold');
                 doc.text(`Valor Líquido Total para o Cliente: ${formatarMoeda(calculoDetalhado.valorOfertaFinal)}`, 15, y);
                 y += 10; doc.setFontSize(10); doc.setFont('helvetica', 'normal');
             }
-            
+
             y += 15; doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.text("Valores aproximados. A proposta final pode variar.", 15, y);
 
             desenharRodape(doc); // Rodapé final
