@@ -151,12 +151,14 @@
         .bi-question {
             color: #0b5ed7;
         }
-        .curiosidade{
+
+        .curiosidade {
             z-index: 1000;
             text-align: center;
 
         }
-        #closeCuriosidade{
+
+        #closeCuriosidade {
             background-color: white;
             color: red;
             border: none;
@@ -763,14 +765,14 @@
 
     <script>
         function showCuriosidade() {
-    const div = document.getElementById("curiosidade");
+            const div = document.getElementById("curiosidade");
 
-    // Se a div já tiver conteúdo, a gente limpa (esconde)
-    if (div.innerHTML !== "") {
-        div.innerHTML = "";
-    } else {
-        // Se estiver vazia, a gente coloca o card
-        div.innerHTML = `<div class="card mt-2">
+            // Se a div já tiver conteúdo, a gente limpa (esconde)
+            if (div.innerHTML !== "") {
+                div.innerHTML = "";
+            } else {
+                // Se estiver vazia, a gente coloca o card
+                div.innerHTML = `<div class="card mt-2">
             <div class="card-body">
                 <button id="closeCuriosidade" type="button" class="btn btn-sm btn-secondary" onclick="showCuriosidade()"><i class="bi bi-x-circle"></i></button> <br> <br>
                 Os coeficientes mudaram! E os prazos também, confira abaixo os novos coeficientes:
@@ -783,8 +785,8 @@ Digio: Sem confirmação
                 </pre>
             </div>
         </div>`;
-    }
-}
+            }
+        }
         pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js`;
 
         let clienteNomePDF = '', clienteCpfPDF = '', parcelasSelecionadasPDF = [], calculoDetalhado = {};
@@ -821,6 +823,7 @@ Digio: Sem confirmação
             exercito: [
                 { value: 'compra_exercito', text: 'Compra de Dívida' },
                 { value: 'portabilidade_exercito', text: 'Portabilidade' },
+                { value: 'refinanciamento_exercito', text: 'Refinanciamento' }, // NOVA OPÇÃO
                 { value: 'margem_refin_exercito', text: 'Margem + Refin Bradesco' },
                 { value: 'margem_nova_exercito', text: 'Margem Nova' },
                 { value: 'negativado_exercito', text: 'Análise de Negativado' }
@@ -828,6 +831,7 @@ Digio: Sem confirmação
             siape: [
                 { value: 'compra_siape', text: 'Compra de Dívida' },
                 { value: 'portabilidade_siape', text: 'Portabilidade' },
+                { value: 'refinanciamento_siape', text: 'Refinanciamento' }, // NOVA OPÇÃO
                 { value: 'margem_nova_siape', text: 'Margem Nova' },
                 { value: 'negativado_siape', text: 'Análise de Negativado' }
             ]
@@ -1759,13 +1763,11 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                 brutoDisponivel = novoContrato - s - d;
                 comissaoInv = s * pctInv;
 
-                // NOVO: A Base da comissão agora é a soma dos Brutos
                 brutoTotalParaComissao = brutoDisponivel + valorLiberadoMI;
                 comissaoG_valor = brutoTotalParaComissao * (comG_pct / 100);
 
                 liquidoFinal = brutoTotalParaComissao - comissaoInv - comissaoG_valor - comEsc;
 
-                // HTML Detalhado para a TELA
                 htmlDet = `
             <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
                 <span>Novo Saldo (Gerado):</span> <strong>${formatarMoeda(novoContrato)}</strong>
@@ -1780,6 +1782,36 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                 <span>(=) Bruto da Compra:</span> <strong>${formatarMoeda(brutoDisponivel)}</strong>
             </li>`;
 
+            } else if (op.includes('refinanciamento')) {
+                // NOVA LÓGICA REFINANCIAMENTO: Sem investidor
+                if (document.getElementById('quitacaoSim') && document.getElementById('quitacaoSim').checked) {
+                    quitadoExtra = moedaParaFloat(document.getElementById('valorQuitado').value);
+                }
+
+                brutoDisponivel = novoContrato - s - d - quitadoExtra;
+
+                brutoTotalParaComissao = brutoDisponivel + valorLiberadoMI;
+                comissaoG_valor = brutoTotalParaComissao * (comG_pct / 100);
+
+                liquidoFinal = brutoTotalParaComissao - comissaoG_valor - comEsc;
+
+                htmlDet = `
+            <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+                <span>Novo Saldo (Gerado):</span> <strong>${formatarMoeda(novoContrato)}</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+                <span>(-) Saldo Devedor:</span> <span class="text-danger">- ${formatarMoeda(s)}</span>
+            </li>
+            ${d > 0 ? `<li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+                <span>(-) Produto:</span> <span class="text-danger">- ${formatarMoeda(d)}</span>
+            </li>` : ''}
+            ${quitadoExtra > 0 ? `<li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
+                <span>(-) Valor Quitado:</span> <span class="text-danger">- ${formatarMoeda(quitadoExtra)}</span>
+            </li>` : ''}
+            <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1 text-primary">
+                <span>(=) Bruto do Refinanciamento:</span> <strong>${formatarMoeda(brutoDisponivel)}</strong>
+            </li>`;
+
             } else {
                 // Lógica Portabilidade / Refin
                 if (document.getElementById('quitacaoSim') && document.getElementById('quitacaoSim').checked) {
@@ -1788,7 +1820,6 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
 
                 brutoDisponivel = novoContrato - s - d - quitadoExtra;
 
-                // NOVO: A Base da comissão agora é a soma dos Brutos
                 brutoTotalParaComissao = brutoDisponivel + valorLiberadoMI;
                 comissaoG_valor = brutoTotalParaComissao * (comG_pct / 100);
 
@@ -2122,6 +2153,17 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                     const txInv = calculoDetalhado.investidorR ? (calculoDetalhado.investidorR * 100).toFixed(0) : '0';
                     doc.text(`Com. Investidor (${txInv}% sobre Saldo): - ${formatarMoeda(calculoDetalhado.investidor)}`, 15, y); y += gap;
                     doc.text(`Com. Gerente (${calculoDetalhado.comissaoG}% sobre Base): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += gap;
+
+                } else if (calculoDetalhado.tipo.includes('refinanciamento')) {
+                    doc.text(`Bruto do Refinanciamento: ${formatarMoeda(calculoDetalhado.sub)}`, 15, y); y += gap;
+                    if (calculoDetalhado.valorMargemIntegrada > 0) {
+                        doc.text(`(+) Bruto Margem Integrada: ${formatarMoeda(calculoDetalhado.valorMargemIntegrada)}`, 15, y); y += gap;
+                        doc.setFont('helvetica', 'bold');
+                        doc.text(`(=) Base de Cálculo (Total): ${formatarMoeda(baseCalculoTotal)}`, 15, y); y += gap;
+                        doc.setFont('helvetica', 'normal');
+                    }
+                    doc.text(`Com. Gerente (${calculoDetalhado.comissaoG}% sobre Base): - ${formatarMoeda(calculoDetalhado.gerente)}`, 15, y); y += gap;
+
                 } else {
                     doc.text(`Bruto da Portabilidade/Refin: ${formatarMoeda(calculoDetalhado.sub)}`, 15, y); y += gap;
                     if (calculoDetalhado.valorMargemIntegrada > 0) {
