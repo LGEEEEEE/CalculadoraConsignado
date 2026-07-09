@@ -170,6 +170,9 @@
             height: 10px;
             width: 10px;
         }
+        #TabelaCoeficientes{
+            width: 400px;
+        }
     </style>
 </head>
 
@@ -778,7 +781,7 @@
             } else {
                 // Se estiver vazia, a gente coloca o card
                 div.innerHTML = `<div class="card mt-2">
-            <div class="card-body">
+            <div class="card-body" id="TabelaCoeficientes">
                 <button id="closeCuriosidade" type="button" class="btn btn-sm btn-secondary" onclick="showCuriosidade()"><i class="bi bi-x-circle"></i></button> <br> <br>
                 Os coeficientes mudaram! E os prazos também, confira abaixo os novos coeficientes:
                 <pre class="bg-light p-2 my-2 rounded">
