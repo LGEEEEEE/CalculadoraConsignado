@@ -168,7 +168,8 @@
             height: 10px;
             width: 10px;
         }
-        #TabelaCoeficientes{
+
+        #TabelaCoeficientes {
             width: 700px;
         }
     </style>
@@ -369,6 +370,19 @@
                                     <label for="saldodevedor" class="form-label">Saldo Devedor Aprox. Total</label>
                                     <input type="text" id="saldodevedor" class="form-control" required
                                         placeholder="Unificado do passo anterior">
+                                </div>
+                            </div>
+
+                            
+
+                            <!-- NOVO CAMPO: Redução de Parcela -->
+                            <div class="row" id="campo-reducao" style="display:none;">
+                                <div class="col-md-12 mb-3">
+                                    <label for="parcelaReduzida" class="form-label text-success fw-bold"><i
+                                            class="bi bi-arrow-down-circle"></i> Novo Valor da Parcela
+                                        (Reduzida)</label>
+                                    <input type="text" id="parcelaReduzida" class="form-control border-success"
+                                        placeholder="Ex: 500,00">
                                 </div>
                             </div>
 
@@ -850,16 +864,18 @@ Digio:
         const operacoes = {
             exercito: [
                 { value: 'compra_exercito', text: 'Compra de Dívida' },
+                { value: 'compra_reducao_exercito', text: 'Compra de Dívida (Redução)' }, // NOVA OPÇÃO
                 { value: 'portabilidade_exercito', text: 'Portabilidade' },
-                { value: 'refinanciamento_exercito', text: 'Refinanciamento' }, // NOVA OPÇÃO
+                { value: 'refinanciamento_exercito', text: 'Refinanciamento' },
                 { value: 'margem_refin_exercito', text: 'Margem + Refin Bradesco' },
                 { value: 'margem_nova_exercito', text: 'Margem Nova' },
                 { value: 'negativado_exercito', text: 'Análise de Negativado' }
             ],
             siape: [
                 { value: 'compra_siape', text: 'Compra de Dívida' },
+                { value: 'compra_reducao_siape', text: 'Compra de Dívida (Redução)' }, // NOVA OPÇÃO
                 { value: 'portabilidade_siape', text: 'Portabilidade' },
-                { value: 'refinanciamento_siape', text: 'Refinanciamento' }, // NOVA OPÇÃO
+                { value: 'refinanciamento_siape', text: 'Refinanciamento' },
                 { value: 'margem_nova_siape', text: 'Margem Nova' },
                 { value: 'negativado_siape', text: 'Análise de Negativado' }
             ]
@@ -1214,6 +1230,16 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                 if (operacaoValue.includes('compra')) {
                     portRefinFields.style.display = 'none';
                     compraFields.style.display = 'block';
+
+                    // Lógica para mostrar/esconder o campo de redução
+                    if (operacaoValue.includes('compra_reducao')) {
+                        document.getElementById('campo-reducao').style.display = 'flex';
+                        document.getElementById('parcelaReduzida').required = true;
+                    } else {
+                        document.getElementById('campo-reducao').style.display = 'none';
+                        document.getElementById('parcelaReduzida').required = false;
+                    }
+                
                 } else if (operacaoValue.includes('portabilidade') || operacaoValue.includes('refin')) {
                     portRefinFields.style.display = 'block';
                     compraFields.style.display = 'none';
@@ -1749,6 +1775,7 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
 
             // Tratamento de valores para evitar NaN
             const p = moedaParaFloat(document.getElementById("parcela").value);
+            const pReduzida = moedaParaFloat(document.getElementById("parcelaReduzida").value); // NOVO
             const s = moedaParaFloat(document.getElementById("saldodevedor").value);
             const d = moedaParaFloat(document.getElementById("desconto").value);
             const coef = parseFloat(document.getElementById("coeficiente").value.replace(',', '.')) || 0.02;
@@ -1764,21 +1791,29 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             const coefMI = usarMI ? parseFloat(document.getElementById('mi-coeficiente').value.replace(',', '.')) : 0;
             const valorLiberadoMI = (usarMI && parcelaMI > 0 && coefMI > 0) ? (parcelaMI / coefMI) : 0;
 
-            // Validação básica
-            if (p <= 0 || coef <= 0) return showToast("Dados inválidos (Parcela ou Coeficiente zerados)", 'danger');
+            // Lógica de Redução
+            let parcelaBaseCalculo = p;
+            let valorReduzido = 0;
+            if (op.includes('compra_reducao')) {
+                parcelaBaseCalculo = pReduzida;
+                valorReduzido = p - pReduzida;
+                if (valorReduzido <= 0) return showToast("A Parcela Reduzida deve ser menor que a Parcela Original.", 'warning');
+            }
 
-            const novoContrato = p / coef;
+            // Validação básica
+            if (parcelaBaseCalculo <= 0 || coef <= 0) return showToast("Dados inválidos (Parcela ou Coeficiente zerados)", 'danger');
+
+            const novoContrato = parcelaBaseCalculo / coef;
 
             // Variáveis de cálculo
-            let brutoDisponivel = 0; // Bruto apenas da operação principal
-            let brutoTotalParaComissao = 0; // Bruto Operação + Bruto Margem
+            let brutoDisponivel = 0;
+            let brutoTotalParaComissao = 0;
             let comissaoInv = 0;
             let comissaoG_valor = 0;
             let liquidoFinal = 0;
             let pctInv = 0;
             let quitadoExtra = 0;
 
-            // Textos para exibição na tela (HTML)
             let txtPctInvestidor = "0%";
             let txtPctGerente = `${comG_pct}%`;
             let htmlDet = '';
@@ -1796,18 +1831,23 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
 
                 liquidoFinal = brutoTotalParaComissao - comissaoInv - comissaoG_valor - comEsc;
 
-                htmlDet = `
+                // Mostra dados adicionais na tela de resultados se for redução
+                if (op.includes('compra_reducao')) {
+                    htmlDet = `
+                    <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1 text-muted">
+                        <span>Parcelas Originais:</span> <strong>${formatarMoeda(p)}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1 text-success">
+                        <span>Parcela Reduzida (Novo Contrato):</span> <strong>${formatarMoeda(pReduzida)}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1 text-success fw-bold">
+                        <span>Economia de Salário (Reduziu):</span> <strong>${formatarMoeda(valorReduzido)}</strong>
+                    </li><hr class="my-1">`;
+                }
+
+                htmlDet += `
             <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
                 <span>Novo Saldo (Gerado):</span> <strong>${formatarMoeda(novoContrato)}</strong>
-            </li>
-            <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
-                <span>(-) Saldo Devedor:</span> <span class="text-danger">- ${formatarMoeda(s)}</span>
-            </li>
-            ${d > 0 ? `<li class="list-group-item d-flex justify-content-between border-0 px-0 py-1">
-                <span>(-) Produto:</span> <span class="text-danger">- ${formatarMoeda(d)}</span>
-            </li>` : ''}
-            <li class="list-group-item d-flex justify-content-between border-0 px-0 py-1 text-primary">
-                <span>(=) Bruto da Compra:</span> <strong>${formatarMoeda(brutoDisponivel)}</strong>
             </li>`;
 
             } else if (op.includes('refinanciamento')) {
@@ -1925,7 +1965,9 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                 cpf: cpfFinal,
                 novoBanco,
                 novoPrazo,
-                novaParcelaValor: p,
+                novaParcelaValor: parcelaBaseCalculo, // Vai receber a pReduzida se for compra_reducao
+                parcelaOriginal: p,                   // Salva a original
+                valorReduzido: valorReduzido,         // Salva o valor da economia
                 sub: brutoDisponivel,
                 investidor: comissaoInv,
                 investidorR: pctInv,
@@ -2113,7 +2155,17 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
             let parcelaTotal = calculoDetalhado?.novaParcelaValor || 0;
             let parcelaMI = calculoDetalhado?.parcelaMargemIntegrada || 0;
 
-            if (parcelaMI > 0) {
+            if (calculoDetalhado?.tipo.includes('compra_reducao')) {
+                doc.text(`Valor das Parcelas Originais: ${formatarMoeda(calculoDetalhado.parcelaOriginal)}`, 15, y); y += 6;
+                
+                doc.setTextColor(25, 135, 84); // Verde sucesso
+                doc.text(`Valor da Parcela depois da Redução: ${formatarMoeda(parcelaTotal)}`, 15, y); y += 6;
+                
+                doc.setFont('helvetica', 'bold');
+                doc.text(`Valor que Reduziu no Salário: ${formatarMoeda(calculoDetalhado.valorReduzido)}`, 15, y); y += 6;
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(0, 0, 0);
+            } else if (parcelaMI > 0) {
                 doc.text(`Valor da Parcela (Contratos Anteriores): ${formatarMoeda(parcelaTotal)}`, 15, y); y += 6;
                 doc.setTextColor(25, 135, 84); // Deixa verdinho para destacar
                 doc.text(`(+) Parcela da Nova Margem Utilizada: ${formatarMoeda(parcelaMI)}`, 15, y); y += 6;
@@ -2324,7 +2376,7 @@ Eu consigo fazer uma simulação rápida aqui, sem compromisso, só para ${prono
                 if (this.value === 'nao') { document.getElementById('valorQuitado').value = ''; }
             }));
 
-            ['#manualParcela', '#negativo', '#parcela', '#saldodevedor', '#desconto', '#valorQuitado', '#comissaoesc', '#mn-parcela', '#mn-comissaoGerente', '#mn-comissaoEscritorio'].forEach(selector => {
+            ['#manualParcela', '#negativo', '#parcela', '#parcelaReduzida', '#saldodevedor', '#desconto', '#valorQuitado', '#comissaoesc', '#mn-parcela', '#mn-comissaoGerente', '#mn-comissaoEscritorio'].forEach(selector => {
                 const el = document.querySelector(selector);
                 if (el) {
                     el.addEventListener('blur', function () { if (this.value.trim() !== "") { const valorNum = moedaParaFloat(this.value); this.value = formatarInputMoeda(valorNum); } });
